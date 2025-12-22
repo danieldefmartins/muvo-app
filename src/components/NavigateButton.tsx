@@ -1,6 +1,7 @@
 import { Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { hapticMedium } from '@/lib/haptics';
 
 interface NavigateButtonProps {
   latitude: number;
@@ -12,6 +13,8 @@ interface NavigateButtonProps {
 
 export function NavigateButton({ latitude, longitude, name, variant = 'default', className }: NavigateButtonProps) {
   const handleNavigate = () => {
+    hapticMedium();
+    
     // Detect platform and open appropriate maps app
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const encodedName = encodeURIComponent(name);

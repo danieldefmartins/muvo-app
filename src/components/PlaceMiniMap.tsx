@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import type { Database } from '@/integrations/supabase/types';
 import { formatDistanceToNow } from 'date-fns';
+import { hapticLight } from '@/lib/haptics';
 
 type PlaceCategory = Database['public']['Enums']['place_category'];
 
@@ -143,6 +144,7 @@ export function PlaceMiniMap({
   }, [latitude, longitude, mapboxToken, mapLoaded]);
 
   const handleClick = () => {
+    hapticLight();
     navigate(`/map?lat=${latitude}&lng=${longitude}&zoom=14`);
   };
 

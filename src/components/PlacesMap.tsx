@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Loader2, Navigation } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
+import { hapticLight } from '@/lib/haptics';
 
 interface PlacesMapProps {
   places: Place[];
@@ -237,6 +238,7 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
         `;
 
         el.addEventListener('click', () => {
+          hapticLight();
           if (!map.current || !clusterRef.current) return;
           const clusterId = (feature as Supercluster.ClusterFeature<PointProperties>).id as number;
           const expansionZoom = clusterRef.current.getClusterExpansionZoom(clusterId);
@@ -270,6 +272,7 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
         `;
 
         el.addEventListener('click', () => {
+          hapticLight();
           openPopupForPlace(place);
         });
 
