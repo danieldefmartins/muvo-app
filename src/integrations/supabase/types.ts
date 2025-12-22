@@ -92,6 +92,70 @@ export type Database = {
           },
         ]
       }
+      place_status_updates: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_approved: boolean | null
+          is_rejected: boolean | null
+          note: string | null
+          place_id: string
+          status: Database["public"]["Enums"]["place_status"]
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_rejected?: boolean | null
+          note?: string | null
+          place_id: string
+          status: Database["public"]["Enums"]["place_status"]
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_rejected?: boolean | null
+          note?: string | null
+          place_id?: string
+          status?: Database["public"]["Enums"]["place_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_status_updates_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_status_updates_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_status_updates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       place_suggestions: {
         Row: {
           created_at: string
@@ -163,6 +227,7 @@ export type Database = {
         Row: {
           cover_image_url: string | null
           created_at: string
+          current_status: Database["public"]["Enums"]["place_status"] | null
           features: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict: boolean
           id: string
@@ -177,10 +242,12 @@ export type Database = {
           packages_accepted: Database["public"]["Enums"]["package_acceptance"]
           price_level: Database["public"]["Enums"]["price_level"]
           primary_category: Database["public"]["Enums"]["place_category"]
+          status_updated_at: string | null
         }
         Insert: {
           cover_image_url?: string | null
           created_at?: string
+          current_status?: Database["public"]["Enums"]["place_status"] | null
           features?: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict?: boolean
           id?: string
@@ -195,10 +262,12 @@ export type Database = {
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
+          status_updated_at?: string | null
         }
         Update: {
           cover_image_url?: string | null
           created_at?: string
+          current_status?: Database["public"]["Enums"]["place_status"] | null
           features?: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict?: boolean
           id?: string
@@ -213,6 +282,7 @@ export type Database = {
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
+          status_updated_at?: string | null
         }
         Relationships: []
       }
@@ -328,6 +398,11 @@ export type Database = {
         | "Hot Tub"
         | "Heated Pool"
         | "Heated Hot Tub"
+      place_status:
+        | "open_accessible"
+        | "access_questionable"
+        | "temporarily_closed"
+        | "restrictions_reported"
       price_level: "$" | "$$" | "$$$"
       suggestion_status: "pending" | "approved" | "rejected"
     }
@@ -486,6 +561,12 @@ export const Constants = {
         "Hot Tub",
         "Heated Pool",
         "Heated Hot Tub",
+      ],
+      place_status: [
+        "open_accessible",
+        "access_questionable",
+        "temporarily_closed",
+        "restrictions_reported",
       ],
       price_level: ["$", "$$", "$$$"],
       suggestion_status: ["pending", "approved", "rejected"],

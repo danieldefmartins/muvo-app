@@ -9,6 +9,7 @@ import {
   Camera,
   Sparkles,
   ClipboardCheck,
+  AlertCircle,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { TrustBadge } from '@/components/TrustBadge';
@@ -17,6 +18,8 @@ import { SuggestUpdateForm } from '@/components/SuggestUpdateForm';
 import { PendingSuggestions } from '@/components/PendingSuggestions';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PlaceCheckin } from '@/components/PlaceCheckin';
+import { PlaceStatusBadge } from '@/components/PlaceStatusBadge';
+import { ReportStatusForm } from '@/components/ReportStatusForm';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -231,10 +234,28 @@ const PlaceDetail = () => {
           )}
         </section>
 
-        {/* Summary */}
+        {/* Current Status */}
         <section 
           className="mb-6 animate-fade-in" 
           style={{ animationDelay: '50ms' }}
+        >
+          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-primary" />
+            Current Status
+          </h2>
+          <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+            <PlaceStatusBadge 
+              status={place.currentStatus} 
+              statusUpdatedAt={place.statusUpdatedAt} 
+            />
+            <ReportStatusForm placeId={id!} currentStatus={place.currentStatus} />
+          </div>
+        </section>
+
+        {/* Summary */}
+        <section 
+          className="mb-6 animate-fade-in" 
+          style={{ animationDelay: '75ms' }}
         >
           <div className="bg-secondary/50 rounded-lg p-4">
             <p className="text-secondary-foreground font-medium">
