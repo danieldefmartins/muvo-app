@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       places: {
         Row: {
+          categories: Database["public"]["Enums"]["place_category"][]
+          cover_image_url: string | null
           created_at: string
           has_conflict: boolean
           id: string
@@ -28,8 +30,11 @@ export type Database = {
           package_fee_required: boolean
           packages_accepted: Database["public"]["Enums"]["package_acceptance"]
           price_level: Database["public"]["Enums"]["price_level"]
+          primary_category: Database["public"]["Enums"]["place_category"]
         }
         Insert: {
+          categories?: Database["public"]["Enums"]["place_category"][]
+          cover_image_url?: string | null
           created_at?: string
           has_conflict?: boolean
           id?: string
@@ -42,8 +47,11 @@ export type Database = {
           package_fee_required?: boolean
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
           price_level?: Database["public"]["Enums"]["price_level"]
+          primary_category?: Database["public"]["Enums"]["place_category"]
         }
         Update: {
+          categories?: Database["public"]["Enums"]["place_category"][]
+          cover_image_url?: string | null
           created_at?: string
           has_conflict?: boolean
           id?: string
@@ -56,6 +64,7 @@ export type Database = {
           package_fee_required?: boolean
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
           price_level?: Database["public"]["Enums"]["price_level"]
+          primary_category?: Database["public"]["Enums"]["place_category"]
         }
         Relationships: []
       }
@@ -68,6 +77,23 @@ export type Database = {
     }
     Enums: {
       package_acceptance: "Yes" | "No" | "Limited"
+      place_category:
+        | "National Park Campground"
+        | "State Park Campground"
+        | "County / Regional Park Campground"
+        | "City / Municipal Park Campground"
+        | "Public Land"
+        | "RV Campground"
+        | "Luxury RV Resort"
+        | "Campground (Mixed)"
+        | "Boondocking Area"
+        | "Overnight Parking Spot"
+        | "Business Allowing Overnight Parking"
+        | "Dump Station"
+        | "Water Station"
+        | "Propane Station"
+        | "RV Service / Repair"
+        | "Rest Area"
       price_level: "$" | "$$" | "$$$"
     }
     CompositeTypes: {
@@ -197,6 +223,24 @@ export const Constants = {
   public: {
     Enums: {
       package_acceptance: ["Yes", "No", "Limited"],
+      place_category: [
+        "National Park Campground",
+        "State Park Campground",
+        "County / Regional Park Campground",
+        "City / Municipal Park Campground",
+        "Public Land",
+        "RV Campground",
+        "Luxury RV Resort",
+        "Campground (Mixed)",
+        "Boondocking Area",
+        "Overnight Parking Spot",
+        "Business Allowing Overnight Parking",
+        "Dump Station",
+        "Water Station",
+        "Propane Station",
+        "RV Service / Repair",
+        "Rest Area",
+      ],
       price_level: ["$", "$$", "$$$"],
     },
   },

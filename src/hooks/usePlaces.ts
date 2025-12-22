@@ -1,6 +1,24 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+export type PlaceCategory =
+  | 'National Park Campground'
+  | 'State Park Campground'
+  | 'County / Regional Park Campground'
+  | 'City / Municipal Park Campground'
+  | 'Public Land'
+  | 'RV Campground'
+  | 'Luxury RV Resort'
+  | 'Campground (Mixed)'
+  | 'Boondocking Area'
+  | 'Overnight Parking Spot'
+  | 'Business Allowing Overnight Parking'
+  | 'Dump Station'
+  | 'Water Station'
+  | 'Propane Station'
+  | 'RV Service / Repair'
+  | 'Rest Area';
+
 export interface Place {
   id: string;
   name: string;
@@ -13,6 +31,9 @@ export interface Place {
   isVerified: boolean;
   hasConflict: boolean;
   lastUpdated: Date;
+  primaryCategory: PlaceCategory;
+  categories: PlaceCategory[];
+  coverImageUrl: string | null;
   // Computed/derived fields
   distance: number;
   summary: string;
@@ -32,6 +53,9 @@ interface PlaceRow {
   has_conflict: boolean;
   last_updated: string;
   created_at: string;
+  primary_category: PlaceCategory;
+  categories: PlaceCategory[];
+  cover_image_url: string | null;
 }
 
 // Generate a summary sentence based on place data
@@ -92,6 +116,9 @@ function transformPlace(row: PlaceRow): Place {
     isVerified: row.is_verified,
     hasConflict: row.has_conflict,
     lastUpdated: new Date(row.last_updated),
+    primaryCategory: row.primary_category,
+    categories: row.categories,
+    coverImageUrl: row.cover_image_url,
     distance: calculateDistance(row.latitude, row.longitude),
     summary: generateSummary(row),
     isProRecommended: row.is_verified && row.price_level !== '$', // Simple heuristic for now
