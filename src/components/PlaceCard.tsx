@@ -86,6 +86,25 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
           <span>{place.distance} miles away</span>
         </div>
 
+        {/* Features (show first 3) */}
+        {place.features.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {place.features.slice(0, 3).map((feature) => (
+              <span
+                key={feature}
+                className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-secondary text-secondary-foreground"
+              >
+                {feature}
+              </span>
+            ))}
+            {place.features.length > 3 && (
+              <span className="text-xs text-muted-foreground">
+                +{place.features.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Summary */}
         <p className="text-sm text-secondary-foreground mb-3 line-clamp-2">
           {place.summary}
