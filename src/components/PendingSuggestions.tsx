@@ -1,6 +1,7 @@
 import { Clock, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TrustedBadge } from '@/components/TrustedBadge';
 import { usePlaceSuggestions, FIELD_LABELS, Suggestion } from '@/hooks/useSuggestions';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -82,7 +83,13 @@ function SuggestionCard({ suggestion }: { suggestion: Suggestion }) {
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <User className="w-3 h-3" />
-        <span>{suggestion.userDisplayName}</span>
+        <span className="flex items-center gap-1">
+          {suggestion.userDisplayName}
+          {suggestion.userIsPro && <TrustedBadge showLabel={false} />}
+        </span>
+        {suggestion.userIsPro && (
+          <span className="text-primary text-xs">Trusted Contributor</span>
+        )}
         <span>•</span>
         <span>{formatDistanceToNow(suggestion.createdAt, { addSuffix: true })}</span>
       </div>
