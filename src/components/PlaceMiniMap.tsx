@@ -1,40 +1,41 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { MapPin, Maximize2 } from 'lucide-react';
+import { MapPin, Maximize2, CheckCircle2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import type { Database } from '@/integrations/supabase/types';
+import { formatDistanceToNow } from 'date-fns';
 
 type PlaceCategory = Database['public']['Enums']['place_category'];
 
 // Map place categories to appropriate Mapbox styles
 function getMapStyle(category?: PlaceCategory): string {
   switch (category) {
-    // Parks - terrain with natural/green emphasis
     case 'National Park':
     case 'State Park':
     case 'County / Regional Park':
       return 'mapbox://styles/mapbox/outdoors-v12';
-    
-    // RV focused - standard terrain
     case 'RV Campground':
     case 'Luxury RV Resort':
     case 'Fairgrounds / Event Grounds':
       return 'mapbox://styles/mapbox/outdoors-v12';
-    
-    // Boondocking/Overnight - terrain with road emphasis
     case 'Boondocking':
     case 'Overnight Parking':
     case 'Rest Area / Travel Plaza':
       return 'mapbox://styles/mapbox/streets-v12';
-    
-    // Business parking - road-focused
     case 'Business Allowing Overnight':
       return 'mapbox://styles/mapbox/streets-v12';
-    
     default:
       return 'mapbox://styles/mapbox/outdoors-v12';
+  }
+}
+
+function formatVerifiedDate(date: string): string {
+  try {
+    return formatDistanceToNow(new Date(date), { addSuffix: true });
+  } catch {
+    return '';
   }
 }
 
@@ -44,14 +45,26 @@ interface PlaceMiniMapProps {
   name: string;
   mapboxToken: string;
   category?: PlaceCategory;
+  isVerified?: boolean;
+  lastUpdated?: string;
   className?: string;
 }
 
-export function PlaceMiniMap({ latitude, longitude, name, mapboxToken, category, className }: PlaceMiniMapProps) {
+export function PlaceMiniMap({ 
+  latitude, 
+  longitude, 
+  name, 
+  mapboxToken, 
+  category, 
+  isVerified,
+  lastUpdated,
+  className 
+}: PlaceMiniMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const navigate = useNavigate();
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [nearbyRoad, setNearbyRoad] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -99,11 +112,41 @@ export function PlaceMiniMap({ latitude, longitude, name, mapboxToken, category,
     return () => {
       map.current?.remove();
     };
-  }, [latitude, longitude, mapboxToken]);
+  }, [latitude, longitude, mapboxToken, category]);
+
+  // Fetch nearby road info using Mapbox Geocoding API
+  useEffect(() => {
+    if (!mapboxToken || !mapLoaded) return;
+
+    const fetchNearbyRoad = async () => {
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?types=address,locality,neighborhood&limit=1&access_token=${mapboxToken}`
+        );
+        const data = await response.json();
+        
+        if (data.features && data.features.length > 0) {
+          const feature = data.features[0];
+          // Extract road/locality name
+          const placeName = feature.text || feature.place_name?.split(',')[0];
+          if (placeName && placeName.length < 30) {
+            setNearbyRoad(placeName);
+          }
+        }
+      } catch (error) {
+        // Silently fail - road info is optional
+        console.debug('Could not fetch nearby road info');
+      }
+    };
+
+    fetchNearbyRoad();
+  }, [latitude, longitude, mapboxToken, mapLoaded]);
 
   const handleClick = () => {
     navigate(`/map?lat=${latitude}&lng=${longitude}&zoom=14`);
   };
+
+  const verifiedText = lastUpdated ? formatVerifiedDate(lastUpdated) : null;
 
   return (
     <>
@@ -164,10 +207,45 @@ export function PlaceMiniMap({ latitude, longitude, name, mapboxToken, category,
       >
         <div ref={mapContainer} className="absolute inset-0" />
         
-        {/* Bottom gradient overlay for contrast */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/60 to-transparent pointer-events-none" />
+        {/* Top gradient for badges */}
+        <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-background/50 to-transparent pointer-events-none" />
         
-        {/* Always visible CTA label */}
+        {/* Bottom gradient overlay for contrast */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/70 to-transparent pointer-events-none" />
+        
+        {/* Verified/Updated badge - top left */}
+        {(isVerified || verifiedText) && (
+          <div className="absolute top-2 left-2 z-10">
+            <div className="bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm border border-border">
+              <span className="text-[10px] font-medium flex items-center gap-1 text-muted-foreground">
+                {isVerified ? (
+                  <>
+                    <CheckCircle2 className="w-3 h-3 text-green-600" />
+                    <span className="text-green-700">Verified</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-3 h-3" />
+                    <span>Updated {verifiedText}</span>
+                  </>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
+        
+        {/* Nearby road label - bottom left */}
+        {nearbyRoad && (
+          <div className="absolute bottom-2 left-2 z-10">
+            <div className="bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm border border-border max-w-[140px]">
+              <span className="text-[10px] font-medium text-muted-foreground truncate block">
+                Near {nearbyRoad}
+              </span>
+            </div>
+          </div>
+        )}
+        
+        {/* Always visible CTA label - bottom right */}
         <div className="absolute bottom-2 right-2 z-10">
           <div className="bg-background/95 backdrop-blur-sm px-2.5 py-1.5 rounded-md shadow-md border border-border group-hover:bg-background group-hover:shadow-lg transition-all">
             <span className="text-xs font-medium flex items-center gap-1.5 text-foreground">
