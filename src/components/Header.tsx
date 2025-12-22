@@ -1,4 +1,4 @@
-import { ArrowLeft, Map, User, LogOut } from 'lucide-react';
+import { ArrowLeft, Map, User, LogOut, Heart } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -57,16 +57,31 @@ export function Header({ title, showBack = false, showMap = false, className }: 
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {showMap && (
             <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 text-muted-foreground hover:text-foreground"
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground"
             >
-              <Map className="w-4 h-4" />
-              <span className="hidden sm:inline">Map</span>
+              <Map className="w-5 h-5" />
             </Button>
+          )}
+
+          {user && (
+            <Link to="/saved">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "text-muted-foreground hover:text-foreground",
+                  location.pathname === '/saved' && "text-primary"
+                )}
+                aria-label="Saved places"
+              >
+                <Heart className="w-5 h-5" />
+              </Button>
+            </Link>
           )}
 
           {user ? (
