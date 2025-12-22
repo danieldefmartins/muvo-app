@@ -119,7 +119,6 @@ export type Database = {
       }
       places: {
         Row: {
-          categories: Database["public"]["Enums"]["place_category"][]
           cover_image_url: string | null
           created_at: string
           features: Database["public"]["Enums"]["place_feature"][] | null
@@ -130,6 +129,7 @@ export type Database = {
           latitude: number
           longitude: number
           name: string
+          open_year_round: boolean
           package_fee_amount: string | null
           package_fee_required: boolean
           packages_accepted: Database["public"]["Enums"]["package_acceptance"]
@@ -137,7 +137,6 @@ export type Database = {
           primary_category: Database["public"]["Enums"]["place_category"]
         }
         Insert: {
-          categories?: Database["public"]["Enums"]["place_category"][]
           cover_image_url?: string | null
           created_at?: string
           features?: Database["public"]["Enums"]["place_feature"][] | null
@@ -148,6 +147,7 @@ export type Database = {
           latitude: number
           longitude: number
           name: string
+          open_year_round?: boolean
           package_fee_amount?: string | null
           package_fee_required?: boolean
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
@@ -155,7 +155,6 @@ export type Database = {
           primary_category?: Database["public"]["Enums"]["place_category"]
         }
         Update: {
-          categories?: Database["public"]["Enums"]["place_category"][]
           cover_image_url?: string | null
           created_at?: string
           features?: Database["public"]["Enums"]["place_feature"][] | null
@@ -166,6 +165,7 @@ export type Database = {
           latitude?: number
           longitude?: number
           name?: string
+          open_year_round?: boolean
           package_fee_amount?: string | null
           package_fee_required?: boolean
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
@@ -226,62 +226,30 @@ export type Database = {
     Enums: {
       package_acceptance: "Yes" | "No" | "Limited"
       place_category:
-        | "National Park Campground"
-        | "State Park Campground"
-        | "County / Regional Park Campground"
-        | "City / Municipal Park Campground"
-        | "Public Land"
+        | "National Park"
+        | "State Park"
+        | "County / Regional Park"
         | "RV Campground"
         | "Luxury RV Resort"
-        | "Campground (Mixed)"
-        | "Boondocking Area"
-        | "Overnight Parking Spot"
-        | "Business Allowing Overnight Parking"
-        | "Dump Station"
-        | "Water Station"
-        | "Propane Station"
-        | "RV Service / Repair"
-        | "Rest Area"
+        | "Overnight Parking"
+        | "Boondocking"
+        | "Business Allowing Overnight"
+        | "Rest Area / Travel Plaza"
+        | "Fairgrounds / Event Grounds"
       place_feature:
-        | "Full Hookups"
-        | "Partial Hookups"
-        | "Dry Camping"
-        | "Pull Through Sites"
-        | "Big Rig Friendly"
-        | "Pet Friendly"
-        | "Laundry"
-        | "Showers"
-        | "WiFi"
-        | "Pool"
-        | "Hot Tub"
-        | "Playground"
-        | "Dog Park"
-        | "Fishing"
-        | "Hiking"
-        | "Beach Access"
-        | "Lake Access"
-        | "River Access"
-        | "Boat Ramp"
         | "Dump Station"
-        | "Propane"
-        | "Store"
-        | "Restaurant"
-        | "Clubhouse"
-        | "Fitness Center"
-        | "Golf"
-        | "Mini Golf"
-        | "Game Room"
-        | "Cable TV"
-        | "Tent Sites"
-        | "Cabins"
-        | "Glamping"
-        | "Long Term Stays"
-        | "Seasonal Sites"
-        | "Rally Friendly"
-        | "Workamper Friendly"
-        | "Military Discount"
-        | "Good Sam Discount"
-        | "Passport America"
+        | "Fresh Water"
+        | "Electric Hookups"
+        | "Sewer Hookups"
+        | "Showers"
+        | "Laundry"
+        | "Wi-Fi"
+        | "Pet Friendly"
+        | "Big Rig Friendly"
+        | "Swimming Pool"
+        | "Hot Tub"
+        | "Heated Pool"
+        | "Heated Hot Tub"
       price_level: "$" | "$$" | "$$$"
       suggestion_status: "pending" | "approved" | "rejected"
     }
@@ -413,63 +381,31 @@ export const Constants = {
     Enums: {
       package_acceptance: ["Yes", "No", "Limited"],
       place_category: [
-        "National Park Campground",
-        "State Park Campground",
-        "County / Regional Park Campground",
-        "City / Municipal Park Campground",
-        "Public Land",
+        "National Park",
+        "State Park",
+        "County / Regional Park",
         "RV Campground",
         "Luxury RV Resort",
-        "Campground (Mixed)",
-        "Boondocking Area",
-        "Overnight Parking Spot",
-        "Business Allowing Overnight Parking",
-        "Dump Station",
-        "Water Station",
-        "Propane Station",
-        "RV Service / Repair",
-        "Rest Area",
+        "Overnight Parking",
+        "Boondocking",
+        "Business Allowing Overnight",
+        "Rest Area / Travel Plaza",
+        "Fairgrounds / Event Grounds",
       ],
       place_feature: [
-        "Full Hookups",
-        "Partial Hookups",
-        "Dry Camping",
-        "Pull Through Sites",
-        "Big Rig Friendly",
-        "Pet Friendly",
-        "Laundry",
-        "Showers",
-        "WiFi",
-        "Pool",
-        "Hot Tub",
-        "Playground",
-        "Dog Park",
-        "Fishing",
-        "Hiking",
-        "Beach Access",
-        "Lake Access",
-        "River Access",
-        "Boat Ramp",
         "Dump Station",
-        "Propane",
-        "Store",
-        "Restaurant",
-        "Clubhouse",
-        "Fitness Center",
-        "Golf",
-        "Mini Golf",
-        "Game Room",
-        "Cable TV",
-        "Tent Sites",
-        "Cabins",
-        "Glamping",
-        "Long Term Stays",
-        "Seasonal Sites",
-        "Rally Friendly",
-        "Workamper Friendly",
-        "Military Discount",
-        "Good Sam Discount",
-        "Passport America",
+        "Fresh Water",
+        "Electric Hookups",
+        "Sewer Hookups",
+        "Showers",
+        "Laundry",
+        "Wi-Fi",
+        "Pet Friendly",
+        "Big Rig Friendly",
+        "Swimming Pool",
+        "Hot Tub",
+        "Heated Pool",
+        "Heated Hot Tub",
       ],
       price_level: ["$", "$$", "$$$"],
       suggestion_status: ["pending", "approved", "rejected"],
