@@ -1,34 +1,91 @@
+import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { PlaceCard } from '@/components/PlaceCard';
-import { usePlaces } from '@/hooks/usePlaces';
+import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
+import { usePlaces, Place } from '@/hooks/usePlaces';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const PlacesToStay = () => {
   const { data: places, isLoading, error } = usePlaces();
 
-  // Sort: Pro Recommended first, then by lastUpdated, then by distance
-  const sortedPlaces = places ? [...places].sort((a, b) => {
-    // Pro recommended first
-    if (a.isProRecommended !== b.isProRecommended) {
-      return a.isProRecommended ? -1 : 1;
+  const [filters, setFilters] = useState<PlaceFiltersState>({
+    category: null,
+    features: [],
+    openYearRound: false,
+    petFriendly: false,
+    bigRigFriendly: false,
+  });
+
+  const [sort, setSort] = useState<SortOption>('recently-updated');
+
+  // Filter and sort places
+  const filteredAndSortedPlaces = useMemo(() => {
+    if (!places) return [];
+
+    let result = [...places];
+
+    // Apply filters
+    if (filters.category) {
+      result = result.filter((p) => p.primaryCategory === filters.category);
     }
-    // Then by recently verified
-    if (a.lastUpdated.getTime() !== b.lastUpdated.getTime()) {
-      return b.lastUpdated.getTime() - a.lastUpdated.getTime();
+
+    if (filters.features.length > 0) {
+      result = result.filter((p) =>
+        filters.features.every((f) => p.features.includes(f))
+      );
     }
-    // Then by distance
-    return a.distance - b.distance;
-  }) : [];
+
+    if (filters.petFriendly) {
+      result = result.filter((p) => p.features.includes('Pet Friendly'));
+    }
+
+    if (filters.bigRigFriendly) {
+      result = result.filter((p) => p.features.includes('Big Rig Friendly'));
+    }
+
+    if (filters.openYearRound) {
+      result = result.filter((p) => p.features.includes('Seasonal Sites') === false);
+    }
+
+    // Apply sorting
+    if (sort === 'alphabetical') {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+      // Recently updated - pro recommended first, then by date
+      result.sort((a, b) => {
+        if (a.isProRecommended !== b.isProRecommended) {
+          return a.isProRecommended ? -1 : 1;
+        }
+        return b.lastUpdated.getTime() - a.lastUpdated.getTime();
+      });
+    }
+
+    return result;
+  }, [places, filters, sort]);
 
   return (
     <div className="min-h-screen bg-background">
       <Header title="Places to Stay" showBack showMap />
 
-      <main className="container px-4 py-6 max-w-lg mx-auto">
+      <main className="container px-4 py-4 max-w-lg mx-auto">
+        {/* Filters and Sort */}
+        <div className="mb-4">
+          <PlaceFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            sort={sort}
+            onSortChange={setSort}
+            totalCount={places?.length || 0}
+            filteredCount={filteredAndSortedPlaces.length}
+          />
+        </div>
+
         {/* Results count */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <p className="text-sm text-muted-foreground">
-            {isLoading ? 'Loading...' : `${sortedPlaces.length} places near you`}
+            {isLoading
+              ? 'Loading...'
+              : `${filteredAndSortedPlaces.length} places near you`}
           </p>
         </div>
 
@@ -53,15 +110,36 @@ const PlacesToStay = () => {
           </div>
         )}
 
+        {/* Empty state */}
+        {!isLoading && !error && filteredAndSortedPlaces.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-2">No places match your filters.</p>
+            <button
+              onClick={() =>
+                setFilters({
+                  category: null,
+                  features: [],
+                  openYearRound: false,
+                  petFriendly: false,
+                  bigRigFriendly: false,
+                })
+              }
+              className="text-sm text-primary hover:underline"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
+
         {/* Places list */}
-        {!isLoading && !error && (
+        {!isLoading && !error && filteredAndSortedPlaces.length > 0 && (
           <div className="space-y-3">
-            {sortedPlaces.map((place, index) => (
+            {filteredAndSortedPlaces.map((place, index) => (
               <PlaceCard
                 key={place.id}
                 place={place}
                 className="animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
+                style={{ animationDelay: `${Math.min(index, 5) * 50}ms` }}
               />
             ))}
           </div>
