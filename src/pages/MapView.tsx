@@ -154,6 +154,7 @@ const MapView = () => {
             className="h-full"
             initialCenter={initialCenter}
             initialZoom={initialZoom}
+            showSearch
           />
         )}
 

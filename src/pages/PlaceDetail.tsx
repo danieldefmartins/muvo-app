@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { ImageUpload } from '@/components/ImageUpload';
 import { PlaceMiniMap, PlaceMiniMapPlaceholder } from '@/components/PlaceMiniMap';
+import { NavigateButton } from '@/components/NavigateButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
@@ -145,6 +146,13 @@ const PlaceDetail = () => {
                   {displayImageUrl ? 'Update photo' : 'Add a photo'}
                 </Button>
                 <FavoriteButton placeId={place.id} variant="full" className="flex-1" />
+                <NavigateButton
+                  latitude={place.latitude}
+                  longitude={place.longitude}
+                  name={place.name}
+                  variant="compact"
+                  className="flex-1"
+                />
               </div>
             )}
           </section>
@@ -152,12 +160,21 @@ const PlaceDetail = () => {
 
         {!user && (
           <section className="mb-6 animate-fade-in">
-            <Link to="/auth">
-              <Button variant="outline" className="w-full">
-                <Camera className="w-4 h-4 mr-2" />
-                Sign in to add a photo
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to="/auth" className="flex-1">
+                <Button variant="outline" className="w-full">
+                  <Camera className="w-4 h-4 mr-2" />
+                  Sign in to add a photo
+                </Button>
+              </Link>
+              <NavigateButton
+                latitude={place.latitude}
+                longitude={place.longitude}
+                name={place.name}
+                variant="compact"
+                className="flex-1"
+              />
+            </div>
           </section>
         )}
 
