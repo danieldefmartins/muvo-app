@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      places: {
+        Row: {
+          created_at: string
+          has_conflict: boolean
+          id: string
+          is_verified: boolean
+          last_updated: string
+          latitude: number
+          longitude: number
+          name: string
+          package_fee_amount: string | null
+          package_fee_required: boolean
+          packages_accepted: Database["public"]["Enums"]["package_acceptance"]
+          price_level: Database["public"]["Enums"]["price_level"]
+        }
+        Insert: {
+          created_at?: string
+          has_conflict?: boolean
+          id?: string
+          is_verified?: boolean
+          last_updated?: string
+          latitude: number
+          longitude: number
+          name: string
+          package_fee_amount?: string | null
+          package_fee_required?: boolean
+          packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
+          price_level?: Database["public"]["Enums"]["price_level"]
+        }
+        Update: {
+          created_at?: string
+          has_conflict?: boolean
+          id?: string
+          is_verified?: boolean
+          last_updated?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          package_fee_amount?: string | null
+          package_fee_required?: boolean
+          packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
+          price_level?: Database["public"]["Enums"]["price_level"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +67,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      package_acceptance: "Yes" | "No" | "Limited"
+      price_level: "$" | "$$" | "$$$"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +195,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      package_acceptance: ["Yes", "No", "Limited"],
+      price_level: ["$", "$$", "$$$"],
+    },
   },
 } as const
