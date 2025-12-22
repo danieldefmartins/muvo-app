@@ -1,18 +1,21 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
-import { PlacesMap } from '@/components/PlacesMap';
+import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
-import { usePlaces } from '@/hooks/usePlaces';
+import { MapSearchBox } from '@/components/MapSearchBox';
+import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, MapPinOff, FilterX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 
 const MapView = () => {
   const [searchParams] = useSearchParams();
   const { data: places, isLoading: isLoadingPlaces, error: placesError } = usePlaces();
+  const mapRef = useRef<PlacesMapRef>(null);
 
   // Parse URL params for initial map position
   const initialCenter = useMemo(() => {
@@ -97,24 +100,76 @@ const MapView = () => {
     });
   }, []);
 
+  // Handle search selections
+  const handleSearchLocation = useCallback((lng: number, lat: number, zoom?: number) => {
+    mapRef.current?.flyTo(lng, lat, zoom || 12);
+  }, []);
+
+  const handleSearchPlaceSelect = useCallback((place: Place) => {
+    mapRef.current?.flyTo(place.longitude, place.latitude, 14);
+    setTimeout(() => {
+      mapRef.current?.openPopup(place.id);
+    }, 1100);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div 
+      className="min-h-screen bg-background flex flex-col"
+      style={{ 
+        // iOS safe area support
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+      }}
+    >
       <Header title="Map View" showBack />
 
-      {/* Filters bar */}
-      <div className="container px-4 py-3 max-w-lg mx-auto w-full border-b border-border">
-        <PlaceFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          sort={sort}
-          onSortChange={setSort}
-          totalCount={places?.length || 0}
-          filteredCount={filteredPlaces.length}
-        />
+      {/* Sticky toolbar - search + filters */}
+      <div 
+        className="sticky top-0 z-[50] bg-background border-b border-border"
+        style={{ 
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+        }}
+      >
+        <div className="px-4 py-3 space-y-3 max-w-lg mx-auto w-full">
+          {/* Row 1: Search input (full width) */}
+          {mapboxToken && (
+            <MapSearchBox
+              mapboxToken={mapboxToken}
+              places={places || []}
+              onSelectLocation={handleSearchLocation}
+              onSelectPlace={handleSearchPlaceSelect}
+            />
+          )}
+
+          {/* Row 2: Sort + Filters + Place count */}
+          <div className="flex items-center gap-2">
+            <PlaceFilters
+              filters={filters}
+              onFiltersChange={setFilters}
+              sort={sort}
+              onSortChange={setSort}
+              totalCount={places?.length || 0}
+              filteredCount={filteredPlaces.length}
+            />
+            
+            {/* Place count badge - inline with filters */}
+            {!isLoading && !hasError && (
+              <Badge variant="secondary" className="ml-auto shrink-0">
+                {filteredPlaces.length} {filteredPlaces.length === 1 ? 'place' : 'places'}
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Full-screen map - use min-height to prevent collapse on iOS */}
-      <div className="flex-1 relative" style={{ minHeight: '300px' }}>
+      {/* Map container - fills remaining viewport */}
+      <div 
+        className="flex-1 relative"
+        style={{ 
+          minHeight: '300px',
+          // Ensure map doesn't collapse
+          height: 'calc(100vh - 180px)',
+        }}
+      >
         {/* Loading state */}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted z-[1]">
@@ -157,15 +212,16 @@ const MapView = () => {
           </div>
         )}
 
-        {/* Map - always render to prevent unmount/remount issues */}
+        {/* Map - no search inside (moved to toolbar) */}
         {mapboxToken && !isLoading && !hasError && (
           <PlacesMap
+            ref={mapRef}
             places={filteredPlaces}
             mapboxToken={mapboxToken}
             className="h-full"
             initialCenter={initialCenter}
             initialZoom={initialZoom}
-            showSearch
+            showSearch={false}
           />
         )}
 
@@ -182,17 +238,6 @@ const MapView = () => {
                 <FilterX className="w-4 h-4" />
                 Reset Filters
               </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Floating results count */}
-        {!isLoading && !hasError && filteredPlaces.length > 0 && (
-          <div className="absolute top-3 left-3 z-[15]">
-            <div className="bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md border border-border">
-              <p className="text-xs font-medium">
-                {filteredPlaces.length} {filteredPlaces.length === 1 ? 'place' : 'places'}
-              </p>
             </div>
           </div>
         )}

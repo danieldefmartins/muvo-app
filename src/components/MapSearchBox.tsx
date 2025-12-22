@@ -150,7 +150,7 @@ export function MapSearchBox({
 
       {/* Results dropdown */}
       {isOpen && query.length >= 2 && hasResults && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 overflow-hidden max-h-80 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-[60] overflow-hidden max-h-80 overflow-y-auto">
           {/* Matching places */}
           {matchingPlaces.length > 0 && (
             <div>
@@ -200,7 +200,7 @@ export function MapSearchBox({
 
       {/* No results */}
       {isOpen && query.length >= 2 && !hasResults && !isLoading && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 p-4 text-center">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-[60] p-4 text-center">
           <p className="text-sm text-muted-foreground">No results found</p>
         </div>
       )}
