@@ -1,9 +1,9 @@
-import { MapPin, ChevronRight } from 'lucide-react';
+import { MapPin, Award, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Place, formatLastUpdated } from '@/hooks/usePlaces';
-import { TrustBadge } from './TrustBadge';
 import { PriceIndicator } from './PriceIndicator';
 import { cn } from '@/lib/utils';
+import { AspectRatio } from './ui/aspect-ratio';
 
 interface PlaceCardProps {
   place: Place;
@@ -16,55 +16,86 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
     <Link
       to={`/place/${place.id}`}
       className={cn(
-        'block bg-card rounded-lg border border-border p-4 transition-all duration-200',
+        'block bg-card rounded-lg border border-border overflow-hidden transition-all duration-200',
         'hover:shadow-card-hover hover:border-primary/20 hover:-translate-y-0.5',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className
       )}
       style={style}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-display font-semibold text-foreground text-lg leading-tight truncate">
-              {place.name}
-            </h3>
-            <PriceIndicator level={place.priceLevel} className="flex-shrink-0" />
-          </div>
+      {/* Image Section */}
+      <div className="relative">
+        <AspectRatio ratio={16 / 9}>
+          {place.coverImageUrl ? (
+            <img
+              src={place.coverImageUrl}
+              alt={place.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-muted-foreground text-sm">No photo yet</span>
+            </div>
+          )}
+        </AspectRatio>
 
-          {/* Distance */}
-          <div className="flex items-center gap-1 text-muted-foreground text-sm mb-2">
-            <MapPin className="w-3.5 h-3.5" />
-            <span>{place.distance} miles away</span>
-          </div>
-
-          {/* Summary */}
-          <p className="text-sm text-secondary-foreground mb-3 line-clamp-2">
-            {place.summary}
-          </p>
-
-          {/* Badges */}
-          <div className="flex flex-wrap gap-1.5">
-            {place.isProRecommended && <TrustBadge type="pro" />}
-            {place.isVerified && <TrustBadge type="verified" />}
-            <TrustBadge type="updated" value={formatLastUpdated(place.lastUpdated)} />
-            {place.hasConflict && <TrustBadge type="conflict" />}
-          </div>
+        {/* Image Overlays */}
+        {/* Top-left: Category badge */}
+        <div className="absolute top-2 left-2">
+          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-background/90 text-foreground backdrop-blur-sm">
+            {place.primaryCategory}
+          </span>
         </div>
 
-        {/* Arrow */}
-        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
+        {/* Top-right: Price level */}
+        <div className="absolute top-2 right-2">
+          <PriceIndicator level={place.priceLevel} className="bg-background/90 backdrop-blur-sm" />
+        </div>
+
+        {/* Bottom-right: Status icons */}
+        <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+          {place.isProRecommended && (
+            <div 
+              className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/90 text-accent-foreground backdrop-blur-sm"
+              title="Pro Recommended"
+            >
+              <Award className="w-4 h-4" />
+            </div>
+          )}
+          {place.hasConflict && (
+            <div 
+              className="flex items-center justify-center w-7 h-7 rounded-full bg-warning/90 text-warning-foreground backdrop-blur-sm"
+              title="Has pending updates"
+            >
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Conflict warning */}
-      {place.hasConflict && (
-        <div className="mt-3 pt-3 border-t border-border">
-          <p className="text-xs text-warning flex items-center gap-1">
-            ⚠️ Some details reported differently by users
-          </p>
+      {/* Content Section */}
+      <div className="p-4">
+        {/* Place name */}
+        <h3 className="font-display font-semibold text-foreground text-lg leading-tight truncate mb-1">
+          {place.name}
+        </h3>
+
+        {/* Distance */}
+        <div className="flex items-center gap-1 text-muted-foreground text-sm mb-2">
+          <MapPin className="w-3.5 h-3.5" />
+          <span>{place.distance} miles away</span>
         </div>
-      )}
+
+        {/* Summary */}
+        <p className="text-sm text-secondary-foreground mb-3 line-clamp-2">
+          {place.summary}
+        </p>
+
+        {/* Last updated */}
+        <p className="text-xs text-muted-foreground">
+          Updated {formatLastUpdated(place.lastUpdated)}
+        </p>
+      </div>
     </Link>
   );
 }
