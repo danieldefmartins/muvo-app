@@ -1,6 +1,7 @@
 import { PlaceFiltersState } from '@/components/PlaceFilters';
 import { PlaceCategory, PlaceFeature } from '@/hooks/usePlaces';
 import { cn } from '@/lib/utils';
+import { hapticLight } from '@/lib/haptics';
 
 interface QuickChip {
   id: string;
@@ -137,11 +138,15 @@ export function QuickFilterChips({ filters, onFiltersChange }: QuickFilterChipsP
             return (
               <button
                 key={chip.id}
-                onClick={() => onFiltersChange(chip.toggle(filters))}
+                onClick={() => {
+                  hapticLight();
+                  onFiltersChange(chip.toggle(filters));
+                }}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium',
                   'border transition-all duration-200 whitespace-nowrap',
-                  'active:scale-95 touch-manipulation',
+                  'active:scale-[0.95] active:opacity-80 touch-manipulation',
+                  'transform-gpu will-change-transform',
                   isActive
                     ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                     : 'bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
