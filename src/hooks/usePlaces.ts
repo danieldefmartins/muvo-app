@@ -1,0 +1,147 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface Place {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  priceLevel: '$' | '$$' | '$$$';
+  packagesAccepted: 'Yes' | 'No' | 'Limited';
+  packageFeeRequired: boolean;
+  packageFeeAmount: string | null;
+  isVerified: boolean;
+  hasConflict: boolean;
+  lastUpdated: Date;
+  // Computed/derived fields
+  distance: number;
+  summary: string;
+  isProRecommended: boolean;
+}
+
+interface PlaceRow {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  price_level: '$' | '$$' | '$$$';
+  packages_accepted: 'Yes' | 'No' | 'Limited';
+  package_fee_required: boolean;
+  package_fee_amount: string | null;
+  is_verified: boolean;
+  has_conflict: boolean;
+  last_updated: string;
+  created_at: string;
+}
+
+// Generate a summary sentence based on place data
+function generateSummary(place: PlaceRow): string {
+  const parts: string[] = [];
+  
+  // Package info
+  if (place.packages_accepted === 'Yes') {
+    if (place.package_fee_required) {
+      parts.push('Package fee');
+    } else {
+      parts.push('Free packages');
+    }
+  } else if (place.packages_accepted === 'Limited') {
+    parts.push('Limited packages');
+  } else {
+    parts.push('No packages');
+  }
+  
+  // Price context
+  if (place.price_level === '$') {
+    parts.push('Budget-friendly');
+  } else if (place.price_level === '$$$') {
+    parts.push('Premium resort');
+  }
+  
+  // Verification status
+  if (place.is_verified) {
+    parts.push('Verified');
+  }
+  
+  return parts.slice(0, 3).join(' • ');
+}
+
+// Calculate distance from user (placeholder - uses fixed point for now)
+function calculateDistance(lat: number, lng: number, userLat = 33.4484, userLng = -112.0740): number {
+  const R = 3959; // Earth's radius in miles
+  const dLat = (lat - userLat) * Math.PI / 180;
+  const dLng = (lng - userLng) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(userLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
+function transformPlace(row: PlaceRow): Place {
+  return {
+    id: row.id,
+    name: row.name,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    priceLevel: row.price_level,
+    packagesAccepted: row.packages_accepted,
+    packageFeeRequired: row.package_fee_required,
+    packageFeeAmount: row.package_fee_amount,
+    isVerified: row.is_verified,
+    hasConflict: row.has_conflict,
+    lastUpdated: new Date(row.last_updated),
+    distance: calculateDistance(row.latitude, row.longitude),
+    summary: generateSummary(row),
+    isProRecommended: row.is_verified && row.price_level !== '$', // Simple heuristic for now
+  };
+}
+
+export function usePlaces() {
+  return useQuery({
+    queryKey: ['places'],
+    queryFn: async (): Promise<Place[]> => {
+      const { data, error } = await supabase
+        .from('places')
+        .select('*')
+        .order('last_updated', { ascending: false });
+      
+      if (error) throw error;
+      
+      return (data as PlaceRow[]).map(transformPlace);
+    },
+  });
+}
+
+export function usePlace(id: string) {
+  return useQuery({
+    queryKey: ['place', id],
+    queryFn: async (): Promise<Place | null> => {
+      const { data, error } = await supabase
+        .from('places')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      if (!data) return null;
+      
+      return transformPlace(data as PlaceRow);
+    },
+    enabled: !!id,
+  });
+}
+
+export function formatLastUpdated(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return '1 day ago';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 14) return '1 week ago';
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  return `${Math.floor(diffDays / 30)} months ago`;
+}

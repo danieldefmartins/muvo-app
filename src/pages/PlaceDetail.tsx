@@ -1,37 +1,38 @@
 import { useParams } from 'react-router-dom';
 import {
   MapPin,
-  Phone,
-  Globe,
-  Mail,
   Package,
   DollarSign,
   Calendar,
   Truck,
-  Wifi,
-  Droplets,
-  Flame,
-  ParkingCircle,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { TrustBadge } from '@/components/TrustBadge';
 import { PriceIndicator } from '@/components/PriceIndicator';
-import { getPlaceById, formatLastUpdated } from '@/data/mockPlaces';
+import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-
-const amenityIcons: Record<string, React.ElementType> = {
-  'Full hookups': Droplets,
-  'WiFi': Wifi,
-  'Fire pits': Flame,
-  'Dry camping': ParkingCircle,
-  'default': ParkingCircle,
-};
 
 const PlaceDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const place = getPlaceById(id || '');
+  const { data: place, isLoading, error } = usePlace(id || '');
 
-  if (!place) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Loading..." showBack />
+        <main className="container px-4 py-6 max-w-lg mx-auto">
+          <Skeleton className="h-8 w-3/4 mb-4" />
+          <Skeleton className="h-4 w-1/2 mb-6" />
+          <Skeleton className="h-24 w-full mb-4" />
+          <Skeleton className="h-32 w-full mb-4" />
+          <Skeleton className="h-32 w-full" />
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !place) {
     return (
       <div className="min-h-screen bg-background">
         <Header title="Place Not Found" showBack />
@@ -41,6 +42,9 @@ const PlaceDetail = () => {
       </div>
     );
   }
+
+  // Create a simple location string from coordinates
+  const locationString = `${place.latitude.toFixed(4)}°N, ${Math.abs(place.longitude).toFixed(4)}°W`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,9 +63,8 @@ const PlaceDetail = () => {
           {/* Location */}
           <div className="flex items-center gap-2 text-muted-foreground mb-4">
             <MapPin className="w-4 h-4" />
-            <span className="text-sm">
-              {place.location.address}, {place.location.city}, {place.location.state}
-            </span>
+            <span className="text-sm">{locationString}</span>
+            <span className="text-sm">• {place.distance} mi away</span>
           </div>
 
           {/* Badges */}
@@ -105,8 +108,8 @@ const PlaceDetail = () => {
           <div className="bg-card border border-border rounded-lg divide-y divide-border">
             <InfoRow
               icon={Truck}
-              label="Max Rig Size"
-              value={place.rigSizeMax}
+              label="Distance"
+              value={`${place.distance} miles`}
             />
             <InfoRow
               icon={DollarSign}
@@ -155,77 +158,10 @@ const PlaceDetail = () => {
           </div>
         </section>
 
-        {/* Amenities */}
-        <section 
-          className="mb-6 animate-fade-in" 
-          style={{ animationDelay: '200ms' }}
-        >
-          <h2 className="font-display text-lg font-semibold text-foreground mb-3">
-            Amenities
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {place.amenities.map((amenity) => {
-              const Icon = amenityIcons[amenity] || amenityIcons.default;
-              return (
-                <div
-                  key={amenity}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary rounded-full text-sm text-secondary-foreground"
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {amenity}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Contact */}
-        {place.contact && (
-          <section 
-            className="mb-6 animate-fade-in" 
-            style={{ animationDelay: '250ms' }}
-          >
-            <h2 className="font-display text-lg font-semibold text-foreground mb-3">
-              Contact
-            </h2>
-            <div className="bg-card border border-border rounded-lg divide-y divide-border">
-              {place.contact.phone && (
-                <a
-                  href={`tel:${place.contact.phone}`}
-                  className="flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors"
-                >
-                  <Phone className="w-5 h-5 text-primary" />
-                  <span className="text-foreground">{place.contact.phone}</span>
-                </a>
-              )}
-              {place.contact.website && (
-                <a
-                  href={place.contact.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors"
-                >
-                  <Globe className="w-5 h-5 text-primary" />
-                  <span className="text-foreground truncate">Website</span>
-                </a>
-              )}
-              {place.contact.email && (
-                <a
-                  href={`mailto:${place.contact.email}`}
-                  className="flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors"
-                >
-                  <Mail className="w-5 h-5 text-primary" />
-                  <span className="text-foreground truncate">{place.contact.email}</span>
-                </a>
-              )}
-            </div>
-          </section>
-        )}
-
         {/* Reviews placeholder */}
         <section 
           className="mb-6 animate-fade-in" 
-          style={{ animationDelay: '300ms' }}
+          style={{ animationDelay: '200ms' }}
         >
           <h2 className="font-display text-lg font-semibold text-foreground mb-3">
             Community Reports

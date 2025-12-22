@@ -1,6 +1,6 @@
 import { MapPin, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Place, formatLastUpdated } from '@/data/mockPlaces';
+import { Place, formatLastUpdated } from '@/hooks/usePlaces';
 import { TrustBadge } from './TrustBadge';
 import { PriceIndicator } from './PriceIndicator';
 import { cn } from '@/lib/utils';
