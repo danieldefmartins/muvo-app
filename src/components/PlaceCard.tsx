@@ -1,7 +1,6 @@
-import { MapPin, Award, AlertTriangle } from 'lucide-react';
+import { MapPin, Wifi, Dog, Truck, Zap, Droplets, Trees, Waves, Tent, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Place, formatLastUpdated } from '@/hooks/usePlaces';
-import { PriceIndicator } from './PriceIndicator';
+import { Place, PlaceFeature } from '@/hooks/usePlaces';
 import { FavoriteButton } from './FavoriteButton';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from './ui/aspect-ratio';
@@ -12,21 +11,52 @@ interface PlaceCardProps {
   style?: React.CSSProperties;
 }
 
+// Map features to icons
+const FEATURE_ICONS: Partial<Record<PlaceFeature, React.ElementType>> = {
+  'WiFi': Wifi,
+  'Pet Friendly': Dog,
+  'Big Rig Friendly': Truck,
+  'Full Hookups': Zap,
+  'Partial Hookups': Zap,
+  'Dump Station': Droplets,
+  'Hiking': Trees,
+  'Beach Access': Waves,
+  'Lake Access': Waves,
+  'Tent Sites': Tent,
+  'Cabins': Home,
+};
+
+function getFeatureIcons(features: PlaceFeature[], max = 3) {
+  const icons: { feature: PlaceFeature; Icon: React.ElementType }[] = [];
+  
+  for (const feature of features) {
+    if (icons.length >= max) break;
+    const Icon = FEATURE_ICONS[feature];
+    if (Icon && !icons.some(i => i.Icon === Icon)) {
+      icons.push({ feature, Icon });
+    }
+  }
+  
+  return icons;
+}
+
 export function PlaceCard({ place, className, style }: PlaceCardProps) {
+  const featureIcons = getFeatureIcons(place.features);
+
   return (
     <Link
       to={`/place/${place.id}`}
       className={cn(
-        'block bg-card rounded-lg border border-border overflow-hidden transition-all duration-200',
-        'hover:shadow-card-hover hover:border-primary/20 hover:-translate-y-0.5',
+        'block rounded-xl overflow-hidden transition-all duration-200',
+        'hover:scale-[1.02] hover:shadow-lg',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className
       )}
       style={style}
     >
-      {/* Image Section */}
+      {/* Large Image with overlays */}
       <div className="relative">
-        <AspectRatio ratio={16 / 9}>
+        <AspectRatio ratio={4 / 3}>
           {place.coverImageUrl ? (
             <img
               src={place.coverImageUrl}
@@ -34,92 +64,59 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <span className="text-muted-foreground text-sm">No photo yet</span>
+            <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+              <MapPin className="w-8 h-8 text-muted-foreground/50" />
             </div>
           )}
-        </AspectRatio>
 
-        {/* Image Overlays */}
-        {/* Top-left: Category badge */}
-        <div className="absolute top-2 left-2">
-          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-background/90 text-foreground backdrop-blur-sm">
-            {place.primaryCategory}
-          </span>
-        </div>
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-        {/* Top-right: Price level */}
-        <div className="absolute top-2 right-2">
-          <PriceIndicator level={place.priceLevel} className="bg-background/90 backdrop-blur-sm" />
-        </div>
-
-        {/* Bottom-left: Favorite button */}
-        <div className="absolute bottom-2 left-2">
-          <FavoriteButton placeId={place.id} variant="icon" />
-        </div>
-
-        {/* Bottom-right: Status icons */}
-        <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
-          {place.isProRecommended && (
-            <div 
-              className="flex items-center justify-center w-7 h-7 rounded-full bg-accent/90 text-accent-foreground backdrop-blur-sm"
-              title="Pro Recommended"
-            >
-              <Award className="w-4 h-4" />
-            </div>
-          )}
-          {place.hasConflict && (
-            <div 
-              className="flex items-center justify-center w-7 h-7 rounded-full bg-warning/90 text-warning-foreground backdrop-blur-sm"
-              title="Has pending updates"
-            >
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="p-4">
-        {/* Place name */}
-        <h3 className="font-display font-semibold text-foreground text-lg leading-tight truncate mb-1">
-          {place.name}
-        </h3>
-
-        {/* Distance */}
-        <div className="flex items-center gap-1 text-muted-foreground text-sm mb-2">
-          <MapPin className="w-3.5 h-3.5" />
-          <span>{place.distance} miles away</span>
-        </div>
-
-        {/* Features (show first 3) */}
-        {place.features.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
-            {place.features.slice(0, 3).map((feature) => (
-              <span
-                key={feature}
-                className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-secondary text-secondary-foreground"
-              >
-                {feature}
-              </span>
-            ))}
-            {place.features.length > 3 && (
-              <span className="text-xs text-muted-foreground">
-                +{place.features.length - 3} more
-              </span>
-            )}
+          {/* Top-left: Category */}
+          <div className="absolute top-3 left-3">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-background/95 text-foreground backdrop-blur-sm shadow-sm">
+              {place.primaryCategory}
+            </span>
           </div>
-        )}
 
-        {/* Summary */}
-        <p className="text-sm text-secondary-foreground mb-3 line-clamp-2">
-          {place.summary}
-        </p>
+          {/* Top-right: Favorite */}
+          <div className="absolute top-3 right-3">
+            <FavoriteButton placeId={place.id} variant="icon" />
+          </div>
 
-        {/* Last updated */}
-        <p className="text-xs text-muted-foreground">
-          Updated {formatLastUpdated(place.lastUpdated)}
-        </p>
+          {/* Bottom content overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            {/* Place name */}
+            <h3 className="font-display font-semibold text-white text-lg leading-tight mb-1 drop-shadow-md">
+              {place.name}
+            </h3>
+
+            {/* Distance and price */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-white/90 text-sm">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>{place.distance} mi</span>
+                <span className="text-white/60 mx-1">•</span>
+                <span className="font-medium">{place.priceLevel}</span>
+              </div>
+
+              {/* Feature icons */}
+              {featureIcons.length > 0 && (
+                <div className="flex items-center gap-1">
+                  {featureIcons.map(({ feature, Icon }) => (
+                    <div
+                      key={feature}
+                      className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm"
+                      title={feature}
+                    >
+                      <Icon className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </AspectRatio>
       </div>
     </Link>
   );
