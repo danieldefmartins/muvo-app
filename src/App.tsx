@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import PlacesToStay from "./pages/PlacesToStay";
 import PlaceDetail from "./pages/PlaceDetail";
 import SavedPlaces from "./pages/SavedPlaces";
+import AdminSuggestions from "./pages/AdminSuggestions";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/places" element={<PlacesToStay />} />
           <Route path="/place/:id" element={<PlaceDetail />} />
           <Route path="/saved" element={<SavedPlaces />} />
+          <Route path="/admin/suggestions" element={<AdminSuggestions />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
