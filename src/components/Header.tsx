@@ -1,7 +1,8 @@
-import { ArrowLeft, Map } from 'lucide-react';
+import { ArrowLeft, Map, User, LogOut } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   title?: string;
@@ -14,6 +15,12 @@ export function Header({ title, showBack = false, showMap = false, className }: 
   const navigate = useNavigate();
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const { user, signOut } = useAuth();
+
+  async function handleSignOut() {
+    await signOut();
+    navigate('/');
+  }
 
   return (
     <header
@@ -50,17 +57,43 @@ export function Header({ title, showBack = false, showMap = false, className }: 
           )}
         </div>
 
-        {showMap && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <Map className="w-4 h-4" />
-            <span className="hidden sm:inline">Map</span>
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {showMap && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Map className="w-4 h-4" />
+              <span className="hidden sm:inline">Map</span>
+            </Button>
+          )}
+
+          {user ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSignOut}
+              className="text-muted-foreground hover:text-foreground"
+              aria-label="Sign out"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
+          ) : (
+            <Link to="/auth">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Sign in"
+              >
+                <User className="w-5 h-5" />
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );
 }
+

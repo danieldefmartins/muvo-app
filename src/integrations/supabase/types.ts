@@ -68,12 +68,45 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          email_verified: boolean
+          id: string
+          phone: string | null
+          phone_verified: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          email_verified?: boolean
+          id: string
+          phone?: string | null
+          phone_verified?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          email_verified?: boolean
+          id?: string
+          phone?: string | null
+          phone_verified?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_verified_user: { Args: { user_id: string }; Returns: boolean }
     }
     Enums: {
       package_acceptance: "Yes" | "No" | "Limited"

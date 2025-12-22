@@ -1,21 +1,32 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
 import {
   MapPin,
   Package,
   DollarSign,
   Calendar,
   Truck,
+  Camera,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { TrustBadge } from '@/components/TrustBadge';
 import { PriceIndicator } from '@/components/PriceIndicator';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
+import { useAuth } from '@/hooks/useAuth';
+import { ImageUpload } from '@/components/ImageUpload';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PlaceDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: place, isLoading, error } = usePlace(id || '');
+  const { user, isVerified } = useAuth();
+  const [showUpload, setShowUpload] = useState(false);
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   if (isLoading) {
     return (
@@ -46,11 +57,100 @@ const PlaceDetail = () => {
   // Create a simple location string from coordinates
   const locationString = `${place.latitude.toFixed(4)}°N, ${Math.abs(place.longitude).toFixed(4)}°W`;
 
+  const displayImageUrl = localImageUrl || place.coverImageUrl;
+
+  function handleImageUploadSuccess(imageUrl: string) {
+    setLocalImageUrl(imageUrl);
+    setShowUpload(false);
+    // Invalidate the query to refresh
+    queryClient.invalidateQueries({ queryKey: ['place', id] });
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header title={place.name} showBack />
 
       <main className="container px-4 py-6 max-w-lg mx-auto">
+        {/* Cover Image */}
+        <section className="mb-6 animate-fade-in">
+          <div className="relative rounded-lg overflow-hidden">
+            <AspectRatio ratio={16 / 9}>
+              {displayImageUrl ? (
+                <img
+                  src={displayImageUrl}
+                  alt={place.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <div className="text-center">
+                    <Camera className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                    <span className="text-muted-foreground text-sm">No photo yet</span>
+                  </div>
+                </div>
+              )}
+            </AspectRatio>
+            
+            {/* Category badge overlay */}
+            <div className="absolute top-2 left-2">
+              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-background/90 text-foreground backdrop-blur-sm">
+                {place.primaryCategory}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Upload Photo Section */}
+        {user && (
+          <section className="mb-6 animate-fade-in">
+            {showUpload ? (
+              <div className="space-y-3">
+                <ImageUpload
+                  placeId={id!}
+                  onSuccess={handleImageUploadSuccess}
+                  disabled={!isVerified}
+                />
+                {!isVerified && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    <Link to="/auth" className="text-primary hover:underline">
+                      Complete verification
+                    </Link>{' '}
+                    to upload photos
+                  </p>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setShowUpload(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowUpload(true)}
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                {displayImageUrl ? 'Update photo' : 'Add a photo'}
+              </Button>
+            )}
+          </section>
+        )}
+
+        {!user && (
+          <section className="mb-6 animate-fade-in">
+            <Link to="/auth">
+              <Button variant="outline" className="w-full">
+                <Camera className="w-4 h-4 mr-2" />
+                Sign in to add a photo
+              </Button>
+            </Link>
+          </section>
+        )}
+
         {/* Hero section */}
         <section className="mb-6 animate-fade-in">
           <div className="flex items-start justify-between gap-3 mb-3">
