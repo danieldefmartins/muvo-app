@@ -14,6 +14,7 @@ import { TrustBadge } from '@/components/TrustBadge';
 import { PriceIndicator } from '@/components/PriceIndicator';
 import { SuggestUpdateForm } from '@/components/SuggestUpdateForm';
 import { PendingSuggestions } from '@/components/PendingSuggestions';
+import { FavoriteButton } from '@/components/FavoriteButton';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -103,7 +104,7 @@ const PlaceDetail = () => {
           </div>
         </section>
 
-        {/* Upload Photo Section */}
+        {/* Action Buttons: Photo upload and Favorite */}
         {user && (
           <section className="mb-6 animate-fade-in">
             {showUpload ? (
@@ -131,14 +132,17 @@ const PlaceDetail = () => {
                 </Button>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setShowUpload(true)}
-              >
-                <Camera className="w-4 h-4 mr-2" />
-                {displayImageUrl ? 'Update photo' : 'Add a photo'}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowUpload(true)}
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  {displayImageUrl ? 'Update photo' : 'Add a photo'}
+                </Button>
+                <FavoriteButton placeId={place.id} variant="full" className="flex-1" />
+              </div>
             )}
           </section>
         )}

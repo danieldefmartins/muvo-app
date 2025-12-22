@@ -2,6 +2,7 @@ import { MapPin, Award, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Place, formatLastUpdated } from '@/hooks/usePlaces';
 import { PriceIndicator } from './PriceIndicator';
+import { FavoriteButton } from './FavoriteButton';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from './ui/aspect-ratio';
 
@@ -50,6 +51,11 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
         {/* Top-right: Price level */}
         <div className="absolute top-2 right-2">
           <PriceIndicator level={place.priceLevel} className="bg-background/90 backdrop-blur-sm" />
+        </div>
+
+        {/* Bottom-left: Favorite button */}
+        <div className="absolute bottom-2 left-2">
+          <FavoriteButton placeId={place.id} variant="icon" />
         </div>
 
         {/* Bottom-right: Status icons */}
