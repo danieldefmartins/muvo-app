@@ -64,7 +64,6 @@ const Index = () => {
             icon={Map}
             title="Map View"
             description="Explore everything on an interactive map"
-            disabled
             className="animate-fade-in"
           />
         </div>
