@@ -11,6 +11,7 @@ import SavedPlaces from "./pages/SavedPlaces";
 import AdminSuggestions from "./pages/AdminSuggestions";
 import AdminPhotos from "./pages/AdminPhotos";
 import AdminUsers from "./pages/AdminUsers";
+import AdminPlaceSubmissions from "./pages/AdminPlaceSubmissions";
 import Auth from "./pages/Auth";
 import MapView from "./pages/MapView";
 import RoutePlanning from "./pages/RoutePlanning";
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/admin/suggestions" element={<AdminSuggestions />} />
           <Route path="/admin/photos" element={<AdminPhotos />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/place-submissions" element={<AdminPlaceSubmissions />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

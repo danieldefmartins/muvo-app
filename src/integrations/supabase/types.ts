@@ -481,6 +481,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_nearby_places: {
+        Args: { _lat: number; _lng: number; _name: string }
+        Returns: {
+          distance_meters: number
+          id: string
+          name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
