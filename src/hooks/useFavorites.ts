@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import type { Place, PlaceCategory, PlaceFeature } from './usePlaces';
+import type { Place, PlaceCategory, PlaceFeature, PlaceStatus } from './usePlaces';
 
 interface PlaceRow {
   id: string;
@@ -20,6 +20,8 @@ interface PlaceRow {
   features: PlaceFeature[];
   open_year_round: boolean;
   cover_image_url: string | null;
+  current_status: PlaceStatus | null;
+  status_updated_at: string | null;
 }
 
 function calculateDistance(lat: number, lng: number, userLat = 33.4484, userLng = -112.0740): number {
@@ -66,6 +68,8 @@ function transformPlace(row: PlaceRow): Place {
     features: row.features || [],
     openYearRound: row.open_year_round,
     coverImageUrl: row.cover_image_url,
+    currentStatus: row.current_status || 'open_accessible',
+    statusUpdatedAt: row.status_updated_at ? new Date(row.status_updated_at) : null,
     distance: calculateDistance(row.latitude, row.longitude),
     summary: generateSummary(row),
     isProRecommended: row.is_verified && row.price_level !== '$',

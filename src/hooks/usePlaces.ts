@@ -57,6 +57,8 @@ export const PLACE_FEATURES: PlaceFeature[] = [
   'Heated Hot Tub',
 ];
 
+export type PlaceStatus = 'open_accessible' | 'access_questionable' | 'temporarily_closed' | 'restrictions_reported';
+
 export interface Place {
   id: string;
   name: string;
@@ -73,6 +75,8 @@ export interface Place {
   features: PlaceFeature[];
   openYearRound: boolean;
   coverImageUrl: string | null;
+  currentStatus: PlaceStatus;
+  statusUpdatedAt: Date | null;
   // Computed/derived fields
   distance: number;
   summary: string;
@@ -96,6 +100,8 @@ interface PlaceRow {
   features: PlaceFeature[];
   open_year_round: boolean;
   cover_image_url: string | null;
+  current_status: PlaceStatus | null;
+  status_updated_at: string | null;
 }
 
 // Generate a summary sentence based on place data
@@ -160,6 +166,8 @@ function transformPlace(row: PlaceRow): Place {
     features: row.features || [],
     openYearRound: row.open_year_round,
     coverImageUrl: row.cover_image_url,
+    currentStatus: row.current_status || 'open_accessible',
+    statusUpdatedAt: row.status_updated_at ? new Date(row.status_updated_at) : null,
     distance: calculateDistance(row.latitude, row.longitude),
     summary: generateSummary(row),
     isProRecommended: row.is_verified && row.price_level !== '$',
