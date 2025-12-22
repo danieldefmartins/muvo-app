@@ -14,6 +14,7 @@ import AdminUsers from "./pages/AdminUsers";
 import Auth from "./pages/Auth";
 import MapView from "./pages/MapView";
 import RoutePlanning from "./pages/RoutePlanning";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/map" element={<MapView />} />
           <Route path="/route" element={<RoutePlanning />} />
           <Route path="/saved" element={<SavedPlaces />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/admin/suggestions" element={<AdminSuggestions />} />
           <Route path="/admin/photos" element={<AdminPhotos />} />
           <Route path="/admin/users" element={<AdminUsers />} />
