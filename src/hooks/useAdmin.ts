@@ -5,6 +5,7 @@ import type { Suggestion } from './useSuggestions';
 
 interface SuggestionWithPlace extends Suggestion {
   placeName: string;
+  userIsPro?: boolean;
 }
 
 interface SuggestionRow {
@@ -20,7 +21,7 @@ interface SuggestionRow {
   reviewed_at: string | null;
   reviewed_by: string | null;
   rejection_reason: string | null;
-  profiles?: { display_name: string | null };
+  profiles?: { display_name: string | null; is_pro: boolean };
   places?: { name: string };
 }
 
@@ -39,6 +40,7 @@ function transformSuggestionWithPlace(row: SuggestionRow): SuggestionWithPlace {
     reviewedBy: row.reviewed_by,
     rejectionReason: row.rejection_reason,
     userDisplayName: row.profiles?.display_name || 'Anonymous',
+    userIsPro: row.profiles?.is_pro || false,
     placeName: row.places?.name || 'Unknown Place',
   };
 }
@@ -70,7 +72,7 @@ export function usePendingSuggestions() {
     queryFn: async (): Promise<SuggestionWithPlace[]> => {
       const { data, error } = await supabase
         .from('place_suggestions')
-        .select('*, profiles!place_suggestions_user_id_fkey(display_name), places!place_suggestions_place_id_fkey(name)')
+        .select('*, profiles!place_suggestions_user_id_fkey(display_name, is_pro), places!place_suggestions_place_id_fkey(name)')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -172,6 +174,24 @@ export function useRejectSuggestion() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSuggestions'] });
       queryClient.invalidateQueries({ queryKey: ['suggestions'] });
+    },
+  });
+}
+
+export function useToggleProStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userId, isPro }: { userId: string; isPro: boolean }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_pro: isPro })
+        .eq('id', userId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminSuggestions'] });
     },
   });
 }
