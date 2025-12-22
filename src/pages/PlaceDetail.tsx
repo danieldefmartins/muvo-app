@@ -203,6 +203,8 @@ const PlaceDetail = () => {
                 name={place.name}
                 mapboxToken={mapboxToken}
                 category={place.primaryCategory}
+                isVerified={place.isVerified}
+                lastUpdated={place.lastUpdated instanceof Date ? place.lastUpdated.toISOString() : place.lastUpdated}
               />
             ) : (
               <PlaceMiniMapPlaceholder />
