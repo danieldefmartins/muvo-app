@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { PlacesMap } from '@/components/PlacesMap';
 import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
@@ -10,7 +11,23 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const MapView = () => {
+  const [searchParams] = useSearchParams();
   const { data: places, isLoading: isLoadingPlaces, error: placesError } = usePlaces();
+
+  // Parse URL params for initial map position
+  const initialCenter = useMemo(() => {
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    if (lat && lng) {
+      return [parseFloat(lng), parseFloat(lat)] as [number, number];
+    }
+    return undefined;
+  }, [searchParams]);
+
+  const initialZoom = useMemo(() => {
+    const zoom = searchParams.get('zoom');
+    return zoom ? parseFloat(zoom) : undefined;
+  }, [searchParams]);
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
 
   const [filters, setFilters] = useState<PlaceFiltersState>({
@@ -135,6 +152,8 @@ const MapView = () => {
             places={filteredPlaces}
             mapboxToken={mapboxToken}
             className="h-full"
+            initialCenter={initialCenter}
+            initialZoom={initialZoom}
           />
         )}
 

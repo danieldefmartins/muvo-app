@@ -17,7 +17,9 @@ import { PendingSuggestions } from '@/components/PendingSuggestions';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
+import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { ImageUpload } from '@/components/ImageUpload';
+import { PlaceMiniMap, PlaceMiniMapPlaceholder } from '@/components/PlaceMiniMap';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
@@ -28,6 +30,7 @@ const PlaceDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: place, isLoading, error } = usePlace(id || '');
   const { user, isVerified } = useAuth();
+  const { data: mapboxToken } = useMapboxToken();
   const [showUpload, setShowUpload] = useState(false);
   const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -172,6 +175,20 @@ const PlaceDetail = () => {
             <MapPin className="w-4 h-4" />
             <span className="text-sm">{locationString}</span>
             <span className="text-sm">• {place.distance} mi away</span>
+          </div>
+
+          {/* Mini Map */}
+          <div className="mb-4">
+            {mapboxToken ? (
+              <PlaceMiniMap
+                latitude={place.latitude}
+                longitude={place.longitude}
+                name={place.name}
+                mapboxToken={mapboxToken}
+              />
+            ) : (
+              <PlaceMiniMapPlaceholder />
+            )}
           </div>
 
           {/* Badges */}
