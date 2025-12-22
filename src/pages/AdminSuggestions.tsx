@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Check, X, AlertTriangle, Clock, User, MapPin } from 'lucide-react';
+import { Check, X, AlertTriangle, Clock, User, MapPin, Award } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useIsAdmin, usePendingSuggestions, useApproveSuggestion, useRejectSuggestion } from '@/hooks/useAdmin';
+import { useIsAdmin, usePendingSuggestions, useApproveSuggestion, useRejectSuggestion, useToggleProStatus } from '@/hooks/useAdmin';
 import { FIELD_LABELS } from '@/hooks/useSuggestions';
+import { TrustedBadge } from '@/components/TrustedBadge';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,7 @@ export default function AdminSuggestions() {
   const { data: suggestions, isLoading: suggestionsLoading } = usePendingSuggestions();
   const approveMutation = useApproveSuggestion();
   const rejectMutation = useRejectSuggestion();
+  const toggleProMutation = useToggleProStatus();
   const { toast } = useToast();
 
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -111,6 +113,24 @@ export default function AdminSuggestions() {
     }
   };
 
+  const handleTogglePro = async (userId: string, currentIsPro: boolean) => {
+    try {
+      await toggleProMutation.mutateAsync({ userId, isPro: !currentIsPro });
+      toast({
+        title: currentIsPro ? 'Pro status removed' : 'Pro status granted',
+        description: currentIsPro 
+          ? 'User is no longer a Trusted Contributor' 
+          : 'User is now a Trusted Contributor',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update pro status',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -151,6 +171,7 @@ export default function AdminSuggestions() {
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3" />
                         {suggestion.userDisplayName}
+                        {suggestion.userIsPro && <TrustedBadge showLabel={false} className="ml-1" />}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
@@ -201,6 +222,20 @@ export default function AdminSuggestions() {
                   >
                     <X className="h-4 w-4 mr-2" />
                     Reject
+                  </Button>
+                </div>
+
+                {/* Admin toggle for Pro status */}
+                <div className="pt-2 border-t border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleTogglePro(suggestion.userId, suggestion.userIsPro || false)}
+                    disabled={toggleProMutation.isPending}
+                    className="text-xs"
+                  >
+                    <Award className="h-3 w-3 mr-1" />
+                    {suggestion.userIsPro ? 'Remove Trusted Status' : 'Grant Trusted Status'}
                   </Button>
                 </div>
               </CardContent>
