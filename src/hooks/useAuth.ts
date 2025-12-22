@@ -12,6 +12,8 @@ export interface Profile {
   phone_verified_at: string | null;
   is_verified: boolean;
   display_name: string | null;
+  contribution_score: number;
+  is_pro: boolean;
 }
 
 export function useAuth() {

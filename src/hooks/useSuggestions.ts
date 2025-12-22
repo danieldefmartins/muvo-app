@@ -19,6 +19,7 @@ export interface Suggestion {
   rejectionReason: string | null;
   // Joined data
   userDisplayName?: string;
+  userIsPro?: boolean;
 }
 
 interface SuggestionRow {
@@ -34,7 +35,7 @@ interface SuggestionRow {
   reviewed_at: string | null;
   reviewed_by: string | null;
   rejection_reason: string | null;
-  profiles?: { display_name: string | null };
+  profiles?: { display_name: string | null; is_pro: boolean };
 }
 
 function transformSuggestion(row: SuggestionRow): Suggestion {
@@ -52,6 +53,7 @@ function transformSuggestion(row: SuggestionRow): Suggestion {
     reviewedBy: row.reviewed_by,
     rejectionReason: row.rejection_reason,
     userDisplayName: row.profiles?.display_name || 'Anonymous',
+    userIsPro: row.profiles?.is_pro || false,
   };
 }
 
@@ -61,7 +63,7 @@ export function usePlaceSuggestions(placeId: string) {
     queryFn: async (): Promise<Suggestion[]> => {
       const { data, error } = await supabase
         .from('place_suggestions')
-        .select('*, profiles!place_suggestions_user_id_fkey(display_name)')
+        .select('*, profiles!place_suggestions_user_id_fkey(display_name, is_pro)')
         .eq('place_id', placeId)
         .order('created_at', { ascending: false });
 

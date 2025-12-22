@@ -176,12 +176,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          contribution_score: number
           created_at: string
           display_name: string | null
           email: string | null
           email_verified: boolean
           email_verified_at: string | null
           id: string
+          is_pro: boolean
           is_verified: boolean
           phone_number: string | null
           phone_verified: boolean
@@ -189,12 +191,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          contribution_score?: number
           created_at?: string
           display_name?: string | null
           email?: string | null
           email_verified?: boolean
           email_verified_at?: string | null
           id: string
+          is_pro?: boolean
           is_verified?: boolean
           phone_number?: string | null
           phone_verified?: boolean
@@ -202,12 +206,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          contribution_score?: number
           created_at?: string
           display_name?: string | null
           email?: string | null
           email_verified?: boolean
           email_verified_at?: string | null
           id?: string
+          is_pro?: boolean
           is_verified?: boolean
           phone_number?: string | null
           phone_verified?: boolean

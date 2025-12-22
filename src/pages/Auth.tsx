@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Header } from '@/components/Header';
+import { UserProfileCard } from '@/components/UserProfileCard';
 
 const signUpSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -65,12 +66,12 @@ export default function Auth() {
     defaultValues: { otp: '' },
   });
 
-  // Redirect if fully verified
+  // Redirect if fully verified - but show profile if they want to see it
   useEffect(() => {
-    if (!loading && user && profile?.is_verified) {
-      navigate('/');
+    if (!loading && user && profile?.is_verified && mode === 'signin') {
+      // Don't auto-redirect, show profile instead
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, profile, loading, navigate, mode]);
 
   // If logged in but not verified, show verification steps
   useEffect(() => {
@@ -190,6 +191,18 @@ export default function Auth() {
             <div className="h-10 bg-muted rounded" />
             <div className="h-10 bg-muted rounded" />
           </div>
+        </main>
+      </div>
+    );
+  }
+
+  // User is fully verified - show profile
+  if (user && profile && profile.is_verified) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="My Profile" showBack />
+        <main className="container px-4 py-8 max-w-md mx-auto">
+          <UserProfileCard profile={profile} />
         </main>
       </div>
     );
