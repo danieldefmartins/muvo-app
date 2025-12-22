@@ -67,7 +67,7 @@ export default function Auth() {
 
   // Redirect if fully verified
   useEffect(() => {
-    if (!loading && user && profile?.email_verified && profile?.phone_verified) {
+    if (!loading && user && profile?.is_verified) {
       navigate('/');
     }
   }, [user, profile, loading, navigate]);

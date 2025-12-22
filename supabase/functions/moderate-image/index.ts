@@ -47,10 +47,10 @@ serve(async (req) => {
       });
     }
 
-    // Check if user is verified
+    // Check if user is verified using the is_verified column
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("email_verified, phone_verified")
+      .select("is_verified")
       .eq("id", user.id)
       .single();
 
@@ -62,7 +62,7 @@ serve(async (req) => {
       });
     }
 
-    if (!profile.email_verified || !profile.phone_verified) {
+    if (!profile.is_verified) {
       return new Response(JSON.stringify({ 
         error: "You must verify your email and phone to upload images",
         code: "NOT_VERIFIED"
