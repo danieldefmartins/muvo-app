@@ -22,6 +22,7 @@ export interface PlacePhoto {
   flagged: boolean;
   profile?: {
     displayName: string | null;
+    trustedContributor: boolean;
   };
 }
 
@@ -36,6 +37,7 @@ interface PhotoRow {
   flagged: boolean;
   profiles?: {
     display_name: string | null;
+    trusted_contributor: boolean;
   };
 }
 
@@ -51,6 +53,7 @@ function transformPhoto(row: PhotoRow): PlacePhoto {
     flagged: row.flagged,
     profile: row.profiles ? {
       displayName: row.profiles.display_name,
+      trustedContributor: row.profiles.trusted_contributor,
     } : undefined,
   };
 }
@@ -75,7 +78,8 @@ export function usePlacePhotos(placeId: string) {
         .select(`
           *,
           profiles!place_photos_user_id_fkey (
-            display_name
+            display_name,
+            trusted_contributor
           )
         `)
         .eq('place_id', placeId)

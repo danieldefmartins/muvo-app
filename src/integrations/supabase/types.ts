@@ -352,6 +352,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          contribution_count: number
           contribution_score: number
           created_at: string
           display_name: string | null
@@ -364,9 +365,12 @@ export type Database = {
           phone_number: string | null
           phone_verified: boolean
           phone_verified_at: string | null
+          trusted_contributor: boolean
+          trusted_since: string | null
           updated_at: string
         }
         Insert: {
+          contribution_count?: number
           contribution_score?: number
           created_at?: string
           display_name?: string | null
@@ -379,9 +383,12 @@ export type Database = {
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
+          trusted_contributor?: boolean
+          trusted_since?: string | null
           updated_at?: string
         }
         Update: {
+          contribution_count?: number
           contribution_score?: number
           created_at?: string
           display_name?: string | null
@@ -394,6 +401,8 @@ export type Database = {
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
+          trusted_contributor?: boolean
+          trusted_since?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -430,6 +439,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_contribution: {
+        Args: { user_id_param: string }
+        Returns: undefined
       }
       is_verified_user: { Args: { user_id: string }; Returns: boolean }
     }
