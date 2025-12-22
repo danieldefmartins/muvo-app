@@ -2,12 +2,14 @@ import { MapPin, Droplets, Zap, Wifi, Dog, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Place, PlaceFeature } from '@/hooks/usePlaces';
 import { FavoriteButton } from './FavoriteButton';
+import { NavigateButton } from './NavigateButton';
 import { cn } from '@/lib/utils';
 
 interface PlaceMapCardProps {
   place: Place;
   className?: string;
   onClose?: () => void;
+  isHighlighted?: boolean;
 }
 
 // Compact feature icons for map popup
@@ -36,13 +38,14 @@ function getFeatureIcons(features: PlaceFeature[], max = 4) {
   return icons;
 }
 
-export function PlaceMapCard({ place, className, onClose }: PlaceMapCardProps) {
+export function PlaceMapCard({ place, className, onClose, isHighlighted }: PlaceMapCardProps) {
   const featureIcons = getFeatureIcons(place.features);
 
   return (
     <div
       className={cn(
         'bg-card border border-border rounded-xl shadow-lg overflow-hidden w-64',
+        isHighlighted && 'ring-2 ring-primary',
         className
       )}
     >
@@ -103,14 +106,22 @@ export function PlaceMapCard({ place, className, onClose }: PlaceMapCardProps) {
           </div>
         )}
 
-        {/* View details link */}
-        <Link
-          to={`/place/${place.id}`}
-          className="block w-full text-center py-2 px-3 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-          onClick={onClose}
-        >
-          View Details
-        </Link>
+        {/* Action buttons */}
+        <div className="flex gap-2">
+          <Link
+            to={`/place/${place.id}`}
+            className="flex-1 text-center py-2 px-3 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            onClick={onClose}
+          >
+            Details
+          </Link>
+          <NavigateButton
+            latitude={place.latitude}
+            longitude={place.longitude}
+            name={place.name}
+            variant="compact"
+          />
+        </div>
       </div>
     </div>
   );

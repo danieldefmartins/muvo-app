@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { PlaceCard } from '@/components/PlaceCard';
 import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
-import { PlacesMap } from '@/components/PlacesMap';
+import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +15,7 @@ type ViewMode = 'list' | 'map';
 const PlacesToStay = () => {
   const { data: places, isLoading, error } = usePlaces();
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
+  const mapRef = useRef<PlacesMapRef>(null);
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [filters, setFilters] = useState<PlaceFiltersState>({
@@ -24,8 +25,9 @@ const PlacesToStay = () => {
     petFriendly: false,
     bigRigFriendly: false,
   });
-
   const [sort, setSort] = useState<SortOption>('recently-updated');
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [visiblePlaceIds, setVisiblePlaceIds] = useState<string[] | null>(null);
 
   // Filter and sort places
   const filteredAndSortedPlaces = useMemo(() => {
@@ -71,6 +73,34 @@ const PlacesToStay = () => {
 
     return result;
   }, [places, filters, sort]);
+
+  // Places visible in the current map viewport (for synced list)
+  const displayedPlaces = useMemo(() => {
+    if (viewMode === 'list' || !visiblePlaceIds) {
+      return filteredAndSortedPlaces;
+    }
+    // In map view, show only places visible in viewport
+    const visibleSet = new Set(visiblePlaceIds);
+    return filteredAndSortedPlaces.filter((p) => visibleSet.has(p.id));
+  }, [filteredAndSortedPlaces, visiblePlaceIds, viewMode]);
+
+  // Handle place card click - center map and open popup
+  const handlePlaceCardClick = useCallback((place: Place) => {
+    setSelectedPlaceId(place.id);
+    if (viewMode === 'map' && mapRef.current) {
+      mapRef.current.openPopup(place.id);
+    }
+  }, [viewMode]);
+
+  // Handle map place selection
+  const handleMapPlaceSelect = useCallback((place: Place) => {
+    setSelectedPlaceId(place.id);
+  }, []);
+
+  // Handle bounds change from map
+  const handleBoundsChange = useCallback((placeIds: string[]) => {
+    setVisiblePlaceIds(placeIds);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -158,9 +188,14 @@ const PlacesToStay = () => {
 
             {mapboxToken && !isLoadingToken && (
               <PlacesMap
+                ref={mapRef}
                 places={filteredAndSortedPlaces}
                 mapboxToken={mapboxToken}
                 className="h-full"
+                showSearch
+                selectedPlaceId={selectedPlaceId}
+                onPlaceSelect={handleMapPlaceSelect}
+                onBoundsChange={handleBoundsChange}
               />
             )}
 
@@ -168,7 +203,7 @@ const PlacesToStay = () => {
             <div className="absolute top-2 left-2 z-10">
               <div className="bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-border">
                 <p className="text-xs font-medium">
-                  {filteredAndSortedPlaces.length} places
+                  {displayedPlaces.length} places in view
                 </p>
               </div>
             </div>
@@ -224,12 +259,20 @@ const PlacesToStay = () => {
             {!isLoading && !error && filteredAndSortedPlaces.length > 0 && (
               <div className="space-y-3">
                 {filteredAndSortedPlaces.map((place, index) => (
-                  <PlaceCard
+                  <div
                     key={place.id}
-                    place={place}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${Math.min(index, 5) * 50}ms` }}
-                  />
+                    onClick={() => handlePlaceCardClick(place)}
+                    className={cn(
+                      'cursor-pointer transition-all',
+                      selectedPlaceId === place.id && 'ring-2 ring-primary rounded-xl'
+                    )}
+                  >
+                    <PlaceCard
+                      place={place}
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${Math.min(index, 5) * 50}ms` }}
+                    />
+                  </div>
                 ))}
               </div>
             )}
