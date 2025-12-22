@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
+import { QuickFilterChips } from '@/components/QuickFilterChips';
 import { MapSearchBox } from '@/components/MapSearchBox';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -161,13 +162,15 @@ const MapView = () => {
         </div>
       </div>
 
+      {/* Quick filter chips - scrollable row */}
+      <QuickFilterChips filters={filters} onFiltersChange={setFilters} />
       {/* Map container - fills remaining viewport */}
       <div 
         className="flex-1 relative"
         style={{ 
           minHeight: '300px',
-          // Ensure map doesn't collapse
-          height: 'calc(100vh - 180px)',
+          // Adjust height for chips row (~44px)
+          height: 'calc(100vh - 224px)',
         }}
       >
         {/* Loading state */}
