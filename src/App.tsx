@@ -8,6 +8,7 @@ import PlacesToStay from "./pages/PlacesToStay";
 import PlaceDetail from "./pages/PlaceDetail";
 import SavedPlaces from "./pages/SavedPlaces";
 import AdminSuggestions from "./pages/AdminSuggestions";
+import AdminPhotos from "./pages/AdminPhotos";
 import Auth from "./pages/Auth";
 import MapView from "./pages/MapView";
 import RoutePlanning from "./pages/RoutePlanning";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/route" element={<RoutePlanning />} />
           <Route path="/saved" element={<SavedPlaces />} />
           <Route path="/admin/suggestions" element={<AdminSuggestions />} />
+          <Route path="/admin/photos" element={<AdminPhotos />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
