@@ -10,6 +10,7 @@ import SavedPlaces from "./pages/SavedPlaces";
 import AdminSuggestions from "./pages/AdminSuggestions";
 import Auth from "./pages/Auth";
 import MapView from "./pages/MapView";
+import RoutePlanning from "./pages/RoutePlanning";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/places" element={<PlacesToStay />} />
           <Route path="/place/:id" element={<PlaceDetail />} />
           <Route path="/map" element={<MapView />} />
+          <Route path="/route" element={<RoutePlanning />} />
           <Route path="/saved" element={<SavedPlaces />} />
           <Route path="/admin/suggestions" element={<AdminSuggestions />} />
           <Route path="/auth" element={<Auth />} />
