@@ -12,6 +12,8 @@ import {
 import { Header } from '@/components/Header';
 import { TrustBadge } from '@/components/TrustBadge';
 import { PriceIndicator } from '@/components/PriceIndicator';
+import { SuggestUpdateForm } from '@/components/SuggestUpdateForm';
+import { PendingSuggestions } from '@/components/PendingSuggestions';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -280,10 +282,45 @@ const PlaceDetail = () => {
           </div>
         </section>
 
+        {/* Suggest Update - Verified users only */}
+        {user && isVerified && (
+          <section 
+            className="mb-6 animate-fade-in" 
+            style={{ animationDelay: '200ms' }}
+          >
+            <SuggestUpdateForm place={place} isVerified={isVerified} />
+          </section>
+        )}
+
+        {/* Not verified prompt */}
+        {user && !isVerified && (
+          <section 
+            className="mb-6 animate-fade-in" 
+            style={{ animationDelay: '200ms' }}
+          >
+            <div className="p-4 bg-secondary/30 border border-dashed border-border rounded-lg text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Want to suggest updates to this place?
+              </p>
+              <Link to="/auth" className="text-sm text-primary hover:underline">
+                Complete verification to contribute
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {/* Pending Suggestions */}
+        <section 
+          className="mb-6 animate-fade-in" 
+          style={{ animationDelay: '225ms' }}
+        >
+          <PendingSuggestions placeId={id!} />
+        </section>
+
         {/* Reviews placeholder */}
         <section 
           className="mb-6 animate-fade-in" 
-          style={{ animationDelay: '200ms' }}
+          style={{ animationDelay: '250ms' }}
         >
           <h2 className="font-display text-lg font-semibold text-foreground mb-3">
             Community Reports
