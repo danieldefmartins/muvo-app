@@ -4,16 +4,50 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapPin, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import type { Database } from '@/integrations/supabase/types';
+
+type PlaceCategory = Database['public']['Enums']['place_category'];
+
+// Map place categories to appropriate Mapbox styles
+function getMapStyle(category?: PlaceCategory): string {
+  switch (category) {
+    // Parks - terrain with natural/green emphasis
+    case 'National Park':
+    case 'State Park':
+    case 'County / Regional Park':
+      return 'mapbox://styles/mapbox/outdoors-v12';
+    
+    // RV focused - standard terrain
+    case 'RV Campground':
+    case 'Luxury RV Resort':
+    case 'Fairgrounds / Event Grounds':
+      return 'mapbox://styles/mapbox/outdoors-v12';
+    
+    // Boondocking/Overnight - terrain with road emphasis
+    case 'Boondocking':
+    case 'Overnight Parking':
+    case 'Rest Area / Travel Plaza':
+      return 'mapbox://styles/mapbox/streets-v12';
+    
+    // Business parking - road-focused
+    case 'Business Allowing Overnight':
+      return 'mapbox://styles/mapbox/streets-v12';
+    
+    default:
+      return 'mapbox://styles/mapbox/outdoors-v12';
+  }
+}
 
 interface PlaceMiniMapProps {
   latitude: number;
   longitude: number;
   name: string;
   mapboxToken: string;
+  category?: PlaceCategory;
   className?: string;
 }
 
-export function PlaceMiniMap({ latitude, longitude, name, mapboxToken, className }: PlaceMiniMapProps) {
+export function PlaceMiniMap({ latitude, longitude, name, mapboxToken, category, className }: PlaceMiniMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const navigate = useNavigate();
@@ -27,7 +61,7 @@ export function PlaceMiniMap({ latitude, longitude, name, mapboxToken, className
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/outdoors-v12',
+      style: getMapStyle(category),
       center: [longitude, latitude],
       zoom: 13,
       interactive: false,
