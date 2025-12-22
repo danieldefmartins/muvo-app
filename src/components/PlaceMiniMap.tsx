@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { MapPin } from 'lucide-react';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { MapPin, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,15 +28,17 @@ export function PlaceMiniMap({ latitude, longitude, name, mapboxToken, className
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/outdoors-v12',
       center: [longitude, latitude],
-      zoom: 12,
-      interactive: false, // Static map for preview
+      zoom: 13,
+      interactive: false,
+      attributionControl: false,
     });
 
-    // Add marker
+    // Add marker with visible styling
     const el = document.createElement('div');
+    el.className = 'place-mini-map-marker';
     el.innerHTML = `
-      <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg border-2 border-white">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-primary-foreground">
+      <div style="width: 32px; height: 32px; background: hsl(142, 76%, 36%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid white;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
           <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
           <circle cx="12" cy="10" r="3"/>
         </svg>
@@ -52,29 +55,31 @@ export function PlaceMiniMap({ latitude, longitude, name, mapboxToken, className
   }, [latitude, longitude, mapboxToken]);
 
   const handleClick = () => {
-    // Navigate to map view centered on this place
     navigate(`/map?lat=${latitude}&lng=${longitude}&zoom=14`);
   };
 
   return (
     <div
       className={cn(
-        'relative w-full h-40 rounded-lg overflow-hidden cursor-pointer group',
+        'relative w-full h-40 rounded-lg overflow-hidden cursor-pointer group border border-border',
         className
       )}
       onClick={handleClick}
     >
       <div ref={mapContainer} className="absolute inset-0" />
       
-      {/* Hover overlay */}
-      <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors flex items-center justify-center">
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md">
-          <span className="text-xs font-medium flex items-center gap-1.5">
-            <MapPin className="w-3 h-3" />
-            View on map
+      {/* Always visible label */}
+      <div className="absolute bottom-2 right-2 z-10">
+        <div className="bg-background/95 backdrop-blur-sm px-2.5 py-1.5 rounded-md shadow-md border border-border group-hover:bg-background transition-colors">
+          <span className="text-xs font-medium flex items-center gap-1.5 text-foreground">
+            <Maximize2 className="w-3 h-3" />
+            Expand map
           </span>
         </div>
       </div>
+      
+      {/* Hover overlay */}
+      <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-colors pointer-events-none" />
     </div>
   );
 }
@@ -84,7 +89,7 @@ export function PlaceMiniMapPlaceholder({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'relative w-full h-40 rounded-lg overflow-hidden bg-muted flex items-center justify-center',
+        'relative w-full h-40 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border',
         className
       )}
     >
