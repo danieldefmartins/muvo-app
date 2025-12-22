@@ -19,6 +19,7 @@ export type Database = {
           categories: Database["public"]["Enums"]["place_category"][]
           cover_image_url: string | null
           created_at: string
+          features: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict: boolean
           id: string
           is_verified: boolean
@@ -36,6 +37,7 @@ export type Database = {
           categories?: Database["public"]["Enums"]["place_category"][]
           cover_image_url?: string | null
           created_at?: string
+          features?: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict?: boolean
           id?: string
           is_verified?: boolean
@@ -53,6 +55,7 @@ export type Database = {
           categories?: Database["public"]["Enums"]["place_category"][]
           cover_image_url?: string | null
           created_at?: string
+          features?: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict?: boolean
           id?: string
           is_verified?: boolean
@@ -136,6 +139,46 @@ export type Database = {
         | "Propane Station"
         | "RV Service / Repair"
         | "Rest Area"
+      place_feature:
+        | "Full Hookups"
+        | "Partial Hookups"
+        | "Dry Camping"
+        | "Pull Through Sites"
+        | "Big Rig Friendly"
+        | "Pet Friendly"
+        | "Laundry"
+        | "Showers"
+        | "WiFi"
+        | "Pool"
+        | "Hot Tub"
+        | "Playground"
+        | "Dog Park"
+        | "Fishing"
+        | "Hiking"
+        | "Beach Access"
+        | "Lake Access"
+        | "River Access"
+        | "Boat Ramp"
+        | "Dump Station"
+        | "Propane"
+        | "Store"
+        | "Restaurant"
+        | "Clubhouse"
+        | "Fitness Center"
+        | "Golf"
+        | "Mini Golf"
+        | "Game Room"
+        | "Cable TV"
+        | "Tent Sites"
+        | "Cabins"
+        | "Glamping"
+        | "Long Term Stays"
+        | "Seasonal Sites"
+        | "Rally Friendly"
+        | "Workamper Friendly"
+        | "Military Discount"
+        | "Good Sam Discount"
+        | "Passport America"
       price_level: "$" | "$$" | "$$$"
     }
     CompositeTypes: {
@@ -282,6 +325,47 @@ export const Constants = {
         "Propane Station",
         "RV Service / Repair",
         "Rest Area",
+      ],
+      place_feature: [
+        "Full Hookups",
+        "Partial Hookups",
+        "Dry Camping",
+        "Pull Through Sites",
+        "Big Rig Friendly",
+        "Pet Friendly",
+        "Laundry",
+        "Showers",
+        "WiFi",
+        "Pool",
+        "Hot Tub",
+        "Playground",
+        "Dog Park",
+        "Fishing",
+        "Hiking",
+        "Beach Access",
+        "Lake Access",
+        "River Access",
+        "Boat Ramp",
+        "Dump Station",
+        "Propane",
+        "Store",
+        "Restaurant",
+        "Clubhouse",
+        "Fitness Center",
+        "Golf",
+        "Mini Golf",
+        "Game Room",
+        "Cable TV",
+        "Tent Sites",
+        "Cabins",
+        "Glamping",
+        "Long Term Stays",
+        "Seasonal Sites",
+        "Rally Friendly",
+        "Workamper Friendly",
+        "Military Discount",
+        "Good Sam Discount",
+        "Passport America",
       ],
       price_level: ["$", "$$", "$$$"],
     },

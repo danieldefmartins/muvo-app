@@ -7,6 +7,7 @@ import {
   Calendar,
   Truck,
   Camera,
+  Sparkles,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { TrustBadge } from '@/components/TrustBadge';
@@ -219,7 +220,28 @@ const PlaceDetail = () => {
           </div>
         </section>
 
-        {/* Package Information */}
+        {/* Features */}
+        {place.features.length > 0 && (
+          <section 
+            className="mb-6 animate-fade-in" 
+            style={{ animationDelay: '125ms' }}
+          >
+            <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Amenities & Features
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {place.features.map((feature) => (
+                <span
+                  key={feature}
+                  className="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-secondary text-secondary-foreground"
+                >
+                  {feature}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
         <section 
           className="mb-6 animate-fade-in" 
           style={{ animationDelay: '150ms' }}
