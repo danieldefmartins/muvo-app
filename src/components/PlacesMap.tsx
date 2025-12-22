@@ -58,22 +58,42 @@ export function PlacesMap({ places, mapboxToken, className }: PlacesMapProps) {
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (typeof window === 'undefined') return;
+    if (!mapContainer.current || !mapboxToken) {
+      console.log('Mapbox init blocked:', { hasContainer: !!mapContainer.current, hasToken: !!mapboxToken });
+      return;
+    }
 
-    mapboxgl.accessToken = mapboxToken;
+    // Debug container size
+    console.log('Mapbox container size:', mapContainer.current.clientWidth, mapContainer.current.clientHeight);
+    console.log('Mapbox token present:', !!mapboxToken);
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/outdoors-v12',
-      center: [-98.5, 39.8], // Center of US
-      zoom: 3,
-    });
+    try {
+      mapboxgl.accessToken = mapboxToken;
 
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl({ visualizePitch: false }),
-      'top-right'
-    );
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/outdoors-v12',
+        center: [-98.5, 39.8], // Center of US
+        zoom: 3,
+      });
+
+      map.current.on('load', () => {
+        console.log('Mapbox map loaded successfully');
+      });
+
+      map.current.on('error', (e) => {
+        console.error('Mapbox error:', e);
+      });
+
+      // Add navigation controls
+      map.current.addControl(
+        new mapboxgl.NavigationControl({ visualizePitch: false }),
+        'top-right'
+      );
+    } catch (error) {
+      console.error('Mapbox initialization failed:', error);
+    }
 
     // Cleanup
     return () => {
@@ -193,8 +213,8 @@ export function PlacesMap({ places, mapboxToken, className }: PlacesMapProps) {
   }, [places, userLocation]);
 
   return (
-    <div className={cn('relative w-full h-full', className)}>
-      <div ref={mapContainer} className="absolute inset-0 rounded-lg" />
+    <div className={cn('relative w-full', className)} style={{ minHeight: '400px', height: '100%' }}>
+      <div ref={mapContainer} className="absolute inset-0 rounded-lg" style={{ minHeight: '400px' }} />
       
       {/* Location button */}
       <Button
