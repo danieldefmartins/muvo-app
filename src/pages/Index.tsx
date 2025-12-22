@@ -1,4 +1,4 @@
-import { Tent, UtensilsCrossed, Wrench, Map, MapPin } from 'lucide-react';
+import { Tent, UtensilsCrossed, Wrench, Map, MapPin, Route } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ActionCard } from '@/components/ActionCard';
 
@@ -38,6 +38,14 @@ const Index = () => {
             title="Places to Stay"
             description="RV parks, campgrounds, and boondocking spots near you"
             variant="primary"
+            className="animate-fade-in"
+          />
+
+          <ActionCard
+            to="/route"
+            icon={Route}
+            title="Plan a Route"
+            description="Find places to stay along your driving route"
             className="animate-fade-in"
           />
 
