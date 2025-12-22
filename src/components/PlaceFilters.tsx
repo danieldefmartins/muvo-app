@@ -102,7 +102,7 @@ export function PlaceFilters({
             )}
           </Button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl flex flex-col">
           <SheetHeader className="text-left pb-4">
             <div className="flex items-center justify-between">
               <SheetTitle className="font-display text-xl">Filter Places</SheetTitle>
@@ -117,7 +117,7 @@ export function PlaceFilters({
             </p>
           </SheetHeader>
 
-          <ScrollArea className="h-[calc(85vh-140px)] pr-4 -mr-4">
+          <ScrollArea className="flex-1 pr-4 -mr-4">
             <div className="space-y-6 pb-6">
               {/* Quick filters */}
               <div>

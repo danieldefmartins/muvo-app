@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { PlacesMap } from '@/components/PlacesMap';
@@ -6,7 +6,7 @@ import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceF
 import { usePlaces } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, MapPinOff } from 'lucide-react';
+import { AlertCircle, MapPinOff, FilterX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -85,6 +85,17 @@ const MapView = () => {
 
   const isLoading = isLoadingPlaces || isLoadingToken;
   const hasError = placesError || tokenError;
+  const hasActiveFilters = filters.category || filters.features.length > 0 || filters.openYearRound || filters.petFriendly || filters.bigRigFriendly;
+
+  const clearFilters = useCallback(() => {
+    setFilters({
+      category: null,
+      features: [],
+      openYearRound: false,
+      petFriendly: false,
+      bigRigFriendly: false,
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -102,11 +113,11 @@ const MapView = () => {
         />
       </div>
 
-      {/* Full-screen map */}
-      <div className="flex-1 relative">
+      {/* Full-screen map - use min-height to prevent collapse on iOS */}
+      <div className="flex-1 relative" style={{ minHeight: '300px' }}>
         {/* Loading state */}
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+          <div className="absolute inset-0 flex items-center justify-center bg-muted z-[1]">
             <div className="text-center">
               <Skeleton className="w-12 h-12 rounded-full mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">Loading map...</p>
@@ -116,7 +127,7 @@ const MapView = () => {
 
         {/* Error state - Map token error */}
         {tokenError && !isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+          <div className="absolute inset-0 flex items-center justify-center bg-muted z-[1]">
             <div className="text-center p-6 max-w-sm">
               <MapPinOff className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">Map Unavailable</h3>
@@ -132,7 +143,7 @@ const MapView = () => {
 
         {/* Error state - Places error */}
         {placesError && !tokenError && !isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+          <div className="absolute inset-0 flex items-center justify-center bg-muted z-[1]">
             <div className="text-center p-6 max-w-sm">
               <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">Failed to Load Places</h3>
@@ -146,7 +157,7 @@ const MapView = () => {
           </div>
         )}
 
-        {/* Map */}
+        {/* Map - always render to prevent unmount/remount issues */}
         {mapboxToken && !isLoading && !hasError && (
           <PlacesMap
             places={filteredPlaces}
@@ -158,9 +169,26 @@ const MapView = () => {
           />
         )}
 
+        {/* No results state - overlay on map when filters return 0 places */}
+        {!isLoading && !hasError && filteredPlaces.length === 0 && hasActiveFilters && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-[20]">
+            <div className="text-center p-6 max-w-sm">
+              <FilterX className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No Places Match</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                No places match your current filters. Try adjusting or clearing your filters.
+              </p>
+              <Button onClick={clearFilters} variant="outline" className="gap-2">
+                <FilterX className="w-4 h-4" />
+                Reset Filters
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Floating results count */}
-        {!isLoading && !hasError && (
-          <div className="absolute top-3 left-3 z-10">
+        {!isLoading && !hasError && filteredPlaces.length > 0 && (
+          <div className="absolute top-3 left-3 z-[15]">
             <div className="bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md border border-border">
               <p className="text-xs font-medium">
                 {filteredPlaces.length} {filteredPlaces.length === 1 ? 'place' : 'places'}
