@@ -50,6 +50,48 @@ export type Database = {
           },
         ]
       }
+      place_checkins: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          place_id: string
+          type: Database["public"]["Enums"]["checkin_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          place_id: string
+          type: Database["public"]["Enums"]["checkin_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          place_id?: string
+          type?: Database["public"]["Enums"]["checkin_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_checkins_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_checkins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       place_suggestions: {
         Row: {
           created_at: string
@@ -259,6 +301,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      checkin_type: "stayed_here" | "used_dump_water" | "passed_by"
       package_acceptance: "Yes" | "No" | "Limited"
       place_category:
         | "National Park"
@@ -415,6 +458,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      checkin_type: ["stayed_here", "used_dump_water", "passed_by"],
       package_acceptance: ["Yes", "No", "Limited"],
       place_category: [
         "National Park",

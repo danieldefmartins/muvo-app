@@ -8,6 +8,7 @@ import {
   Truck,
   Camera,
   Sparkles,
+  ClipboardCheck,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { TrustBadge } from '@/components/TrustBadge';
@@ -15,6 +16,7 @@ import { PriceIndicator } from '@/components/PriceIndicator';
 import { SuggestUpdateForm } from '@/components/SuggestUpdateForm';
 import { PendingSuggestions } from '@/components/PendingSuggestions';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { PlaceCheckin } from '@/components/PlaceCheckin';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -364,19 +366,16 @@ const PlaceDetail = () => {
           <PendingSuggestions placeId={id!} />
         </section>
 
-        {/* Reviews placeholder */}
+        {/* Check-in Section */}
         <section 
           className="mb-6 animate-fade-in" 
           style={{ animationDelay: '250ms' }}
         >
-          <h2 className="font-display text-lg font-semibold text-foreground mb-3">
-            Community Reports
+          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            <ClipboardCheck className="w-5 h-5 text-primary" />
+            Check In
           </h2>
-          <div className="bg-secondary/30 border border-dashed border-border rounded-lg p-6 text-center">
-            <p className="text-muted-foreground text-sm">
-              Community reviews coming soon
-            </p>
-          </div>
+          <PlaceCheckin placeId={id!} />
         </section>
 
         {/* Disclaimer */}
