@@ -424,12 +424,12 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
   }, [openPopupForPlace]);
 
   return (
-    <div className={cn('relative w-full', className)} style={{ minHeight: '400px', height: '100%' }}>
-      <div ref={mapContainer} className="absolute inset-0 rounded-lg" style={{ minHeight: '400px' }} />
+    <div className={cn('relative w-full', className)} style={{ minHeight: '300px', height: '100%' }}>
+      <div ref={mapContainer} className="absolute inset-0" style={{ minHeight: '300px' }} />
       
-      {/* Search box */}
+      {/* Search box - only show if enabled */}
       {showSearch && (
-        <div className="absolute top-3 left-3 right-16 z-10">
+        <div className="absolute top-3 left-3 right-16 z-[10]">
           <MapSearchBox
             mapboxToken={mapboxToken}
             places={places}
@@ -443,7 +443,7 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
       <Button
         variant="secondary"
         size="icon"
-        className="absolute bottom-4 right-4 z-10 shadow-lg"
+        className="absolute bottom-4 right-4 z-[10] shadow-lg bg-background/95 backdrop-blur-sm"
         onClick={requestLocation}
         disabled={isLocating}
       >
@@ -464,11 +464,21 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
         .place-popup .mapboxgl-popup-tip {
           display: none;
         }
+        .mapboxgl-popup {
+          z-index: 30 !important;
+        }
         .user-location-marker {
-          z-index: 1;
+          z-index: 5;
         }
         .cluster-marker {
-          z-index: 2;
+          z-index: 6;
+        }
+        .place-marker {
+          z-index: 5;
+        }
+        .mapboxgl-ctrl-top-right {
+          top: 10px !important;
+          right: 10px !important;
         }
       `}</style>
     </div>
