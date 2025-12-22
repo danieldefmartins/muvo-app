@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useAdmin';
+import { NotificationBell } from '@/components/NotificationBell';
 
 interface HeaderProps {
   title?: string;
@@ -71,19 +72,22 @@ export function Header({ title, showBack = false, showMap = false, className }: 
           )}
 
           {user && (
-            <Link to="/saved">
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "text-muted-foreground hover:text-foreground",
-                  location.pathname === '/saved' && "text-primary"
-                )}
-                aria-label="Saved places"
-              >
-                <Heart className="w-5 h-5" />
-              </Button>
-            </Link>
+            <>
+              <NotificationBell />
+              <Link to="/saved">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground",
+                    location.pathname === '/saved' && "text-primary"
+                  )}
+                  aria-label="Saved places"
+                >
+                  <Heart className="w-5 h-5" />
+                </Button>
+              </Link>
+            </>
           )}
 
           {isAdmin && (

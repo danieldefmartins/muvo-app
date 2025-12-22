@@ -50,6 +50,54 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          place_id: string | null
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          place_id?: string | null
+          read_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          place_id?: string | null
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       place_checkins: {
         Row: {
           created_at: string
@@ -445,10 +493,24 @@ export type Database = {
         Returns: undefined
       }
       is_verified_user: { Args: { user_id: string }; Returns: boolean }
+      notify_place_followers: {
+        Args: {
+          _exclude_user_id?: string
+          _message: string
+          _place_id: string
+          _title: string
+          _type: Database["public"]["Enums"]["notification_type"]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
       checkin_type: "stayed_here" | "used_dump_water" | "passed_by"
+      notification_type:
+        | "place_status_changed"
+        | "place_photo_added"
+        | "place_updated"
       package_acceptance: "Yes" | "No" | "Limited"
       photo_category:
         | "entrance"
@@ -619,6 +681,11 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       checkin_type: ["stayed_here", "used_dump_water", "passed_by"],
+      notification_type: [
+        "place_status_changed",
+        "place_photo_added",
+        "place_updated",
+      ],
       package_acceptance: ["Yes", "No", "Limited"],
       photo_category: [
         "entrance",
