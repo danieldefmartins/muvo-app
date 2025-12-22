@@ -202,6 +202,7 @@ const PlaceDetail = () => {
                 longitude={place.longitude}
                 name={place.name}
                 mapboxToken={mapboxToken}
+                category={place.primaryCategory}
               />
             ) : (
               <PlaceMiniMapPlaceholder />
