@@ -14,6 +14,7 @@ export interface Checkin {
   profile?: {
     displayName: string | null;
     isPro: boolean;
+    trustedContributor: boolean;
   };
 }
 
@@ -27,6 +28,7 @@ interface CheckinRow {
   profiles?: {
     display_name: string | null;
     is_pro: boolean;
+    trusted_contributor: boolean;
   };
 }
 
@@ -41,6 +43,7 @@ function transformCheckin(row: CheckinRow): Checkin {
     profile: row.profiles ? {
       displayName: row.profiles.display_name,
       isPro: row.profiles.is_pro,
+      trustedContributor: row.profiles.trusted_contributor,
     } : undefined,
   };
 }
@@ -60,7 +63,8 @@ export function usePlaceCheckins(placeId: string) {
           created_at,
           profiles!place_checkins_user_id_fkey (
             display_name,
-            is_pro
+            is_pro,
+            trusted_contributor
           )
         `)
         .eq('place_id', placeId)

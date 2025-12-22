@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, X, Flag, Trash2, Camera } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Flag, Trash2, Camera, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TrustedContributorBadge } from '@/components/TrustedContributorBadge';
 import { usePlacePhotos, useDeletePhoto, useFlagPhoto, PHOTO_CATEGORIES, PlacePhoto } from '@/hooks/usePlacePhotos';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useAdmin';
@@ -206,13 +207,16 @@ export function PlacePhotoGallery({ placeId, onAddPhoto }: PlacePhotoGalleryProp
               {/* Info bar */}
               <div className="p-4 bg-black/80 text-white">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium">
                       {getCategoryLabel(selectedPhoto.category)}
                     </span>
-                    <span className="text-xs text-white/60 ml-2">
+                    <span className="text-xs text-white/60">
                       by {selectedPhoto.profile?.displayName || 'Anonymous'}
                     </span>
+                    {selectedPhoto.profile?.trustedContributor && (
+                      <TrustedContributorBadge className="bg-amber-500/20" />
+                    )}
                   </div>
                   <div className="flex gap-2">
                     {user && (

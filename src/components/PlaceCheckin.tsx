@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Home, Droplets, Eye, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { TrustedContributorBadge } from '@/components/TrustedContributorBadge';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   usePlaceCheckins, 
@@ -191,10 +192,13 @@ export function PlaceCheckin({ placeId }: PlaceCheckinProps) {
                     <Icon className="w-3.5 h-3.5 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-foreground truncate">
                         {checkin.profile?.displayName || 'Anonymous'}
                       </span>
+                      {checkin.profile?.trustedContributor && (
+                        <TrustedContributorBadge />
+                      )}
                       {checkin.profile?.isPro && (
                         <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
                           PRO
