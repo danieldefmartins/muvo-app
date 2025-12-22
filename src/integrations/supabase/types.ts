@@ -74,9 +74,12 @@ export type Database = {
           display_name: string | null
           email: string | null
           email_verified: boolean
+          email_verified_at: string | null
           id: string
-          phone: string | null
+          is_verified: boolean
+          phone_number: string | null
           phone_verified: boolean
+          phone_verified_at: string | null
           updated_at: string
         }
         Insert: {
@@ -84,9 +87,12 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           email_verified?: boolean
+          email_verified_at?: string | null
           id: string
-          phone?: string | null
+          is_verified?: boolean
+          phone_number?: string | null
           phone_verified?: boolean
+          phone_verified_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -94,9 +100,12 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           email_verified?: boolean
+          email_verified_at?: string | null
           id?: string
-          phone?: string | null
+          is_verified?: boolean
+          phone_number?: string | null
           phone_verified?: boolean
+          phone_verified_at?: string | null
           updated_at?: string
         }
         Relationships: []

@@ -5,9 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 export interface Profile {
   id: string;
   email: string | null;
-  phone: string | null;
+  phone_number: string | null;
   email_verified: boolean;
+  email_verified_at: string | null;
   phone_verified: boolean;
+  phone_verified_at: string | null;
+  is_verified: boolean;
   display_name: string | null;
 }
 
@@ -107,7 +110,7 @@ export function useAuth() {
       // Update profile to mark phone as verified
       await supabase
         .from('profiles')
-        .update({ phone_verified: true, phone })
+        .update({ phone_verified: true, phone_number: phone })
         .eq('id', user.id);
       
       // Refresh profile
@@ -131,7 +134,7 @@ export function useAuth() {
     return { error };
   }
 
-  const isVerified = profile?.email_verified && profile?.phone_verified;
+  const isVerified = profile?.is_verified ?? false;
 
   return {
     user,
