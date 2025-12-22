@@ -1,8 +1,9 @@
-import { ArrowLeft, Map, User, LogOut, Heart } from 'lucide-react';
+import { ArrowLeft, Map, User, LogOut, Heart, Shield } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsAdmin } from '@/hooks/useAdmin';
 
 interface HeaderProps {
   title?: string;
@@ -16,6 +17,7 @@ export function Header({ title, showBack = false, showMap = false, className }: 
   const location = useLocation();
   const isHome = location.pathname === '/';
   const { user, signOut } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
 
   async function handleSignOut() {
     await signOut();
@@ -80,6 +82,22 @@ export function Header({ title, showBack = false, showMap = false, className }: 
                 aria-label="Saved places"
               >
                 <Heart className="w-5 h-5" />
+              </Button>
+            </Link>
+          )}
+
+          {isAdmin && (
+            <Link to="/admin/suggestions">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "text-muted-foreground hover:text-foreground",
+                  location.pathname === '/admin/suggestions' && "text-primary"
+                )}
+                aria-label="Admin panel"
+              >
+                <Shield className="w-5 h-5" />
               </Button>
             </Link>
           )}
