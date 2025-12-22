@@ -2,63 +2,60 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export type PlaceCategory =
-  | 'National Park Campground'
-  | 'State Park Campground'
-  | 'County / Regional Park Campground'
-  | 'City / Municipal Park Campground'
-  | 'Public Land'
+  | 'National Park'
+  | 'State Park'
+  | 'County / Regional Park'
   | 'RV Campground'
   | 'Luxury RV Resort'
-  | 'Campground (Mixed)'
-  | 'Boondocking Area'
-  | 'Overnight Parking Spot'
-  | 'Business Allowing Overnight Parking'
-  | 'Dump Station'
-  | 'Water Station'
-  | 'Propane Station'
-  | 'RV Service / Repair'
-  | 'Rest Area';
+  | 'Overnight Parking'
+  | 'Boondocking'
+  | 'Business Allowing Overnight'
+  | 'Rest Area / Travel Plaza'
+  | 'Fairgrounds / Event Grounds';
 
 export type PlaceFeature =
-  | 'Full Hookups'
-  | 'Partial Hookups'
-  | 'Dry Camping'
-  | 'Pull Through Sites'
-  | 'Big Rig Friendly'
-  | 'Pet Friendly'
-  | 'Laundry'
-  | 'Showers'
-  | 'WiFi'
-  | 'Pool'
-  | 'Hot Tub'
-  | 'Playground'
-  | 'Dog Park'
-  | 'Fishing'
-  | 'Hiking'
-  | 'Beach Access'
-  | 'Lake Access'
-  | 'River Access'
-  | 'Boat Ramp'
   | 'Dump Station'
-  | 'Propane'
-  | 'Store'
-  | 'Restaurant'
-  | 'Clubhouse'
-  | 'Fitness Center'
-  | 'Golf'
-  | 'Mini Golf'
-  | 'Game Room'
-  | 'Cable TV'
-  | 'Tent Sites'
-  | 'Cabins'
-  | 'Glamping'
-  | 'Long Term Stays'
-  | 'Seasonal Sites'
-  | 'Rally Friendly'
-  | 'Workamper Friendly'
-  | 'Military Discount'
-  | 'Good Sam Discount'
-  | 'Passport America';
+  | 'Fresh Water'
+  | 'Electric Hookups'
+  | 'Sewer Hookups'
+  | 'Showers'
+  | 'Laundry'
+  | 'Wi-Fi'
+  | 'Pet Friendly'
+  | 'Big Rig Friendly'
+  | 'Swimming Pool'
+  | 'Hot Tub'
+  | 'Heated Pool'
+  | 'Heated Hot Tub';
+
+export const PLACE_CATEGORIES: PlaceCategory[] = [
+  'National Park',
+  'State Park',
+  'County / Regional Park',
+  'RV Campground',
+  'Luxury RV Resort',
+  'Overnight Parking',
+  'Boondocking',
+  'Business Allowing Overnight',
+  'Rest Area / Travel Plaza',
+  'Fairgrounds / Event Grounds',
+];
+
+export const PLACE_FEATURES: PlaceFeature[] = [
+  'Dump Station',
+  'Fresh Water',
+  'Electric Hookups',
+  'Sewer Hookups',
+  'Showers',
+  'Laundry',
+  'Wi-Fi',
+  'Pet Friendly',
+  'Big Rig Friendly',
+  'Swimming Pool',
+  'Hot Tub',
+  'Heated Pool',
+  'Heated Hot Tub',
+];
 
 export interface Place {
   id: string;
@@ -73,8 +70,8 @@ export interface Place {
   hasConflict: boolean;
   lastUpdated: Date;
   primaryCategory: PlaceCategory;
-  categories: PlaceCategory[];
   features: PlaceFeature[];
+  openYearRound: boolean;
   coverImageUrl: string | null;
   // Computed/derived fields
   distance: number;
@@ -96,8 +93,8 @@ interface PlaceRow {
   last_updated: string;
   created_at: string;
   primary_category: PlaceCategory;
-  categories: PlaceCategory[];
   features: PlaceFeature[];
+  open_year_round: boolean;
   cover_image_url: string | null;
 }
 
@@ -122,12 +119,12 @@ function generateSummary(place: PlaceRow): string {
   if (place.price_level === '$') {
     parts.push('Budget-friendly');
   } else if (place.price_level === '$$$') {
-    parts.push('Premium resort');
+    parts.push('Premium');
   }
   
-  // Verification status
-  if (place.is_verified) {
-    parts.push('Verified');
+  // Year round
+  if (!place.open_year_round) {
+    parts.push('Seasonal');
   }
   
   return parts.slice(0, 3).join(' • ');
@@ -160,12 +157,12 @@ function transformPlace(row: PlaceRow): Place {
     hasConflict: row.has_conflict,
     lastUpdated: new Date(row.last_updated),
     primaryCategory: row.primary_category,
-    categories: row.categories,
     features: row.features || [],
+    openYearRound: row.open_year_round,
     coverImageUrl: row.cover_image_url,
     distance: calculateDistance(row.latitude, row.longitude),
     summary: generateSummary(row),
-    isProRecommended: row.is_verified && row.price_level !== '$', // Simple heuristic for now
+    isProRecommended: row.is_verified && row.price_level !== '$',
   };
 }
 
@@ -180,7 +177,7 @@ export function usePlaces() {
       
       if (error) throw error;
       
-      return (data as PlaceRow[]).map(transformPlace);
+      return (data as unknown as PlaceRow[]).map(transformPlace);
     },
   });
 }
@@ -198,7 +195,7 @@ export function usePlace(id: string) {
       if (error) throw error;
       if (!data) return null;
       
-      return transformPlace(data as PlaceRow);
+      return transformPlace(data as unknown as PlaceRow);
     },
     enabled: !!id,
   });

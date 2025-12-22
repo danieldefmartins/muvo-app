@@ -20,31 +20,12 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateSuggestion, FIELD_LABELS } from '@/hooks/useSuggestions';
-import type { Place, PlaceCategory, PlaceFeature } from '@/hooks/usePlaces';
+import { PLACE_CATEGORIES, type Place, type PlaceCategory } from '@/hooks/usePlaces';
 
 interface SuggestUpdateFormProps {
   place: Place;
   isVerified: boolean;
 }
-
-const CATEGORIES: PlaceCategory[] = [
-  'National Park Campground',
-  'State Park Campground',
-  'County / Regional Park Campground',
-  'City / Municipal Park Campground',
-  'Public Land',
-  'RV Campground',
-  'Luxury RV Resort',
-  'Campground (Mixed)',
-  'Boondocking Area',
-  'Overnight Parking Spot',
-  'Business Allowing Overnight Parking',
-  'Dump Station',
-  'Water Station',
-  'Propane Station',
-  'RV Service / Repair',
-  'Rest Area',
-];
 
 export function SuggestUpdateForm({ place, isVerified }: SuggestUpdateFormProps) {
   const [open, setOpen] = useState(false);
@@ -70,6 +51,8 @@ export function SuggestUpdateForm({ place, isVerified }: SuggestUpdateFormProps)
         return place.packageFeeAmount;
       case 'features':
         return place.features.join(', ');
+      case 'open_year_round':
+        return place.openYearRound ? 'Yes' : 'No';
       case 'latitude':
         return String(place.latitude);
       case 'longitude':
@@ -129,7 +112,7 @@ export function SuggestUpdateForm({ place, isVerified }: SuggestUpdateFormProps)
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border z-50 max-h-60">
-              {CATEGORIES.map((cat) => (
+              {PLACE_CATEGORIES.map((cat) => (
                 <SelectItem key={cat} value={cat}>
                   {cat}
                 </SelectItem>
@@ -179,7 +162,19 @@ export function SuggestUpdateForm({ place, isVerified }: SuggestUpdateFormProps)
           </Select>
         );
 
-      case 'latitude':
+      case 'open_year_round':
+        return (
+          <Select value={suggestedValue} onValueChange={setSuggestedValue}>
+            <SelectTrigger className="bg-card border-border">
+              <SelectValue placeholder="Select option" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              <SelectItem value="Yes">Yes - Open Year-Round</SelectItem>
+              <SelectItem value="No">No - Seasonal</SelectItem>
+            </SelectContent>
+          </Select>
+        );
+
       case 'longitude':
         return (
           <Input
