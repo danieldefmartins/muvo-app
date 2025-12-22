@@ -92,6 +92,70 @@ export type Database = {
           },
         ]
       }
+      place_photos: {
+        Row: {
+          category: Database["public"]["Enums"]["photo_category"]
+          created_at: string
+          flag_reason: string | null
+          flagged: boolean
+          flagged_at: string | null
+          flagged_by: string | null
+          id: string
+          is_approved: boolean
+          place_id: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["photo_category"]
+          created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean
+          flagged_at?: string | null
+          flagged_by?: string | null
+          id?: string
+          is_approved?: boolean
+          place_id: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["photo_category"]
+          created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean
+          flagged_at?: string | null
+          flagged_by?: string | null
+          id?: string
+          is_approved?: boolean
+          place_id?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_photos_flagged_by_fkey"
+            columns: ["flagged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_photos_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_photos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       place_status_updates: {
         Row: {
           approved_at: string | null
@@ -373,6 +437,14 @@ export type Database = {
       app_role: "admin" | "moderator" | "user"
       checkin_type: "stayed_here" | "used_dump_water" | "passed_by"
       package_acceptance: "Yes" | "No" | "Limited"
+      photo_category:
+        | "entrance"
+        | "site_parking"
+        | "hookups"
+        | "dump_water"
+        | "bathrooms_showers"
+        | "surroundings"
+        | "rules_signs"
       place_category:
         | "National Park"
         | "State Park"
@@ -535,6 +607,15 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
       checkin_type: ["stayed_here", "used_dump_water", "passed_by"],
       package_acceptance: ["Yes", "No", "Limited"],
+      photo_category: [
+        "entrance",
+        "site_parking",
+        "hookups",
+        "dump_water",
+        "bathrooms_showers",
+        "surroundings",
+        "rules_signs",
+      ],
       place_category: [
         "National Park",
         "State Park",

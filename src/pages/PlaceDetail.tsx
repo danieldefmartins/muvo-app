@@ -10,6 +10,7 @@ import {
   Sparkles,
   ClipboardCheck,
   AlertCircle,
+  Images,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { TrustBadge } from '@/components/TrustBadge';
@@ -20,6 +21,8 @@ import { FavoriteButton } from '@/components/FavoriteButton';
 import { PlaceCheckin } from '@/components/PlaceCheckin';
 import { PlaceStatusBadge } from '@/components/PlaceStatusBadge';
 import { ReportStatusForm } from '@/components/ReportStatusForm';
+import { PlacePhotoGallery } from '@/components/PlacePhotoGallery';
+import { PhotoUploadForm } from '@/components/PhotoUploadForm';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -38,6 +41,7 @@ const PlaceDetail = () => {
   const { user, isVerified } = useAuth();
   const { data: mapboxToken } = useMapboxToken();
   const [showUpload, setShowUpload] = useState(false);
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -84,104 +88,42 @@ const PlaceDetail = () => {
       <Header title={place.name} showBack />
 
       <main className="container px-4 py-6 max-w-lg mx-auto">
-        {/* Cover Image */}
+        {/* Photo Gallery */}
         <section className="mb-6 animate-fade-in">
-          <div className="relative rounded-lg overflow-hidden">
-            <AspectRatio ratio={16 / 9}>
-              {displayImageUrl ? (
-                <img
-                  src={displayImageUrl}
-                  alt={place.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                  <div className="text-center">
-                    <Camera className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                    <span className="text-muted-foreground text-sm">No photo yet</span>
-                  </div>
-                </div>
-              )}
-            </AspectRatio>
-            
-            {/* Category badge overlay */}
-            <div className="absolute top-2 left-2">
-              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-background/90 text-foreground backdrop-blur-sm">
-                {place.primaryCategory}
-              </span>
-            </div>
-          </div>
+          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Images className="w-5 h-5 text-primary" />
+            Photos
+          </h2>
+          {showPhotoUpload ? (
+            <PhotoUploadForm 
+              placeId={id!}
+              onSuccess={() => {
+                setShowPhotoUpload(false);
+                queryClient.invalidateQueries({ queryKey: ['place-photos', id] });
+              }}
+              onCancel={() => setShowPhotoUpload(false)}
+            />
+          ) : (
+            <PlacePhotoGallery 
+              placeId={id!} 
+              onAddPhoto={() => setShowPhotoUpload(true)}
+            />
+          )}
         </section>
 
-        {/* Action Buttons: Photo upload and Favorite */}
-        {user && (
-          <section className="mb-6 animate-fade-in">
-            {showUpload ? (
-              <div className="space-y-3">
-                <ImageUpload
-                  placeId={id!}
-                  onSuccess={handleImageUploadSuccess}
-                  disabled={!isVerified}
-                />
-                {!isVerified && (
-                  <p className="text-sm text-muted-foreground text-center">
-                    <Link to="/auth" className="text-primary hover:underline">
-                      Complete verification
-                    </Link>{' '}
-                    to upload photos
-                  </p>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setShowUpload(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowUpload(true)}
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  {displayImageUrl ? 'Update photo' : 'Add a photo'}
-                </Button>
-                <FavoriteButton placeId={place.id} variant="full" className="flex-1" />
-                <NavigateButton
-                  latitude={place.latitude}
-                  longitude={place.longitude}
-                  name={place.name}
-                  variant="compact"
-                  className="flex-1"
-                />
-              </div>
-            )}
-          </section>
-        )}
-
-        {!user && (
-          <section className="mb-6 animate-fade-in">
-            <div className="flex gap-2">
-              <Link to="/auth" className="flex-1">
-                <Button variant="outline" className="w-full">
-                  <Camera className="w-4 h-4 mr-2" />
-                  Sign in to add a photo
-                </Button>
-              </Link>
-              <NavigateButton
-                latitude={place.latitude}
-                longitude={place.longitude}
-                name={place.name}
-                variant="compact"
-                className="flex-1"
-              />
-            </div>
-          </section>
-        )}
+        {/* Action Buttons */}
+        <section className="mb-6 animate-fade-in">
+          <div className="flex gap-2">
+            <FavoriteButton placeId={place.id} variant="full" className="flex-1" />
+            <NavigateButton
+              latitude={place.latitude}
+              longitude={place.longitude}
+              name={place.name}
+              variant="compact"
+              className="flex-1"
+            />
+          </div>
+        </section>
 
         {/* Hero section */}
         <section className="mb-6 animate-fade-in">
