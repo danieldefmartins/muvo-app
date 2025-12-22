@@ -1,4 +1,4 @@
-import { MapPin, Wifi, Dog, Truck, Zap, Droplets, Trees, Waves, Tent, Home } from 'lucide-react';
+import { MapPin, Droplets, Zap, Wifi, Dog, Truck, ShowerHead, WashingMachine, Waves, Flame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Place, PlaceFeature } from '@/hooks/usePlaces';
 import { FavoriteButton } from './FavoriteButton';
@@ -13,27 +13,31 @@ interface PlaceCardProps {
 
 // Map features to icons
 const FEATURE_ICONS: Partial<Record<PlaceFeature, React.ElementType>> = {
-  'WiFi': Wifi,
+  'Wi-Fi': Wifi,
   'Pet Friendly': Dog,
   'Big Rig Friendly': Truck,
-  'Full Hookups': Zap,
-  'Partial Hookups': Zap,
+  'Electric Hookups': Zap,
   'Dump Station': Droplets,
-  'Hiking': Trees,
-  'Beach Access': Waves,
-  'Lake Access': Waves,
-  'Tent Sites': Tent,
-  'Cabins': Home,
+  'Fresh Water': Droplets,
+  'Sewer Hookups': Droplets,
+  'Showers': ShowerHead,
+  'Laundry': WashingMachine,
+  'Swimming Pool': Waves,
+  'Hot Tub': Flame,
+  'Heated Pool': Waves,
+  'Heated Hot Tub': Flame,
 };
 
 function getFeatureIcons(features: PlaceFeature[], max = 3) {
   const icons: { feature: PlaceFeature; Icon: React.ElementType }[] = [];
+  const usedIcons = new Set<React.ElementType>();
   
   for (const feature of features) {
     if (icons.length >= max) break;
     const Icon = FEATURE_ICONS[feature];
-    if (Icon && !icons.some(i => i.Icon === Icon)) {
+    if (Icon && !usedIcons.has(Icon)) {
       icons.push({ feature, Icon });
+      usedIcons.add(Icon);
     }
   }
   

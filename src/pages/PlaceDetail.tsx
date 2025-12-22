@@ -210,7 +210,7 @@ const PlaceDetail = () => {
           style={{ animationDelay: '100ms' }}
         >
           <h2 className="font-display text-lg font-semibold text-foreground mb-3">
-            Key RV Facts
+            Key Info
           </h2>
           <div className="bg-card border border-border rounded-lg divide-y divide-border">
             <InfoRow
@@ -222,6 +222,12 @@ const PlaceDetail = () => {
               icon={DollarSign}
               label="Price Level"
               value={place.priceLevel === '$' ? 'Budget-friendly' : place.priceLevel === '$$' ? 'Moderate' : 'Premium'}
+            />
+            <InfoRow
+              icon={Calendar}
+              label="Open Year-Round"
+              value={place.openYearRound ? 'Yes' : 'Seasonal'}
+              valueClassName={place.openYearRound ? 'text-success' : 'text-warning'}
             />
           </div>
         </section>

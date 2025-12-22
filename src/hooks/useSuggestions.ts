@@ -119,6 +119,7 @@ export const FIELD_LABELS: Record<string, string> = {
   package_fee_required: 'Package Fee Required',
   package_fee_amount: 'Package Fee Amount',
   features: 'Features',
+  open_year_round: 'Open Year-Round',
   latitude: 'Latitude',
   longitude: 'Longitude',
 };

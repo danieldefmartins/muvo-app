@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Filter, ChevronDown, X, ArrowUpDown } from 'lucide-react';
+import { Filter, X, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -20,7 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import type { PlaceCategory, PlaceFeature } from '@/hooks/usePlaces';
+import { PLACE_CATEGORIES, PLACE_FEATURES, PlaceCategory, PlaceFeature } from '@/hooks/usePlaces';
 
 export type SortOption = 'recently-updated' | 'alphabetical';
 
@@ -40,55 +40,6 @@ interface PlaceFiltersProps {
   totalCount: number;
   filteredCount: number;
 }
-
-const CATEGORIES: PlaceCategory[] = [
-  'National Park Campground',
-  'State Park Campground',
-  'County / Regional Park Campground',
-  'City / Municipal Park Campground',
-  'Public Land',
-  'RV Campground',
-  'Luxury RV Resort',
-  'Campground (Mixed)',
-  'Boondocking Area',
-  'Overnight Parking Spot',
-  'Business Allowing Overnight Parking',
-  'Dump Station',
-  'Water Station',
-  'Propane Station',
-  'RV Service / Repair',
-  'Rest Area',
-];
-
-const FEATURES: PlaceFeature[] = [
-  'Full Hookups',
-  'Partial Hookups',
-  'Dry Camping',
-  'Pull Through Sites',
-  'Big Rig Friendly',
-  'Pet Friendly',
-  'Laundry',
-  'Showers',
-  'WiFi',
-  'Pool',
-  'Hot Tub',
-  'Playground',
-  'Dog Park',
-  'Fishing',
-  'Hiking',
-  'Beach Access',
-  'Lake Access',
-  'River Access',
-  'Boat Ramp',
-  'Dump Station',
-  'Propane',
-  'Store',
-  'Restaurant',
-  'Clubhouse',
-  'Fitness Center',
-  'Long Term Stays',
-  'Seasonal Sites',
-];
 
 export function PlaceFilters({
   filters,
@@ -227,7 +178,7 @@ export function PlaceFilters({
                   </SelectTrigger>
                   <SelectContent className="bg-popover border-border z-50 max-h-60">
                     <SelectItem value="">All categories</SelectItem>
-                    {CATEGORIES.map((cat) => (
+                    {PLACE_CATEGORIES.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat}
                       </SelectItem>
@@ -249,7 +200,7 @@ export function PlaceFilters({
                   )}
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {FEATURES.map((feature) => (
+                  {PLACE_FEATURES.map((feature) => (
                     <div
                       key={feature}
                       className={`flex items-center p-2.5 rounded-lg border cursor-pointer transition-colors ${

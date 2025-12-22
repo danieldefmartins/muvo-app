@@ -44,7 +44,7 @@ const PlacesToStay = () => {
     }
 
     if (filters.openYearRound) {
-      result = result.filter((p) => p.features.includes('Seasonal Sites') === false);
+      result = result.filter((p) => p.openYearRound);
     }
 
     // Apply sorting
