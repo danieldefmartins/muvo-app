@@ -1,4 +1,4 @@
-import { Award, CheckCircle, Mail, Phone } from 'lucide-react';
+import { Award, CheckCircle, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Profile } from '@/hooks/useAuth';
@@ -18,30 +18,16 @@ export function UserProfileCard({ profile }: UserProfileCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Verification Status */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-muted-foreground" />
-            {profile.email_verified ? (
-              <Badge variant="secondary" className="gap-1">
-                <CheckCircle className="w-3 h-3 text-success" />
-                Email verified
-              </Badge>
-            ) : (
-              <Badge variant="outline">Email not verified</Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4 text-muted-foreground" />
-            {profile.phone_verified ? (
-              <Badge variant="secondary" className="gap-1">
-                <CheckCircle className="w-3 h-3 text-success" />
-                Phone verified
-              </Badge>
-            ) : (
-              <Badge variant="outline">Phone not verified</Badge>
-            )}
-          </div>
+        {/* Email Status */}
+        <div className="flex items-center gap-2">
+          <Mail className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">{profile.email}</span>
+          {profile.email_verified && (
+            <Badge variant="secondary" className="gap-1">
+              <CheckCircle className="w-3 h-3 text-success" />
+              Verified
+            </Badge>
+          )}
         </div>
 
         {/* Contribution Stats */}
