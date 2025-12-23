@@ -77,30 +77,38 @@ export function ReviewsSection({
   const locationString = getLocationString();
 
   const handleReviewSuccess = () => {
+    // Mark that user has completed at least one review ever
+    localStorage.setItem('review-first-completed', 'true');
     if (isFirstReview) {
       setJustSubmittedFirst(true);
     }
     setShowReviewForm(false);
   };
 
-  // Handle "Leave a Review" button click - show tutorial if first time
+  // Handle "Leave a Review" button click - show tutorial only on first ever review
   const handleLeaveReviewClick = () => {
     const tutorialSeen = localStorage.getItem(TUTORIAL_SEEN_KEY) === 'true';
-    if (!tutorialSeen) {
+    const hasCompletedFirstReview = localStorage.getItem('review-first-completed') === 'true';
+    
+    // Only show tutorial if never seen AND never completed a review
+    if (!tutorialSeen && !hasCompletedFirstReview) {
       setShowTutorial(true);
     } else {
+      // Open review form directly - no intermediate steps
       setShowReviewForm(true);
     }
   };
 
   // Called when user clicks "Start Review" in tutorial
   const handleTutorialStart = () => {
+    localStorage.setItem(TUTORIAL_SEEN_KEY, 'true');
     setShowTutorial(false);
     setShowReviewForm(true);
   };
 
   // Called when user clicks "Skip" in tutorial
   const handleTutorialSkip = () => {
+    localStorage.setItem(TUTORIAL_SEEN_KEY, 'true');
     setShowTutorial(false);
     setShowReviewForm(true);
   };
@@ -117,19 +125,19 @@ export function ReviewsSection({
       {/* Section Header with Location */}
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
+          <h2 className="font-display text-xl font-semibold text-foreground flex items-center gap-2">
             <MessageSquareText className="w-5 h-5 text-primary" />
             Reviews
           </h2>
           {reviewCount !== undefined && reviewCount > 0 && (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-base text-muted-foreground">
               {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}
             </span>
           )}
         </div>
         {locationString && (
-          <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
-            <MapPin className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 mt-1 text-base text-muted-foreground">
+            <MapPin className="w-4 h-4" />
             <span>
               {placeName} – {locationString}
             </span>
@@ -161,13 +169,13 @@ export function ReviewsSection({
       {isFirstReview && !showReviewForm && user && isVerified && (
         <div className="text-center py-8 px-4 bg-secondary/30 border border-dashed border-border rounded-lg mb-4">
           <Heart className="w-10 h-10 mx-auto mb-3 text-primary/60" />
-          <h3 className="font-medium text-foreground mb-1">
+          <h3 className="font-medium text-foreground text-lg mb-1">
             Be the first to share what stood out here
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-base text-muted-foreground mb-4">
             Your review helps other travelers make better decisions
           </p>
-          <Button onClick={handleLeaveReviewClick} className="min-w-[180px]">
+          <Button onClick={handleLeaveReviewClick} size="lg" className="min-w-[200px] text-base">
             Leave the first review
           </Button>
         </div>
@@ -177,10 +185,10 @@ export function ReviewsSection({
       {isFirstReview && !showReviewForm && (!user || !isVerified) && (
         <div className="text-center py-8 px-4 bg-secondary/30 border border-dashed border-border rounded-lg mb-4">
           <Heart className="w-10 h-10 mx-auto mb-3 text-muted-foreground/60" />
-          <h3 className="font-medium text-foreground mb-1">
+          <h3 className="font-medium text-foreground text-lg mb-1">
             No reviews yet
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Be the first to share what stood out here
           </p>
         </div>

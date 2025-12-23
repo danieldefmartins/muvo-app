@@ -115,7 +115,7 @@ const PlaceDetail = () => {
         </section>
 
         {/* Action Buttons */}
-        <section className="mb-6 animate-fade-in">
+        <section className="mb-4 animate-fade-in">
           <div className="flex gap-2">
             <FavoriteButton placeId={place.id} variant="full" className="flex-1" />
             <NavigateButton
@@ -127,6 +127,15 @@ const PlaceDetail = () => {
             />
           </div>
         </section>
+
+        {/* Reviews Section - MOVED UP near top, under place name */}
+        <ReviewsSection
+          placeId={id!}
+          placeName={place.name}
+          placeCategory={place.primaryCategory}
+          latitude={place.latitude}
+          longitude={place.longitude}
+        />
 
         {/* Hero section */}
         <section className="mb-6 animate-fade-in">
@@ -360,14 +369,7 @@ const PlaceDetail = () => {
           <PlaceCheckin placeId={id!} />
         </section>
 
-        {/* Reviews Section */}
-        <ReviewsSection
-          placeId={id!}
-          placeName={place.name}
-          placeCategory={place.primaryCategory}
-          latitude={place.latitude}
-          longitude={place.longitude}
-        />
+        {/* Reviews Section is now at the top under action buttons */}
 
         {/* Disclaimer */}
         <p className="text-center text-xs text-muted-foreground pb-6">

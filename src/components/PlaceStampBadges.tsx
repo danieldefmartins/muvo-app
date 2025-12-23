@@ -37,9 +37,12 @@ export function PlaceStampBadges({
     .filter(a => a.polarity === 'positive')
     .slice(0, maxGood);
 
-  const improvementStamps = sortedAggregates
-    .filter(a => a.polarity === 'improvement')
-    .slice(0, maxBad);
+  // HIDE negative/improvement stamps on list cards (variant != 'default')
+  // Only show on full detail page (default variant) when there's enough positive signal
+  const showImprovementStamps = variant === 'default' && positiveStamps.length >= 2;
+  const improvementStamps = showImprovementStamps 
+    ? sortedAggregates.filter(a => a.polarity === 'improvement').slice(0, maxBad)
+    : [];
 
   if (positiveStamps.length === 0 && improvementStamps.length === 0) return null;
 
@@ -59,11 +62,12 @@ export function PlaceStampBadges({
         </div>
       )}
 
-      {/* Positive stamps */}
+      {/* Positive stamps - show ×N for vote count instead of repeating icons */}
       {positiveStamps.map((stamp) => {
         const label = stamp.stamp_id 
           ? getStampLabel(allStamps, stamp.stamp_id)
           : stamp.dimension;
+        const voteCount = stamp.review_count; // Number of reviews with this stamp
         
         return (
           <div
@@ -74,26 +78,29 @@ export function PlaceStampBadges({
                 ? 'bg-primary/80 text-primary-foreground px-2 py-0.5 backdrop-blur-sm'
                 : isCompact
                   ? 'bg-primary/10 text-primary px-1.5 py-0.5'
-                  : 'bg-primary/10 text-primary px-2 py-1'
+                  : 'bg-primary/10 text-primary px-2.5 py-1'
             )}
-            title={`${label}: ${stamp.total_votes} votes`}
+            title={`${label}: ${voteCount} ${voteCount === 1 ? 'review' : 'reviews'}`}
           >
             <CheckCircle className={cn(isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5')} />
             {!isCompact && (
               <>
-                <span className="text-xs font-medium">{label}</span>
-                <span className="text-xs opacity-70">({stamp.total_votes})</span>
+                <span className="text-sm font-medium">{label}</span>
+                {voteCount > 1 && (
+                  <span className="text-sm font-semibold opacity-80">×{voteCount}</span>
+                )}
               </>
             )}
           </div>
         );
       })}
 
-      {/* Improvement stamps */}
+      {/* Improvement stamps - show ×N for vote count instead of repeating icons */}
       {improvementStamps.map((stamp) => {
         const label = stamp.stamp_id 
           ? getStampLabel(allStamps, stamp.stamp_id)
           : stamp.dimension;
+        const voteCount = stamp.review_count;
         
         return (
           <div
@@ -104,15 +111,17 @@ export function PlaceStampBadges({
                 ? 'bg-amber-500/80 text-white px-2 py-0.5 backdrop-blur-sm'
                 : isCompact
                   ? 'bg-amber-500/10 text-amber-600 px-1.5 py-0.5'
-                  : 'bg-amber-500/10 text-amber-600 px-2 py-1'
+                  : 'bg-amber-500/10 text-amber-600 px-2.5 py-1'
             )}
-            title={`${label}: ${stamp.total_votes} votes`}
+            title={`${label}: ${voteCount} ${voteCount === 1 ? 'review' : 'reviews'}`}
           >
             <AlertTriangle className={cn(isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5')} />
             {!isCompact && (
               <>
-                <span className="text-xs font-medium">{label}</span>
-                <span className="text-xs opacity-70">({stamp.total_votes})</span>
+                <span className="text-sm font-medium">{label}</span>
+                {voteCount > 1 && (
+                  <span className="text-sm font-semibold opacity-80">×{voteCount}</span>
+                )}
               </>
             )}
           </div>
