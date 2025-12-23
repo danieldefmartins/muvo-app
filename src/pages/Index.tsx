@@ -1,20 +1,15 @@
-import { Tent, Route, Map, Search, Star, ChevronRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Tent, Route, Map, Star, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
-import { Input } from '@/components/ui/input';
+import { HomeSearchBar } from '@/components/HomeSearchBar';
 import heroImage from '@/assets/hero-rv-landscape.jpg';
 import { usePlaces } from '@/hooks/usePlaces';
 
 const Index = () => {
-  const navigate = useNavigate();
   const { data: places } = usePlaces();
   
   // Get top rated places for discovery section
   const topPlaces = places?.slice(0, 4) || [];
-
-  const handleSearchFocus = () => {
-    navigate('/places');
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,20 +36,8 @@ const Index = () => {
             RV parks, campgrounds & hidden gems
           </p>
           
-          {/* Search Bar */}
-          <div 
-            className="w-full max-w-md px-4"
-            onClick={handleSearchFocus}
-          >
-            <div className="relative cursor-pointer">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                placeholder="Where do you want to go?"
-                className="w-full h-14 pl-12 pr-4 rounded-full bg-white/95 backdrop-blur-sm border-0 shadow-lg text-foreground placeholder:text-muted-foreground text-base cursor-pointer"
-                readOnly
-              />
-            </div>
-          </div>
+          {/* Search Bar with Autocomplete */}
+          <HomeSearchBar className="w-full max-w-md px-4" />
         </div>
       </section>
 
