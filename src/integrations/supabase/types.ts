@@ -211,6 +211,7 @@ export type Database = {
           place_id: string
           polarity: Database["public"]["Enums"]["signal_polarity"]
           review_count: number
+          stamp_id: string | null
           total_votes: number
           updated_at: string
         }
@@ -220,6 +221,7 @@ export type Database = {
           place_id: string
           polarity: Database["public"]["Enums"]["signal_polarity"]
           review_count?: number
+          stamp_id?: string | null
           total_votes?: number
           updated_at?: string
         }
@@ -229,6 +231,7 @@ export type Database = {
           place_id?: string
           polarity?: Database["public"]["Enums"]["signal_polarity"]
           review_count?: number
+          stamp_id?: string | null
           total_votes?: number
           updated_at?: string
         }
@@ -238,6 +241,13 @@ export type Database = {
             columns: ["place_id"]
             isOneToOne: false
             referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_stamp_aggregates_stamp_id_fkey"
+            columns: ["stamp_id"]
+            isOneToOne: false
+            referencedRelation: "stamp_definitions"
             referencedColumns: ["id"]
           },
         ]
@@ -505,6 +515,7 @@ export type Database = {
           place_id: string
           polarity: Database["public"]["Enums"]["signal_polarity"]
           review_id: string
+          stamp_id: string | null
           user_id: string
         }
         Insert: {
@@ -515,6 +526,7 @@ export type Database = {
           place_id: string
           polarity: Database["public"]["Enums"]["signal_polarity"]
           review_id: string
+          stamp_id?: string | null
           user_id: string
         }
         Update: {
@@ -525,6 +537,7 @@ export type Database = {
           place_id?: string
           polarity?: Database["public"]["Enums"]["signal_polarity"]
           review_id?: string
+          stamp_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -540,6 +553,13 @@ export type Database = {
             columns: ["review_id"]
             isOneToOne: false
             referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_signals_stamp_id_fkey"
+            columns: ["stamp_id"]
+            isOneToOne: false
+            referencedRelation: "stamp_definitions"
             referencedColumns: ["id"]
           },
           {
@@ -596,6 +616,36 @@ export type Database = {
           },
         ]
       }
+      stamp_definitions: {
+        Row: {
+          category: string
+          created_at: string
+          icon: string | null
+          id: string
+          label: string
+          polarity: string
+          sort_order: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          icon?: string | null
+          id: string
+          label: string
+          polarity: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          label?: string
+          polarity?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -629,6 +679,10 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      get_review_category: {
+        Args: { place_category: Database["public"]["Enums"]["place_category"] }
+        Returns: string
       }
       has_role: {
         Args: {
