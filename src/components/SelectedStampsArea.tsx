@@ -102,18 +102,30 @@ export function SelectedStampsArea({
           type="button"
           onClick={onTap}
           className={cn(
-            'w-16 h-16 rounded-full border-2 flex items-center justify-center transition-all duration-200',
+            'w-16 h-16 rounded-full border-2 flex items-center justify-center transition-all duration-200 relative',
             'hover:scale-105 active:scale-95',
             getStyles()
           )}
         >
           <IconComponent size={28} />
+          {/* Multiplier badge - prominent display */}
+          {level > 1 && (
+            <div className={cn(
+              'absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md',
+              polarity === 'positive'
+                ? 'bg-primary text-primary-foreground'
+                : level === 3
+                ? 'bg-destructive text-destructive-foreground'
+                : 'bg-amber-500 text-white'
+            )}>
+              ×{level}
+            </div>
+          )}
         </button>
         
         <div className="text-center w-18">
           <p className="text-xs font-medium text-foreground leading-tight truncate max-w-16">
             {stamp.label}
-            {level > 1 && <span className="font-bold ml-0.5">×{level}</span>}
           </p>
           {/* Strength Dots */}
           <div className="flex gap-0.5 justify-center mt-0.5">

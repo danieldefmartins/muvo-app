@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { HomeSearchBar } from '@/components/HomeSearchBar';
 import { usePlaces } from '@/hooks/usePlaces';
+import { PlaceStampBadges } from '@/components/PlaceStampBadges';
 import {
   Carousel,
   CarouselContent,
@@ -220,9 +221,17 @@ const Index = () => {
                       <h3 className="font-medium text-sm text-foreground leading-tight group-hover:text-primary transition-colors">
                         {place.name}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5 mb-2">
                         {place.primaryCategory}
                       </p>
+                      {/* Review stamps */}
+                      <PlaceStampBadges 
+                        placeId={place.id} 
+                        variant="compact" 
+                        maxGood={2} 
+                        maxBad={0}
+                        showReviewCount={true}
+                      />
                     </div>
                   </div>
                 </Link>
