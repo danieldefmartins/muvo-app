@@ -86,6 +86,7 @@ export function CompactReviewStrip({
     const tutorialSeen = localStorage.getItem(TUTORIAL_SEEN_KEY) === 'true';
     const hasCompletedFirstReview = localStorage.getItem('review-first-completed') === 'true';
     
+    // Allow anyone to start a review - we'll check auth on submit
     if (!tutorialSeen && !hasCompletedFirstReview) {
       setShowTutorial(true);
     } else {
@@ -112,6 +113,25 @@ export function CompactReviewStrip({
     notePrivate: string;
   }) => {
     const { positiveSignals, improvementSignals, notePublic, notePrivate } = data;
+
+    // Check auth only on submit
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Create an account to post your review. Your selections will be saved!",
+      });
+      // Store pending review in localStorage so it's not lost
+      localStorage.setItem('pending-review', JSON.stringify({
+        placeId,
+        positiveSignals: Array.from(positiveSignals.entries()),
+        improvementSignals: Array.from(improvementSignals.entries()),
+        notePublic,
+        notePrivate,
+      }));
+      // Redirect to auth page
+      window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
+      return;
+    }
 
     const totalStamps = positiveSignals.size + improvementSignals.size;
     if (totalStamps === 0) {
@@ -165,6 +185,7 @@ export function CompactReviewStrip({
         });
       }
       localStorage.setItem('review-first-completed', 'true');
+      localStorage.removeItem('pending-review'); // Clear any pending review
       setShowReviewPopup(false);
     } catch (error: any) {
       toast({
@@ -198,15 +219,13 @@ export function CompactReviewStrip({
           )}
         </div>
 
-        {/* Leave a review link */}
-        {user && isVerified && (
-          <button
-            onClick={handleLeaveReviewClick}
-            className="text-base font-semibold text-primary hover:underline whitespace-nowrap flex-shrink-0"
-          >
-            {isEditing ? 'Edit review' : 'Leave a review'}
-          </button>
-        )}
+        {/* Leave a review link - available to everyone */}
+        <button
+          onClick={handleLeaveReviewClick}
+          className="text-base font-semibold text-primary hover:underline whitespace-nowrap flex-shrink-0"
+        >
+          {isEditing ? 'Edit review' : 'Leave a review'}
+        </button>
       </div>
 
       {/* Review Popup */}
