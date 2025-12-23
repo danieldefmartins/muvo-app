@@ -168,36 +168,36 @@ export function StampSelectorPopup({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center">
+      <DialogContent className="w-[95vw] max-w-md mx-auto p-4 sm:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-center text-lg">
             {polarity === 'positive' ? 'What stood out?' : 'What needs improvement?'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 py-2">
           {/* Large Active Stamp Preview */}
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-3">
             <button
               onClick={handleStampTap}
               disabled={!activeStamp || (currentLevel === 0 && isLimitReached)}
               className={cn(
-                'w-28 h-28 rounded-full border-2 flex items-center justify-center transition-all duration-300',
+                'w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 flex items-center justify-center transition-all duration-300',
                 'hover:scale-105 active:scale-95',
                 getActiveStyles(),
                 animatingLevel !== null && 'scale-110',
                 (!activeStamp || (currentLevel === 0 && isLimitReached)) && 'opacity-50 cursor-not-allowed'
               )}
             >
-              <ActiveIcon size={52} />
+              <ActiveIcon size={40} className="sm:w-12 sm:h-12" />
             </button>
 
             {/* Stamp Label */}
-            <div className="text-center min-h-[80px]">
-              <p className="text-lg font-semibold mb-2">{activeStamp?.label || 'Select a stamp'}</p>
+            <div className="text-center min-h-[60px]">
+              <p className="text-base sm:text-lg font-semibold mb-1">{activeStamp?.label || 'Select a stamp'}</p>
               
               {/* Animated Level Text */}
-              <div className="h-8 flex items-center justify-center mb-2">
+              <div className="h-6 flex items-center justify-center mb-1">
                 {showLevelText && animatingLevel !== null && animatingLevel > 0 ? (
                   <p
                     className={cn(
@@ -228,7 +228,7 @@ export function StampSelectorPopup({
 
           {/* Limit Reached Warning */}
           {isLimitReached && currentLevel === 0 && (
-            <div className="flex items-center gap-2 py-2 px-3 bg-amber-500/10 rounded-lg border border-amber-500/20 animate-fade-in">
+            <div className="flex items-center gap-2 py-2 px-3 bg-amber-500/10 rounded-lg border border-amber-500/20 animate-fade-in mx-2">
               <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
               <p className="text-sm text-amber-600">
                 You've reached the max for this review.
@@ -237,9 +237,9 @@ export function StampSelectorPopup({
           )}
 
           {/* Horizontal Scrollable Stamp List */}
-          <div className="border-t border-border pt-4">
+          <div className="border-t border-border pt-3">
             <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex gap-3 px-2 py-2">
+              <div className="flex gap-2 px-1 py-1">
                 {stamps.map((stamp) => {
                   const IconComponent = stamp.icon
                     ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
@@ -254,7 +254,7 @@ export function StampSelectorPopup({
                       onClick={() => setActiveStamp(stamp)}
                       disabled={isDisabled}
                       className={cn(
-                        'flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all duration-200',
+                        'flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all duration-200 flex-shrink-0',
                         'hover:bg-muted/50',
                         isActive && 'bg-muted ring-2 ring-primary/50',
                         stampLevel > 0 && !isActive && 'opacity-80',
@@ -263,7 +263,7 @@ export function StampSelectorPopup({
                     >
                       <div
                         className={cn(
-                          'w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all',
+                          'w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all',
                           stampLevel > 0
                             ? polarity === 'positive'
                               ? 'bg-primary/20 text-primary border-primary/50'
@@ -271,9 +271,9 @@ export function StampSelectorPopup({
                             : 'bg-muted text-muted-foreground border-border'
                         )}
                       >
-                        <IconComponent size={20} />
+                        <IconComponent size={18} />
                       </div>
-                      <span className="text-xs text-center w-14 truncate">{stamp.label}</span>
+                      <span className="text-[10px] text-center w-12 truncate">{stamp.label}</span>
                       {stampLevel > 0 && (
                         <div className="flex gap-0.5">
                           {[1, 2, 3].map((dot) => (
@@ -300,11 +300,11 @@ export function StampSelectorPopup({
           </div>
 
           {/* Instructions */}
-          <div className="text-center space-y-1 pt-2 border-t border-border">
-            <p className="text-sm text-muted-foreground">
+          <div className="text-center space-y-0.5 pt-2 border-t border-border">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               1× Good • 2× Great • 3× Excellent
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               {remainingVotes} of {maxVotes} remaining
             </p>
           </div>
