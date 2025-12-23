@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { StampButton } from './StampButton';
+import { SelectedStampsArea } from './SelectedStampsArea';
+import { StampSelectorPopup } from './StampSelectorPopup';
 import { ReviewHelpButton } from './ReviewHelper';
 import {
   ReviewSignal,
@@ -17,8 +18,6 @@ import { Loader2, CheckCircle2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type PlaceCategory = Database['public']['Enums']['place_category'];
-
-const HINTS_STORAGE_KEY = 'review-hints-understood';
 
 interface ReviewFormProps {
   placeId: string;
@@ -41,12 +40,12 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
   const [notePublic, setNotePublic] = useState('');
   const [notePrivate, setNotePrivate] = useState('');
   
-  // Inline hints state
-  const [tapCount, setTapCount] = useState(0);
-  const [hintsUnderstood, setHintsUnderstood] = useState(false);
+  // Popup state
+  const [showPositivePopup, setShowPositivePopup] = useState(false);
+  const [showImprovementPopup, setShowImprovementPopup] = useState(false);
+  
+  // Encouragement state
   const [showEncouragement, setShowEncouragement] = useState(false);
-  const [lastTapLevel, setLastTapLevel] = useState<number | null>(null);
-  const [showTapHint, setShowTapHint] = useState(false);
 
   // Get stamps to display (fallback if none loaded)
   const positiveStamps = stamps?.positive || FALLBACK_STAMPS.positive.map(f => ({
@@ -67,20 +66,6 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
     sort_order: 0,
   }));
 
-  // Check if hints have been dismissed before
-  useEffect(() => {
-    const understood = localStorage.getItem(HINTS_STORAGE_KEY) === 'true';
-    setHintsUnderstood(understood);
-  }, []);
-
-  // Mark hints as understood after 3 taps
-  useEffect(() => {
-    if (tapCount >= 3 && !hintsUnderstood) {
-      localStorage.setItem(HINTS_STORAGE_KEY, 'true');
-      setHintsUnderstood(true);
-    }
-  }, [tapCount, hintsUnderstood]);
-
   // Show encouragement after 3 total stamps selected
   useEffect(() => {
     const totalSelected = positiveSignals.size + improvementSignals.size;
@@ -88,15 +73,6 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
       setShowEncouragement(true);
     }
   }, [positiveSignals.size, improvementSignals.size, showEncouragement]);
-
-  // Show tap hint after first tap
-  useEffect(() => {
-    if (lastTapLevel === 1 && !hintsUnderstood) {
-      setShowTapHint(true);
-      const timer = setTimeout(() => setShowTapHint(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [lastTapLevel, hintsUnderstood]);
 
   const isEditing = !!existingReview;
 
@@ -110,7 +86,6 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
       
       // Map existing signals to stamp IDs
       existingReview.signals.forEach((s: ReviewSignal) => {
-        // Try to find matching stamp by dimension (legacy) or stamp_id
         const stampId = (s as any).stamp_id || s.dimension;
         if (s.polarity === 'positive') {
           posMap.set(stampId, s.level);
@@ -143,140 +118,135 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
     );
   }
 
-  // Calculate total votes used (taps count toward limits)
+  // Calculate total votes used
   const totalPositiveVotes = Array.from(positiveSignals.values()).reduce((sum, level) => sum + level, 0);
   const totalImprovementVotes = Array.from(improvementSignals.values()).reduce((sum, level) => sum + level, 0);
   const remainingPositiveVotes = 5 - totalPositiveVotes;
   const remainingImprovementVotes = 2 - totalImprovementVotes;
 
-  const handlePositiveClick = (stamp: StampDefinition) => {
-    // Can't select if already in improvement
-    if (improvementSignals.has(stamp.id)) {
-      toast({
-        title: "Already marked for improvement",
-        description: "Remove from improvements first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const current = positiveSignals.get(stamp.id);
+  const handleSelectPositiveStamp = (stamp: StampDefinition, level: number) => {
     const newMap = new Map(positiveSignals);
-
-    if (!current) {
-      // Check if we have at least 1 vote remaining
-      if (remainingPositiveVotes < 1) {
+    
+    if (level === 0) {
+      newMap.delete(stamp.id);
+    } else {
+      // Check if already in improvement
+      if (improvementSignals.has(stamp.id)) {
         toast({
-          title: "Limit reached",
-          description: "You've used all 5 Good votes",
+          title: "Already marked for improvement",
+          description: "Remove from improvements first",
           variant: "destructive",
         });
         return;
       }
-      newMap.set(stamp.id, 1);
-      setLastTapLevel(1);
-    } else if (current < 3) {
+      newMap.set(stamp.id, level);
+    }
+    
+    setPositiveSignals(newMap);
+  };
+
+  const handleSelectImprovementStamp = (stamp: StampDefinition, level: number) => {
+    const newMap = new Map(improvementSignals);
+    
+    if (level === 0) {
+      newMap.delete(stamp.id);
+    } else {
+      // Check if already in positive
+      if (positiveSignals.has(stamp.id)) {
+        toast({
+          title: "Already marked as strength",
+          description: "Remove from strengths first",
+          variant: "destructive",
+        });
+        return;
+      }
+      newMap.set(stamp.id, level);
+    }
+    
+    setImprovementSignals(newMap);
+  };
+
+  const handleTapPositive = (stamp: StampDefinition) => {
+    const current = positiveSignals.get(stamp.id) || 0;
+    const newMap = new Map(positiveSignals);
+
+    if (current < 3) {
       // Check if we can add another vote
       if (remainingPositiveVotes < 1) {
         toast({
           title: "Vote limit reached",
-          description: "You've used all 5 Good votes. Tap again to remove.",
+          description: "Remove some votes first or tap again to remove this stamp",
           variant: "destructive",
         });
-        // Allow removing by tapping when at max
-        if (current === 3) {
-          newMap.delete(stamp.id);
-          setLastTapLevel(null);
-        }
         return;
       }
       newMap.set(stamp.id, current + 1);
-      setLastTapLevel(current + 1);
     } else {
       // At level 3, remove the stamp
       newMap.delete(stamp.id);
-      setLastTapLevel(null);
     }
-
-    setTapCount(prev => prev + 1);
+    
     setPositiveSignals(newMap);
   };
 
-  const handleImprovementClick = (stamp: StampDefinition) => {
-    // Can't select if already in positive
-    if (positiveSignals.has(stamp.id)) {
-      toast({
-        title: "Already marked as strength",
-        description: "Remove from strengths first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const current = improvementSignals.get(stamp.id);
+  const handleTapImprovement = (stamp: StampDefinition) => {
+    const current = improvementSignals.get(stamp.id) || 0;
     const newMap = new Map(improvementSignals);
 
-    if (!current) {
-      // Check if we have at least 1 vote remaining
-      if (remainingImprovementVotes < 1) {
-        toast({
-          title: "Limit reached",
-          description: "You've used all 2 Improvement votes",
-          variant: "destructive",
-        });
-        return;
-      }
-      newMap.set(stamp.id, 1);
-      setLastTapLevel(1);
-    } else if (current < 3) {
-      // Check if we can add another vote (but cap at 2 total for improvements)
+    if (current < 3) {
       if (remainingImprovementVotes < 1) {
         toast({
           title: "Vote limit reached",
-          description: "You've used all 2 Improvement votes. Tap again to remove.",
+          description: "Remove some votes first or tap again to remove this stamp",
           variant: "destructive",
         });
         return;
       }
       newMap.set(stamp.id, current + 1);
-      setLastTapLevel(current + 1);
     } else {
-      // At level 3, remove the stamp
       newMap.delete(stamp.id);
-      setLastTapLevel(null);
     }
+    
+    setImprovementSignals(newMap);
+  };
 
-    setTapCount(prev => prev + 1);
+  const handleRemovePositive = (stampId: string) => {
+    const newMap = new Map(positiveSignals);
+    newMap.delete(stampId);
+    setPositiveSignals(newMap);
+  };
+
+  const handleRemoveImprovement = (stampId: string) => {
+    const newMap = new Map(improvementSignals);
+    newMap.delete(stampId);
     setImprovementSignals(newMap);
   };
 
   const totalStamps = positiveSignals.size + improvementSignals.size;
   const hasStamps = totalStamps > 0;
-  const showNudge = !hasStamps && tapCount === 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation: require at least one stamp
     if (!hasStamps) {
       toast({
         title: "Something needs to stand out",
-        description: "Something needs to stand out to count as a review.",
+        description: "Add at least one thing that stood out to submit your review.",
         variant: "destructive",
       });
       return;
     }
 
-    // Build signals array with stamp_id for new system
+    // Build signals array
     const signals: ReviewSignal[] = [
       ...Array.from(positiveSignals.entries()).map(([stampId, level]) => ({
-        dimension: 'quality' as const, // Legacy field, required by type
+        dimension: 'quality' as const,
         polarity: 'positive' as const,
         level,
         stamp_id: stampId,
       })),
       ...Array.from(improvementSignals.entries()).map(([stampId, level]) => ({
-        dimension: 'quality' as const, // Legacy field, required by type
+        dimension: 'quality' as const,
         polarity: 'improvement' as const,
         level,
         stamp_id: stampId,
@@ -320,17 +290,17 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
 
   const isSubmitting = createReview.isPending || updateReview.isPending;
 
+  // Filter out already selected stamps for the popup
+  const availablePositiveStamps = positiveStamps.filter(s => !improvementSignals.has(s.id));
+  const availableImprovementStamps = improvementStamps.filter(s => !positiveSignals.has(s.id));
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-
-      {/* Tap Hint - shows after first tap */}
-      {showTapHint && (
-        <div className="animate-fade-in text-center py-2 px-3 bg-primary/10 rounded-lg border border-primary/20">
-          <p className="text-sm text-primary">
-            Tap again to mark it as Great • Tap 3× for Excellent
-          </p>
-        </div>
-      )}
+      {/* Header with help button */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Leave a Review</h3>
+        <ReviewHelpButton />
+      </div>
 
       {/* Encouragement Message */}
       {showEncouragement && !isEditing && (
@@ -340,96 +310,46 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
         </div>
       )}
 
-      {/* Section A: Strengths */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Label className="text-base font-semibold">
-              What was GREAT here?
-            </Label>
-            <ReviewHelpButton />
-          </div>
-          <span className="text-sm text-muted-foreground">
-            {totalPositiveVotes} / 5 selected
-          </span>
-        </div>
-        
-        {/* Grouped Stamps */}
-        <div className="space-y-4">
-          {/* Safety & Comfort */}
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Safety & Comfort</p>
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-              {positiveStamps.slice(0, 4).map((stamp) => (
-                <StampButton
-                  key={stamp.id}
-                  stamp={stamp}
-                  polarity="positive"
-                  level={positiveSignals.get(stamp.id) || 0}
-                  onClick={() => handlePositiveClick(stamp)}
-                />
-              ))}
-            </div>
-          </div>
-          
-          {/* Site Quality */}
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Site Quality</p>
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-              {positiveStamps.slice(4, 7).map((stamp) => (
-                <StampButton
-                  key={stamp.id}
-                  stamp={stamp}
-                  polarity="positive"
-                  level={positiveSignals.get(stamp.id) || 0}
-                  onClick={() => handlePositiveClick(stamp)}
-                />
-              ))}
-            </div>
-          </div>
-          
-          {/* Logistics */}
-          {positiveStamps.length > 7 && (
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Logistics & Amenities</p>
-              <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-                {positiveStamps.slice(7, 10).map((stamp) => (
-                  <StampButton
-                    key={stamp.id}
-                    stamp={stamp}
-                    polarity="positive"
-                    level={positiveSignals.get(stamp.id) || 0}
-                    onClick={() => handlePositiveClick(stamp)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Selected Stamps Area */}
+      <SelectedStampsArea
+        positiveStamps={positiveStamps}
+        improvementStamps={improvementStamps}
+        selectedPositive={positiveSignals}
+        selectedImprovement={improvementSignals}
+        onAddPositive={() => setShowPositivePopup(true)}
+        onAddImprovement={() => setShowImprovementPopup(true)}
+        onTapPositive={handleTapPositive}
+        onTapImprovement={handleTapImprovement}
+        onRemovePositive={handleRemovePositive}
+        onRemoveImprovement={handleRemoveImprovement}
+        totalPositiveVotes={totalPositiveVotes}
+        totalImprovementVotes={totalImprovementVotes}
+        maxPositiveVotes={5}
+        maxImprovementVotes={2}
+      />
 
-      {/* Section B: Improvements */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-base font-semibold">
-            What needs IMPROVEMENT?
-          </Label>
-          <span className="text-sm text-muted-foreground">
-            {totalImprovementVotes} / 2 selected
-          </span>
-        </div>
-        <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-          {improvementStamps.slice(0, 10).map((stamp) => (
-            <StampButton
-              key={stamp.id}
-              stamp={stamp}
-              polarity="improvement"
-              level={improvementSignals.get(stamp.id) || 0}
-              onClick={() => handleImprovementClick(stamp)}
-            />
-          ))}
-        </div>
-      </div>
+      {/* Stamp Selector Popups */}
+      <StampSelectorPopup
+        open={showPositivePopup}
+        onOpenChange={setShowPositivePopup}
+        stamps={availablePositiveStamps}
+        polarity="positive"
+        selectedStamps={positiveSignals}
+        onSelectStamp={handleSelectPositiveStamp}
+        remainingVotes={remainingPositiveVotes}
+        maxVotes={5}
+      />
+
+      <StampSelectorPopup
+        open={showImprovementPopup}
+        onOpenChange={setShowImprovementPopup}
+        stamps={availableImprovementStamps}
+        polarity="improvement"
+        selectedStamps={improvementSignals}
+        onSelectStamp={handleSelectImprovementStamp}
+        remainingVotes={remainingImprovementVotes}
+        maxVotes={2}
+      />
 
       {/* Contextual Helper Message */}
       {hasStamps ? (
@@ -438,14 +358,13 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
             Nice — you can add more, or submit when ready.
           </p>
         </div>
-      ) : showNudge && (
+      ) : (
         <div className="text-center py-3 px-4 bg-muted/50 rounded-lg border border-border/50">
           <p className="text-sm text-muted-foreground">
-            Tap at least one thing that stood out — good or bad.
+            Tap "Add" to select what stood out — good or bad.
           </p>
         </div>
       )}
-
 
       {/* Optional Comments */}
       <div className="space-y-4">
