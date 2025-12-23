@@ -193,7 +193,7 @@ const Index = () => {
               {topPlaces.map((place) => (
                 <Link 
                   key={place.id} 
-                  to={`/places/${place.id}`}
+                  to={`/place/${place.id}`}
                   className="group"
                 >
                   <div className="rounded-xl overflow-hidden bg-card border border-border shadow-card hover:shadow-card-hover transition-all duration-200">
