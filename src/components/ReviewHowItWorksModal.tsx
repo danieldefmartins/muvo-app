@@ -24,17 +24,17 @@ const steps = [
   {
     icon: MousePointerClick,
     title: 'Pick What Stood Out',
-    body: 'Choose up to 5 Good stamps and up to 2 Needs Work stamps. Only select what really mattered to you.',
+    body: 'Choose up to 5 Good stamps and up to 2 Needs Work stamps.\n\nOnly select what really mattered to you.',
   },
   {
     icon: Zap,
-    title: 'Tap to Set Strength',
-    body: 'Tap a stamp to rate it: Good → Great → Excellent\n(Tap again if it was even better)',
+    title: 'Set Strength',
+    body: 'Tap a stamp to rate it:\n\nGood → Great → Excellent\n\n(Tap again if it was even better)',
   },
   {
     icon: Send,
-    title: "You're Almost Done",
-    body: 'Comments are optional. When you submit, we update this place instantly for everyone.',
+    title: 'Almost Done',
+    body: 'Comments are optional. When you submit, this place updates instantly for everyone.',
   },
 ];
 

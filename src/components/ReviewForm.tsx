@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { SelectedStampsArea } from './SelectedStampsArea';
 import { StampSelectorPopup } from './StampSelectorPopup';
+import { ReviewHowItWorksModal } from './ReviewHowItWorksModal';
 import { ReviewHelpButton } from './ReviewHelper';
 import {
   ReviewSignal,
@@ -14,10 +15,13 @@ import {
 } from '@/hooks/useReviews';
 import { useStamps, FALLBACK_STAMPS, type StampDefinition } from '@/hooks/useStamps';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2, HelpCircle } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type PlaceCategory = Database['public']['Enums']['place_category'];
+
+const ONBOARDING_SEEN_KEY = 'review-onboarding-seen';
+const VIEW_COUNT_KEY = 'review-tutorial-view-count';
 
 interface ReviewFormProps {
   placeId: string;
@@ -44,6 +48,11 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
   const [showPositivePopup, setShowPositivePopup] = useState(false);
   const [showImprovementPopup, setShowImprovementPopup] = useState(false);
   
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [viewCount, setViewCount] = useState(0);
+  
   // Encouragement state
   const [showEncouragement, setShowEncouragement] = useState(false);
 
@@ -65,6 +74,24 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
     polarity: 'improvement' as const,
     sort_order: 0,
   }));
+
+  // Check onboarding status on mount
+  useEffect(() => {
+    const isDismissed = localStorage.getItem(ONBOARDING_SEEN_KEY) === 'true';
+    const count = parseInt(localStorage.getItem(VIEW_COUNT_KEY) || '0', 10);
+    setViewCount(count);
+    
+    // Show onboarding if not dismissed and not editing existing review
+    if (!isDismissed && !existingReview) {
+      setShowOnboarding(true);
+      // Increment view count
+      const newCount = count + 1;
+      setViewCount(newCount);
+      localStorage.setItem(VIEW_COUNT_KEY, String(newCount));
+    } else {
+      setOnboardingComplete(true);
+    }
+  }, [existingReview]);
 
   // Show encouragement after 3 total stamps selected
   useEffect(() => {
@@ -96,8 +123,26 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
       
       setPositiveSignals(posMap);
       setImprovementSignals(impMap);
+      setOnboardingComplete(true);
     }
   }, [existingReview, stamps]);
+
+  const handleOnboardingStart = () => {
+    setOnboardingComplete(true);
+  };
+
+  const handleOnboardingSkip = () => {
+    setOnboardingComplete(true);
+  };
+
+  const handleDontShowAgain = () => {
+    localStorage.setItem(ONBOARDING_SEEN_KEY, 'true');
+    setOnboardingComplete(true);
+  };
+
+  const handleShowHelp = () => {
+    setShowOnboarding(true);
+  };
 
   if (!profile?.is_verified) {
     return (
@@ -295,122 +340,141 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
   const availableImprovementStamps = improvementStamps.filter(s => !positiveSignals.has(s.id));
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Header with help button */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Leave a Review</h3>
-        <ReviewHelpButton />
-      </div>
-
-      {/* Encouragement Message */}
-      {showEncouragement && !isEditing && (
-        <div className="animate-fade-in flex items-center gap-2 py-2 px-3 bg-success/10 rounded-lg border border-success/20">
-          <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
-          <p className="text-sm text-success">Nice! This already helps other travelers</p>
-        </div>
-      )}
-
-      {/* Selected Stamps Area */}
-      <SelectedStampsArea
-        positiveStamps={positiveStamps}
-        improvementStamps={improvementStamps}
-        selectedPositive={positiveSignals}
-        selectedImprovement={improvementSignals}
-        onAddPositive={() => setShowPositivePopup(true)}
-        onAddImprovement={() => setShowImprovementPopup(true)}
-        onTapPositive={handleTapPositive}
-        onTapImprovement={handleTapImprovement}
-        onRemovePositive={handleRemovePositive}
-        onRemoveImprovement={handleRemoveImprovement}
-        totalPositiveVotes={totalPositiveVotes}
-        totalImprovementVotes={totalImprovementVotes}
-        maxPositiveVotes={5}
-        maxImprovementVotes={2}
+    <>
+      {/* Onboarding Modal */}
+      <ReviewHowItWorksModal
+        open={showOnboarding}
+        onOpenChange={setShowOnboarding}
+        onStartReview={handleOnboardingStart}
+        onSkip={handleOnboardingSkip}
+        viewCount={viewCount}
+        onDontShowAgain={handleDontShowAgain}
       />
 
-      {/* Stamp Selector Popups */}
-      <StampSelectorPopup
-        open={showPositivePopup}
-        onOpenChange={setShowPositivePopup}
-        stamps={availablePositiveStamps}
-        polarity="positive"
-        selectedStamps={positiveSignals}
-        onSelectStamp={handleSelectPositiveStamp}
-        remainingVotes={remainingPositiveVotes}
-        maxVotes={5}
-      />
-
-      <StampSelectorPopup
-        open={showImprovementPopup}
-        onOpenChange={setShowImprovementPopup}
-        stamps={availableImprovementStamps}
-        polarity="improvement"
-        selectedStamps={improvementSignals}
-        onSelectStamp={handleSelectImprovementStamp}
-        remainingVotes={remainingImprovementVotes}
-        maxVotes={2}
-      />
-
-      {/* Contextual Helper Message */}
-      {hasStamps ? (
-        <div className="text-center py-3 px-4 bg-muted/50 rounded-lg border border-border/50">
-          <p className="text-sm text-muted-foreground">
-            Nice — you can add more, or submit when ready.
-          </p>
-        </div>
-      ) : (
-        <div className="text-center py-3 px-4 bg-muted/50 rounded-lg border border-border/50">
-          <p className="text-sm text-muted-foreground">
-            Tap "Add" to select what stood out — good or bad.
-          </p>
-        </div>
-      )}
-
-      {/* Optional Comments */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="note-public">Note for future visitors (optional)</Label>
-          <Textarea
-            id="note-public"
-            value={notePublic}
-            onChange={(e) => setNotePublic(e.target.value.slice(0, 250))}
-            placeholder="Share tips or experiences for other travelers..."
-            className="resize-none"
-            rows={3}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {notePublic.length} / 250
-          </p>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Header with help button */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Leave a Review</h3>
+          <button
+            type="button"
+            onClick={handleShowHelp}
+            className="p-2 rounded-full hover:bg-muted transition-colors"
+            aria-label="How reviews work"
+          >
+            <HelpCircle className="w-5 h-5 text-muted-foreground" />
+          </button>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="note-private">Private note for the owner (optional)</Label>
-          <Textarea
-            id="note-private"
-            value={notePrivate}
-            onChange={(e) => setNotePrivate(e.target.value.slice(0, 250))}
-            placeholder="Feedback only visible to the owner or admin..."
-            className="resize-none"
-            rows={3}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {notePrivate.length} / 250
-          </p>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-3">
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-            Cancel
-          </Button>
+        {/* Encouragement Message */}
+        {showEncouragement && !isEditing && (
+          <div className="animate-fade-in flex items-center gap-2 py-2 px-3 bg-success/10 rounded-lg border border-success/20">
+            <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+            <p className="text-sm text-success">Nice! This already helps other travelers</p>
+          </div>
         )}
-        <Button type="submit" disabled={isSubmitting} className="flex-1">
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isEditing ? 'Update Review' : 'Submit Review'}
-        </Button>
-      </div>
-    </form>
+
+        {/* Selected Stamps Area */}
+        <SelectedStampsArea
+          positiveStamps={positiveStamps}
+          improvementStamps={improvementStamps}
+          selectedPositive={positiveSignals}
+          selectedImprovement={improvementSignals}
+          onAddPositive={() => setShowPositivePopup(true)}
+          onAddImprovement={() => setShowImprovementPopup(true)}
+          onTapPositive={handleTapPositive}
+          onTapImprovement={handleTapImprovement}
+          onRemovePositive={handleRemovePositive}
+          onRemoveImprovement={handleRemoveImprovement}
+          totalPositiveVotes={totalPositiveVotes}
+          totalImprovementVotes={totalImprovementVotes}
+          maxPositiveVotes={5}
+          maxImprovementVotes={2}
+        />
+
+        {/* Stamp Selector Popups */}
+        <StampSelectorPopup
+          open={showPositivePopup}
+          onOpenChange={setShowPositivePopup}
+          stamps={availablePositiveStamps}
+          polarity="positive"
+          selectedStamps={positiveSignals}
+          onSelectStamp={handleSelectPositiveStamp}
+          remainingVotes={remainingPositiveVotes}
+          maxVotes={5}
+        />
+
+        <StampSelectorPopup
+          open={showImprovementPopup}
+          onOpenChange={setShowImprovementPopup}
+          stamps={availableImprovementStamps}
+          polarity="improvement"
+          selectedStamps={improvementSignals}
+          onSelectStamp={handleSelectImprovementStamp}
+          remainingVotes={remainingImprovementVotes}
+          maxVotes={2}
+        />
+
+        {/* Contextual Helper Message */}
+        {hasStamps ? (
+          <div className="text-center py-3 px-4 bg-muted/50 rounded-lg border border-border/50">
+            <p className="text-sm text-muted-foreground">
+              Nice — you can add more, or submit when ready.
+            </p>
+          </div>
+        ) : (
+          <div className="text-center py-3 px-4 bg-muted/50 rounded-lg border border-border/50">
+            <p className="text-sm text-muted-foreground">
+              Tap "+ Add what stood out" to begin.
+            </p>
+          </div>
+        )}
+
+        {/* Optional Comments */}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="note-public">Note for future visitors (optional)</Label>
+            <Textarea
+              id="note-public"
+              value={notePublic}
+              onChange={(e) => setNotePublic(e.target.value.slice(0, 250))}
+              placeholder="Share tips or experiences for other travelers..."
+              className="resize-none"
+              rows={3}
+            />
+            <p className="text-xs text-muted-foreground text-right">
+              {notePublic.length} / 250
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="note-private">Private note for the owner (optional)</Label>
+            <Textarea
+              id="note-private"
+              value={notePrivate}
+              onChange={(e) => setNotePrivate(e.target.value.slice(0, 250))}
+              placeholder="Feedback only visible to the owner or admin..."
+              className="resize-none"
+              rows={3}
+            />
+            <p className="text-xs text-muted-foreground text-right">
+              {notePrivate.length} / 250
+            </p>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+              Cancel
+            </Button>
+          )}
+          <Button type="submit" disabled={isSubmitting} className="flex-1">
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isEditing ? 'Update Review' : 'Submit Review'}
+          </Button>
+        </div>
+      </form>
+    </>
   );
 }
