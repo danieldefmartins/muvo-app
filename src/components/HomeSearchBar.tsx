@@ -3,6 +3,7 @@ import { Search, X, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { usePlaces, Place } from '@/hooks/usePlaces';
+import { WeatherBadge } from './WeatherBadge';
 import { cn } from '@/lib/utils';
 
 interface HomeSearchBarProps {
@@ -110,6 +111,12 @@ export function HomeSearchBar({ className }: HomeSearchBarProps) {
                     <p className="font-medium text-sm text-foreground truncate">{place.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{place.primaryCategory}</p>
                   </div>
+                  <WeatherBadge 
+                    latitude={place.latitude} 
+                    longitude={place.longitude} 
+                    variant="compact"
+                    className="flex-shrink-0"
+                  />
                 </button>
               ))}
               
