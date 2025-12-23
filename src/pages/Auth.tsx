@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Header } from '@/components/Header';
 import { UserProfileCard } from '@/components/UserProfileCard';
+import { supabase } from '@/integrations/supabase/client';
 
 // Schemas
 const emailPasswordSchema = z.object({
@@ -26,7 +27,7 @@ const signInEmailSchema = z.object({
 type EmailPasswordForm = z.infer<typeof emailPasswordSchema>;
 type SignInEmailForm = z.infer<typeof signInEmailSchema>;
 
-type AuthMode = 'signup' | 'signin';
+type AuthMode = 'signup' | 'signin' | 'check-email' | 'confirmed';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -39,10 +40,12 @@ export default function Auth() {
     signInWithEmail,
     signUp,
     signOut,
+    refreshProfile,
   } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>('signup');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signupEmail, setSignupEmail] = useState('');
 
   const signUpForm = useForm<EmailPasswordForm>({
     resolver: zodResolver(emailPasswordSchema),
@@ -54,18 +57,52 @@ export default function Auth() {
     defaultValues: { email: '', password: '' },
   });
 
-  // Check URL params for mode
+  // Check URL params for mode and handle email confirmation
   useEffect(() => {
     const urlMode = searchParams.get('mode');
     if (urlMode === 'signin') {
       setMode('signin');
     }
-  }, [searchParams]);
+    
+    // Handle email confirmation callback - when user clicks the link in their email
+    const handleEmailConfirmation = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
+      
+      if (type === 'signup' && accessToken) {
+        // User just confirmed their email - update their profile
+        const { data: { user: confirmedUser } } = await supabase.auth.getUser();
+        if (confirmedUser) {
+          await supabase
+            .from('profiles')
+            .update({ 
+              email_verified: true, 
+              email_verified_at: new Date().toISOString(),
+              is_verified: true
+            })
+            .eq('id', confirmedUser.id);
+          
+          setMode('confirmed');
+          toast({
+            title: 'Email verified!',
+            description: 'Your account is now fully verified.',
+          });
+          
+          // Clear the hash and redirect after a moment
+          window.history.replaceState(null, '', window.location.pathname);
+          setTimeout(() => navigate('/'), 2000);
+        }
+      }
+    };
+    
+    handleEmailConfirmation();
+  }, [searchParams, toast, navigate]);
 
-  // Redirect if user is logged in
+  // Redirect if user is logged in and verified
   useEffect(() => {
-    if (!loading && user && profile) {
-      // User is fully logged in, redirect to home or show profile
+    if (!loading && user && profile?.is_verified) {
+      // User is fully verified, can redirect
     }
   }, [user, profile, loading]);
 
@@ -84,11 +121,9 @@ export default function Auth() {
       return;
     }
 
-    toast({
-      title: 'Account created!',
-      description: 'You are now signed in.',
-    });
-    navigate('/');
+    // Show check-email screen
+    setSignupEmail(data.email);
+    setMode('check-email');
   }
 
   // Sign in with email
@@ -127,6 +162,49 @@ export default function Auth() {
     );
   }
 
+  // Email confirmed successfully
+  if (mode === 'confirmed') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Email Verified" />
+        <main className="container px-4 py-8 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6 text-center">
+            <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
+            <h1 className="font-display text-xl font-semibold mb-2">Email Verified!</h1>
+            <p className="text-muted-foreground mb-4">
+              Your account is now fully verified. Redirecting...
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Check email screen after signup
+  if (mode === 'check-email') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Check Your Email" showBack />
+        <main className="container px-4 py-8 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6 text-center">
+            <Mail className="w-16 h-16 text-primary mx-auto mb-4" />
+            <h1 className="font-display text-xl font-semibold mb-2">Check your email</h1>
+            <p className="text-muted-foreground mb-4">
+              We sent a verification link to:
+            </p>
+            <p className="font-medium text-foreground mb-6">{signupEmail}</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Click the link in the email to verify your account and start contributing.
+            </p>
+            <Button variant="outline" onClick={() => setMode('signin')}>
+              Back to Sign In
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // User is logged in - show profile
   if (user && profile) {
     return (
@@ -134,6 +212,16 @@ export default function Auth() {
         <Header title="My Profile" showBack />
         <main className="container px-4 py-8 max-w-md mx-auto">
           <UserProfileCard profile={profile} />
+          
+          {/* Show verification status */}
+          {!profile.is_verified && (
+            <div className="mt-4 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+              <p className="text-sm text-warning">
+                ⚠️ Please verify your email to contribute. Check your inbox for the verification link.
+              </p>
+            </div>
+          )}
+          
           <div className="mt-4">
             <Button 
               variant="outline" 
