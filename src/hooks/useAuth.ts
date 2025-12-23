@@ -175,7 +175,18 @@ export function useAuth() {
     return { error };
   }
 
-  const isVerified = profile?.is_verified ?? false;
+  // Treat a user as "verified" if their auth email is confirmed OR their profile flags are set.
+  // This prevents false negatives when profile verification fields lag behind auth state.
+  const authEmailVerified = Boolean((user as any)?.email_confirmed_at);
+  const authPhoneVerified = Boolean((user as any)?.phone_confirmed_at);
+
+  const isVerified = Boolean(
+    authEmailVerified ||
+      authPhoneVerified ||
+      profile?.email_verified ||
+      profile?.phone_verified ||
+      profile?.is_verified
+  );
 
   return {
     user,

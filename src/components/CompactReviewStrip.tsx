@@ -24,7 +24,7 @@ export function CompactReviewStrip({
   placeName,
   placeCategory,
 }: CompactReviewStripProps) {
-  const { user, isVerified } = useAuth();
+  const { user, isVerified, loading, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { data: reviews, isLoading } = useReviews(placeId);
   const { data: existingReview } = useMyReview(placeId);
@@ -137,6 +137,16 @@ export function CompactReviewStrip({
     }
 
     // Prevent RLS failures: backend requires verified users for review inserts/signals
+    // Avoid false negatives while auth/profile is still loading.
+    if (loading) {
+      toast({
+        title: "Checking your account…",
+        description: "One moment while we confirm your verification status.",
+      });
+      refreshProfile?.();
+      return;
+    }
+
     if (!isVerified) {
       toast({
         title: "Verify your email to post",
