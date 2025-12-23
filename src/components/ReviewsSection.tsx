@@ -12,6 +12,8 @@ import type { Database } from '@/integrations/supabase/types';
 
 type PlaceCategory = Database['public']['Enums']['place_category'];
 
+const TUTORIAL_SEEN_KEY = 'review-tutorial-seen';
+
 interface ReviewsSectionProps {
   placeId: string;
   placeName: string;
@@ -41,6 +43,7 @@ export function ReviewsSection({
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showFirstReviewCelebration, setShowFirstReviewCelebration] = useState(false);
   const [justSubmittedFirst, setJustSubmittedFirst] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const hasReviews = reviews && reviews.length > 0;
   const isFirstReview = !hasReviews && !isLoading;
@@ -80,8 +83,37 @@ export function ReviewsSection({
     setShowReviewForm(false);
   };
 
+  // Handle "Leave a Review" button click - show tutorial if first time
+  const handleLeaveReviewClick = () => {
+    const tutorialSeen = localStorage.getItem(TUTORIAL_SEEN_KEY) === 'true';
+    if (!tutorialSeen) {
+      setShowTutorial(true);
+    } else {
+      setShowReviewForm(true);
+    }
+  };
+
+  // Called when user clicks "Start Review" in tutorial
+  const handleTutorialStart = () => {
+    setShowTutorial(false);
+    setShowReviewForm(true);
+  };
+
+  // Called when user clicks "Skip" in tutorial
+  const handleTutorialSkip = () => {
+    setShowTutorial(false);
+    setShowReviewForm(true);
+  };
+
   return (
     <section className="mb-6 animate-fade-in" style={{ animationDelay: '275ms' }}>
+      {/* Tutorial Modal - shows on first review click */}
+      <ReviewHelper 
+        autoShowOnFirstTime={showTutorial}
+        onStartReview={handleTutorialStart}
+        onSkip={handleTutorialSkip}
+      />
+
       {/* Section Header with Location */}
       <div className="mb-4">
         <div className="flex items-center justify-between">
@@ -104,9 +136,6 @@ export function ReviewsSection({
           </div>
         )}
       </div>
-
-      {/* Review Helper Banner - Always visible */}
-      <ReviewHelper className="mb-4" />
 
       {/* First Review Celebration */}
       {(showFirstReviewCelebration || justSubmittedFirst) && hasReviews && (
@@ -138,7 +167,7 @@ export function ReviewsSection({
           <p className="text-sm text-muted-foreground mb-4">
             Share an honest review of this place
           </p>
-          <Button onClick={() => setShowReviewForm(true)} className="min-w-[180px]">
+          <Button onClick={handleLeaveReviewClick} className="min-w-[180px]">
             Leave the first review
           </Button>
         </div>
@@ -160,7 +189,7 @@ export function ReviewsSection({
       {/* Write/Edit Review Button (when reviews exist) */}
       {hasReviews && user && isVerified && !showReviewForm && (
         <Button
-          onClick={() => setShowReviewForm(true)}
+          onClick={handleLeaveReviewClick}
           variant="outline"
           className="w-full mb-4"
         >
