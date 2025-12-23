@@ -163,4 +163,22 @@
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
+
+  /* iOS Safe Areas */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Trust color utility */
+  .bg-trust\/10 {
+    background-color: hsl(var(--trust) / 0.1);
+  }
+
+  .text-trust {
+    color: hsl(var(--trust));
+  }
 }
