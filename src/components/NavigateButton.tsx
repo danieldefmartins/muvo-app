@@ -1,5 +1,11 @@
-import { Navigation } from 'lucide-react';
+import { Navigation, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { hapticMedium } from '@/lib/haptics';
 
@@ -12,44 +18,51 @@ interface NavigateButtonProps {
 }
 
 export function NavigateButton({ latitude, longitude, name, variant = 'default', className }: NavigateButtonProps) {
-  const handleNavigate = () => {
+  const encodedName = encodeURIComponent(name);
+
+  const openAppleMaps = () => {
     hapticMedium();
-    
-    // Detect platform and open appropriate maps app
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const encodedName = encodeURIComponent(name);
-    
-    if (isIOS) {
-      // Apple Maps
-      window.open(`maps://maps.apple.com/?daddr=${latitude},${longitude}&q=${encodedName}`, '_blank');
-    } else {
-      // Google Maps (works on Android and web)
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&destination_place_id=${encodedName}`, '_blank');
-    }
+    window.open(`maps://maps.apple.com/?daddr=${latitude},${longitude}&q=${encodedName}`, '_blank');
   };
 
-  if (variant === 'compact') {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className={cn('gap-1.5', className)}
-        onClick={handleNavigate}
-      >
-        <Navigation className="w-3.5 h-3.5" />
-        Navigate
-      </Button>
-    );
-  }
+  const openGoogleMaps = () => {
+    hapticMedium();
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&destination_place_id=${encodedName}`, '_blank');
+  };
+
+  const openWaze = () => {
+    hapticMedium();
+    window.open(`https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes&q=${encodedName}`, '_blank');
+  };
+
+  const isCompact = variant === 'compact';
 
   return (
-    <Button
-      variant="outline"
-      className={cn('gap-2', className)}
-      onClick={handleNavigate}
-    >
-      <Navigation className="w-4 h-4" />
-      Get Directions
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size={isCompact ? 'sm' : 'default'}
+          className={cn(isCompact ? 'gap-1.5' : 'gap-2', className)}
+        >
+          <Navigation className={isCompact ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+          {isCompact ? 'Navigate' : 'Get Directions'}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={openAppleMaps} className="gap-2 cursor-pointer">
+          <MapPin className="w-4 h-4" />
+          Apple Maps
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={openGoogleMaps} className="gap-2 cursor-pointer">
+          <MapPin className="w-4 h-4" />
+          Google Maps
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={openWaze} className="gap-2 cursor-pointer">
+          <MapPin className="w-4 h-4" />
+          Waze
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
