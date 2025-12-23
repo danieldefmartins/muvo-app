@@ -1,13 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { MousePointerClick, Zap, MessageSquare, Send } from 'lucide-react';
+import { ArrowRight, Sparkles, MousePointerClick, Zap, Send } from 'lucide-react';
 
 interface ReviewHowItWorksModalProps {
   open: boolean;
@@ -16,104 +13,132 @@ interface ReviewHowItWorksModalProps {
   onSkip?: () => void;
 }
 
+const steps = [
+  {
+    icon: Sparkles,
+    title: 'A Better Way to Review',
+    body: 'Instead of stars, we focus on what actually stood out — the good and what needs work.',
+  },
+  {
+    icon: MousePointerClick,
+    title: 'Pick What Stood Out',
+    body: 'Choose up to 5 Good stamps and up to 2 Needs Work stamps. Only select what really mattered to you.',
+  },
+  {
+    icon: Zap,
+    title: 'Tap to Set Strength',
+    body: 'Tap a stamp to rate it: Good → Great → Excellent\n(Tap again if it was even better)',
+  },
+  {
+    icon: Send,
+    title: "You're Almost Done",
+    body: 'Comments are optional. When you submit, we update this place instantly for everyone.',
+  },
+];
+
 export function ReviewHowItWorksModal({
   open,
   onOpenChange,
   onStartReview,
   onSkip,
 }: ReviewHowItWorksModalProps) {
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
   const handleStartReview = () => {
+    setCurrentStep(0);
     onStartReview?.();
     onOpenChange(false);
   };
 
   const handleSkip = () => {
+    setCurrentStep(0);
     onSkip?.();
     onOpenChange(false);
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setCurrentStep(0);
+    }
+    onOpenChange(newOpen);
+  };
+
+  const step = steps[currentStep];
+  const Icon = step.icon;
+  const isLastStep = currentStep === steps.length - 1;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-display">How Reviews Work</DialogTitle>
-          <DialogDescription>
-            Fast, simple, and more honest than stars
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-5 py-4">
-          {/* Step 1 */}
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center">
-              <MousePointerClick className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-0.5">Pick what stood out</h4>
-              <p className="text-sm text-muted-foreground">
-                Choose up to <span className="text-primary font-medium">5 Good</span> stamps and up to{' '}
-                <span className="text-amber-500 font-medium">2 Needs Work</span> stamps.
-              </p>
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-0.5">Tap to set strength</h4>
-              <p className="text-sm text-muted-foreground">
-                Tap a stamp to rate it: <span className="text-muted-foreground">Good</span> →{' '}
-                <span className="text-primary">Great</span> →{' '}
-                <span className="text-primary font-semibold">Excellent</span>
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                (tap again to increase)
-              </p>
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-0.5">Optional comments</h4>
-              <p className="text-sm text-muted-foreground">
-                Add a quick note for other travelers (optional).
-              </p>
-            </div>
-          </div>
-
-          {/* Step 4 */}
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center">
-              <Send className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-0.5">Submit</h4>
-              <p className="text-sm text-muted-foreground">
-                Tap Submit Review — we update the place instantly.
-              </p>
-            </div>
-          </div>
+        {/* Progress dots */}
+        <div className="flex justify-center gap-1.5 pt-2">
+          {steps.map((_, index) => (
+            <div
+              key={index}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                index === currentStep
+                  ? 'w-6 bg-primary'
+                  : index < currentStep
+                  ? 'w-1.5 bg-primary/50'
+                  : 'w-1.5 bg-muted'
+              }`}
+            />
+          ))}
         </div>
 
+        {/* Step content with animation */}
+        <div
+          key={currentStep}
+          className="flex flex-col items-center text-center py-8 px-4 animate-fade-in"
+        >
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-5">
+            <Icon className="w-7 h-7 text-primary" />
+          </div>
+
+          <h2 className="text-xl font-display font-semibold text-foreground mb-3">
+            {step.title}
+          </h2>
+
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+            {step.body}
+          </p>
+        </div>
+
+        {/* Buttons */}
         <div className="flex flex-col gap-2">
-          <Button onClick={handleStartReview} className="w-full">
-            Start Review
-          </Button>
-          <Button variant="ghost" onClick={handleSkip} className="w-full text-muted-foreground">
-            Skip
-          </Button>
+          {isLastStep ? (
+            <>
+              <Button onClick={handleStartReview} className="w-full">
+                Start Review
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleSkip}
+                className="w-full text-muted-foreground"
+              >
+                Skip
+              </Button>
+            </>
+          ) : (
+            <Button onClick={handleNext} className="w-full">
+              Next
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          )}
         </div>
 
-        <p className="text-xs text-center text-muted-foreground pt-2">
-          You can reopen this anytime from the ? button.
-        </p>
+        {/* Footnote on last step */}
+        {isLastStep && (
+          <p className="text-xs text-center text-muted-foreground pt-2">
+            You can reopen this guide anytime from the ? icon.
+          </p>
+        )}
       </DialogContent>
     </Dialog>
   );
