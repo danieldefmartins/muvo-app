@@ -72,12 +72,12 @@ export function PlaceStampBadges({
         </div>
       )}
 
-      {/* Positive stamps - show ×N for vote count instead of repeating icons */}
+      {/* Positive stamps - show ×N for intensity (avg rounded) */}
       {positiveStamps.map((stamp) => {
         const label = stamp.stamp_id 
           ? getStampLabel(allStamps, stamp.stamp_id)
           : stamp.dimension;
-        const voteCount = stamp.review_count; // Number of reviews with this stamp
+        const intensity = Math.round(stamp.avg_intensity || 1); // Rounded intensity level
         const IconComponent = stamp.stamp_id ? getStampIcon(allStamps, stamp.stamp_id) : CheckCircle;
         
         return (
@@ -91,7 +91,7 @@ export function PlaceStampBadges({
                   ? 'bg-primary/15 text-primary px-2.5 py-1.5 shadow-sm border border-primary/20'
                   : 'bg-primary/10 text-primary px-2.5 py-1'
             )}
-            title={`${label}: ${voteCount} ${voteCount === 1 ? 'review' : 'reviews'}`}
+            title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
           >
             <IconComponent className={cn(
               'flex-shrink-0',
@@ -100,8 +100,8 @@ export function PlaceStampBadges({
             {!isCompact && (
               <>
                 <span className="text-sm font-medium">{label}</span>
-                {voteCount > 1 && (
-                  <span className="text-sm font-semibold opacity-80">×{voteCount}</span>
+                {intensity > 1 && (
+                  <span className="text-sm font-bold">×{intensity}</span>
                 )}
               </>
             )}
@@ -109,12 +109,12 @@ export function PlaceStampBadges({
         );
       })}
 
-      {/* Improvement stamps - show ×N for vote count instead of repeating icons */}
+      {/* Improvement stamps - show ×N for intensity (avg rounded) */}
       {improvementStamps.map((stamp) => {
         const label = stamp.stamp_id 
           ? getStampLabel(allStamps, stamp.stamp_id)
           : stamp.dimension;
-        const voteCount = stamp.review_count;
+        const intensity = Math.round(stamp.avg_intensity || 1);
         const IconComponent = stamp.stamp_id ? getStampIcon(allStamps, stamp.stamp_id) : AlertTriangle;
         
         return (
@@ -128,7 +128,7 @@ export function PlaceStampBadges({
                   ? 'bg-amber-500/15 text-amber-600 px-2.5 py-1.5 shadow-sm border border-amber-500/20'
                   : 'bg-amber-500/10 text-amber-600 px-2.5 py-1'
             )}
-            title={`${label}: ${voteCount} ${voteCount === 1 ? 'review' : 'reviews'}`}
+            title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
           >
             <IconComponent className={cn(
               'flex-shrink-0',
@@ -137,8 +137,8 @@ export function PlaceStampBadges({
             {!isCompact && (
               <>
                 <span className="text-sm font-medium">{label}</span>
-                {voteCount > 1 && (
-                  <span className="text-sm font-semibold opacity-80">×{voteCount}</span>
+                {intensity > 1 && (
+                  <span className="text-sm font-bold">×{intensity}</span>
                 )}
               </>
             )}

@@ -113,6 +113,7 @@ export function SelectedStampsArea({
         <div className="text-center w-18">
           <p className="text-xs font-medium text-foreground leading-tight truncate max-w-16">
             {stamp.label}
+            {level > 1 && <span className="font-bold ml-0.5">×{level}</span>}
           </p>
           {/* Strength Dots */}
           <div className="flex gap-0.5 justify-center mt-0.5">

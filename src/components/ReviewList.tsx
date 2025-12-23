@@ -128,7 +128,7 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
                   {positiveSignals.map((signal) => (
                     <div
                       key={signal.dimension}
-                      className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full text-xs"
+                      className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium"
                     >
                       <ReviewSignalIcon
                         dimension={signal.dimension}
@@ -137,7 +137,10 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
                         selected
                         size="sm"
                       />
-                      <span>{getDimensionLabel(signal.dimension)}</span>
+                      <span>
+                        {getDimensionLabel(signal.dimension)}
+                        {signal.level > 1 && <span className="font-bold ml-0.5">×{signal.level}</span>}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -147,7 +150,7 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
                   {improvementSignals.map((signal) => (
                     <div
                       key={signal.dimension}
-                      className="flex items-center gap-1 bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full text-xs"
+                      className="flex items-center gap-1 bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full text-xs font-medium"
                     >
                       <ReviewSignalIcon
                         dimension={signal.dimension}
@@ -156,7 +159,10 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
                         selected
                         size="sm"
                       />
-                      <span>{getDimensionLabel(signal.dimension)}</span>
+                      <span>
+                        {getDimensionLabel(signal.dimension)}
+                        {signal.level > 1 && <span className="font-bold ml-0.5">×{signal.level}</span>}
+                      </span>
                     </div>
                   ))}
                 </div>
