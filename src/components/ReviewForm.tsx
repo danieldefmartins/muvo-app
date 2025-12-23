@@ -17,12 +17,13 @@ type PlaceCategory = Database['public']['Enums']['place_category'];
 
 interface ReviewFormProps {
   placeId: string;
+  placeName?: string;
   placeCategory?: PlaceCategory;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: ReviewFormProps) {
+export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCancel }: ReviewFormProps) {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { data: existingReview, isLoading: loadingExisting } = useMyReview(placeId);
@@ -208,6 +209,7 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
         onOpenChange={setShowPopup}
         positiveStamps={positiveStamps}
         improvementStamps={improvementStamps}
+        placeName={placeName}
         initialPositive={getInitialPositive()}
         initialImprovement={getInitialImprovement()}
         initialNotePublic={existingReview?.note_public || ''}

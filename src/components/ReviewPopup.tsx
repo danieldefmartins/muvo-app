@@ -6,8 +6,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import * as LucideIcons from 'lucide-react';
-import { ArrowLeft, ArrowRight, Check, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, ChevronLeft, ChevronRight, HelpCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { haptic, hapticLight, hapticMedium } from '@/lib/haptics';
 import type { StampDefinition } from '@/hooks/useStamps';
 
 // Step definitions
@@ -18,6 +19,7 @@ interface ReviewPopupProps {
   onOpenChange: (open: boolean) => void;
   positiveStamps: StampDefinition[];
   improvementStamps: StampDefinition[];
+  placeName?: string;
   initialPositive?: Map<string, number>;
   initialImprovement?: Map<string, number>;
   initialNotePublic?: string;
@@ -35,11 +37,15 @@ interface ReviewPopupProps {
 const LEVEL_LABELS = ['', 'Good', 'Great', 'Excellent'];
 const IMPROVEMENT_LABELS = ['', 'Needs Work', 'Needs More', 'Major Issue'];
 
+// Onboarding key for localStorage
+const ONBOARDING_KEY = 'review_onboarding_seen';
+
 export function ReviewPopup({
   open,
   onOpenChange,
   positiveStamps,
   improvementStamps,
+  placeName,
   initialPositive,
   initialImprovement,
   initialNotePublic = '',
@@ -54,9 +60,12 @@ export function ReviewPopup({
   const [notePublic, setNotePublic] = useState('');
   const [notePrivate, setNotePrivate] = useState('');
   const [activeStamp, setActiveStamp] = useState<StampDefinition | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Animation states
   const [flashLevel, setFlashLevel] = useState<number | null>(null);
   const [showFlash, setShowFlash] = useState(false);
+  const [popText, setPopText] = useState<string | null>(null);
 
   // Scroll indicators
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -82,6 +91,16 @@ export function ReviewPopup({
     }
   }, [step, positiveStamps, improvementStamps]);
 
+  // Check if onboarding was seen
+  useEffect(() => {
+    if (open) {
+      const seen = localStorage.getItem(ONBOARDING_KEY);
+      if (!seen && !isEditing) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [open, isEditing]);
+
   // Initialize state when popup opens
   useEffect(() => {
     if (open) {
@@ -89,21 +108,32 @@ export function ReviewPopup({
       setImprovementSignals(initialImprovement || new Map());
       setNotePublic(initialNotePublic);
       setNotePrivate(initialNotePrivate);
-      setStep(isEditing ? 'good' : 'intro');
+      
+      // Check onboarding
+      const seen = localStorage.getItem(ONBOARDING_KEY);
+      if (seen || isEditing) {
+        setStep('good');
+      } else {
+        setStep('intro');
+      }
+      
       setActiveStamp(null);
       setFlashLevel(null);
       setShowFlash(false);
+      setPopText(null);
     }
   }, [open, initialPositive, initialImprovement, initialNotePublic, initialNotePrivate, isEditing]);
 
   // Set initial active stamp when step changes
   useEffect(() => {
     if (step === 'good' && positiveStamps.length > 0) {
+      const firstSelected = positiveStamps.find((s) => positiveSignals.has(s.id));
       const unselected = positiveStamps.find((s) => !positiveSignals.has(s.id));
-      setActiveStamp(unselected || positiveStamps[0]);
+      setActiveStamp(firstSelected || unselected || positiveStamps[0]);
     } else if (step === 'improvement' && improvementStamps.length > 0) {
+      const firstSelected = improvementStamps.find((s) => improvementSignals.has(s.id));
       const unselected = improvementStamps.find((s) => !improvementSignals.has(s.id));
-      setActiveStamp(unselected || improvementStamps[0]);
+      setActiveStamp(firstSelected || unselected || improvementStamps[0]);
     } else {
       setActiveStamp(null);
     }
@@ -114,32 +144,35 @@ export function ReviewPopup({
     setTimeout(updateScrollIndicators, 100);
   }, [step, positiveStamps, improvementStamps]);
 
-  // Vote calculations
-  const totalPositiveVotes = Array.from(positiveSignals.values()).reduce((sum, l) => sum + l, 0);
-  const totalImprovementVotes = Array.from(improvementSignals.values()).reduce((sum, l) => sum + l, 0);
-  const remainingPositive = 5 - totalPositiveVotes;
-  const remainingImprovement = 2 - totalImprovementVotes;
+  // *** CRITICAL FIX: Count DISTINCT stamps, NOT intensity ***
+  const stampsSelectedPositive = positiveSignals.size;
+  const stampsSelectedImprovement = improvementSignals.size;
+  const remainingPositiveSlots = 5 - stampsSelectedPositive;
+  const remainingImprovementSlots = 2 - stampsSelectedImprovement;
 
-  // Handle tapping on a stamp in the carousel - this is the KEY fix
+  // Handle tapping on a stamp in the carousel
   const handleCarouselStampTap = (stamp: StampDefinition) => {
     const isPositive = step === 'good';
     const signals = isPositive ? positiveSignals : improvementSignals;
     const setSignals = isPositive ? setPositiveSignals : setImprovementSignals;
-    const remaining = isPositive ? remainingPositive : remainingImprovement;
+    const remainingSlots = isPositive ? remainingPositiveSlots : remainingImprovementSlots;
+    const labels = isPositive ? LEVEL_LABELS : IMPROVEMENT_LABELS;
 
     const current = signals.get(stamp.id) || 0;
     let newLevel: number;
 
     if (current === 0) {
-      // First tap: select with level 1
-      if (remaining < 1) return;
+      // First tap: select with level 1 (uses 1 stamp slot)
+      if (remainingSlots < 1) {
+        haptic('heavy');
+        return;
+      }
       newLevel = 1;
     } else if (current < 3) {
-      // Already selected, increase intensity
-      if (remaining < 1) return;
+      // Already selected, increase intensity (does NOT use another slot)
       newLevel = current + 1;
     } else {
-      // At max, deselect
+      // At max (3), deselect completely
       newLevel = 0;
     }
 
@@ -151,34 +184,59 @@ export function ReviewPopup({
     }
     setSignals(newMap);
 
-    // Always keep this stamp active while tapping
+    // Always keep this stamp active
     setActiveStamp(stamp);
 
-    // Visual feedback
+    // Visual + haptic feedback
     if (newLevel > 0) {
+      hapticMedium();
       setFlashLevel(newLevel);
       setShowFlash(true);
-      window.setTimeout(() => setShowFlash(false), 400);
-      window.setTimeout(() => setFlashLevel(null), 450);
+      setPopText(labels[newLevel]);
+      
+      window.setTimeout(() => {
+        setShowFlash(false);
+        setPopText(null);
+      }, 500);
+      window.setTimeout(() => setFlashLevel(null), 550);
+    } else {
+      hapticLight();
     }
   };
 
-  // Handle tapping the main active stamp icon
+  // Handle tapping the main active stamp icon (increase intensity)
   const handleMainStampTap = () => {
     if (!activeStamp) return;
     handleCarouselStampTap(activeStamp);
   };
 
+  // Handle removing a stamp (long press or X button)
   const handleRemoveStamp = (stampId: string, isPositive: boolean) => {
+    hapticLight();
     if (isPositive) {
       const newMap = new Map(positiveSignals);
       newMap.delete(stampId);
       setPositiveSignals(newMap);
+      // Update active stamp if needed
+      if (activeStamp?.id === stampId && positiveStamps.length > 0) {
+        const nextActive = positiveStamps.find(s => newMap.has(s.id)) || positiveStamps[0];
+        setActiveStamp(nextActive);
+      }
     } else {
       const newMap = new Map(improvementSignals);
       newMap.delete(stampId);
       setImprovementSignals(newMap);
+      if (activeStamp?.id === stampId && improvementStamps.length > 0) {
+        const nextActive = improvementStamps.find(s => newMap.has(s.id)) || improvementStamps[0];
+        setActiveStamp(nextActive);
+      }
     }
+  };
+
+  const dismissOnboarding = () => {
+    localStorage.setItem(ONBOARDING_KEY, 'true');
+    setShowOnboarding(false);
+    setStep('good');
   };
 
   const getStepTitle = () => {
@@ -186,7 +244,7 @@ export function ReviewPopup({
       case 'intro': return 'A Better Way to Review';
       case 'good': return 'What Stood Out?';
       case 'improvement': return 'What Needs Work?';
-      case 'notes': return 'Add a Note (Optional)';
+      case 'notes': return 'Add a Note';
       case 'confirm': return 'Ready to Submit';
     }
   };
@@ -203,7 +261,10 @@ export function ReviewPopup({
 
   const goNext = () => {
     switch (step) {
-      case 'intro': setStep('good'); break;
+      case 'intro':
+        localStorage.setItem(ONBOARDING_KEY, 'true');
+        setStep('good');
+        break;
       case 'good': setStep('improvement'); break;
       case 'improvement': setStep('notes'); break;
       case 'notes': setStep('confirm'); break;
@@ -225,7 +286,7 @@ export function ReviewPopup({
   const scrollCarousel = (direction: 'left' | 'right') => {
     const container = scrollContainerRef.current;
     if (!container) return;
-    const scrollAmount = 200;
+    const scrollAmount = 180;
     container.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth'
@@ -242,30 +303,31 @@ export function ReviewPopup({
   const isPositive = step === 'good';
   const stamps = isPositive ? positiveStamps : improvementStamps;
   const signals = isPositive ? positiveSignals : improvementSignals;
-  const remaining = isPositive ? remainingPositive : remainingImprovement;
-  const maxVotes = isPositive ? 5 : 2;
+  const remainingSlots = isPositive ? remainingPositiveSlots : remainingImprovementSlots;
+  const maxSlots = isPositive ? 5 : 2;
   const labels = isPositive ? LEVEL_LABELS : IMPROVEMENT_LABELS;
   const currentLevel = activeStamp ? (signals.get(activeStamp.id) || 0) : 0;
+  const stampCount = signals.size;
 
   const getActiveStyles = () => {
     if (currentLevel === 0) {
       return isPositive
-        ? 'bg-primary/10 text-primary border-primary/40'
-        : 'bg-amber-500/10 text-amber-500 border-amber-500/40';
+        ? 'bg-primary/10 text-primary border-primary/30'
+        : 'bg-amber-500/10 text-amber-500 border-amber-500/30';
     }
     if (isPositive) {
       switch (currentLevel) {
-        case 1: return 'bg-primary/20 text-primary border-primary/60 shadow-lg shadow-primary/20';
+        case 1: return 'bg-primary/20 text-primary border-primary/50 shadow-lg shadow-primary/20';
         case 2: return 'bg-primary/40 text-primary border-primary ring-4 ring-primary/30 shadow-xl shadow-primary/30';
         case 3: return 'bg-primary text-primary-foreground border-primary ring-4 ring-primary/50 shadow-2xl shadow-primary/40';
-        default: return 'bg-primary/10 text-primary border-primary/40';
+        default: return 'bg-primary/10 text-primary border-primary/30';
       }
     } else {
       switch (currentLevel) {
-        case 1: return 'bg-amber-500/20 text-amber-500 border-amber-500/60 shadow-lg shadow-amber-500/20';
+        case 1: return 'bg-amber-500/20 text-amber-500 border-amber-500/50 shadow-lg shadow-amber-500/20';
         case 2: return 'bg-amber-500/40 text-amber-600 border-amber-500 ring-4 ring-amber-500/30 shadow-xl shadow-amber-500/30';
         case 3: return 'bg-destructive text-destructive-foreground border-destructive ring-4 ring-destructive/40 shadow-2xl shadow-destructive/40';
-        default: return 'bg-amber-500/10 text-amber-500 border-amber-500/40';
+        default: return 'bg-amber-500/10 text-amber-500 border-amber-500/30';
       }
     }
   };
@@ -276,7 +338,7 @@ export function ReviewPopup({
         <div
           key={dot}
           className={cn(
-            'w-3 h-3 rounded-full transition-all duration-200',
+            'w-3 h-3 rounded-full transition-all duration-300',
             dot <= level
               ? polarity === 'positive'
                 ? 'bg-primary scale-110'
@@ -304,7 +366,7 @@ export function ReviewPopup({
             : LucideIcons.Circle;
 
           return (
-            <div key={id} className="flex flex-col items-center gap-1.5 w-20">
+            <div key={id} className="flex flex-col items-center gap-1.5 w-24">
               <div
                 className={cn(
                   'w-14 h-14 rounded-full border-2 flex items-center justify-center',
@@ -315,7 +377,7 @@ export function ReviewPopup({
               >
                 <Icon size={24} />
               </div>
-              <span className="text-sm text-center leading-tight">
+              <span className="text-sm text-center leading-tight font-medium">
                 {stamp.label}
               </span>
               {renderDots(level, polarity)}
@@ -328,67 +390,113 @@ export function ReviewPopup({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto p-0 overflow-hidden gap-0 flex flex-col max-h-[90vh]">
+      <DialogContent className="w-[95vw] max-w-md mx-auto p-0 overflow-hidden gap-0 flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background">
-          <div className="w-10">
+          <div className="w-10 flex items-center">
             {step !== 'intro' && (
               <button onClick={goBack} className="p-2 -m-2 rounded-lg hover:bg-muted transition-colors">
                 <ArrowLeft className="w-5 h-5 text-muted-foreground" />
               </button>
             )}
           </div>
-          <h2 className="text-lg font-semibold text-center flex-1">
-            {getStepTitle()}
-          </h2>
-          <div className="w-10" />
+          <div className="flex-1 text-center">
+            <h2 className="text-lg font-semibold">
+              {getStepTitle()}
+            </h2>
+            {placeName && step !== 'intro' && (
+              <p className="text-sm text-muted-foreground truncate max-w-[200px] mx-auto" title={placeName}>
+                {placeName}
+              </p>
+            )}
+          </div>
+          <div className="w-10 flex items-center justify-end">
+            {(step === 'good' || step === 'improvement') && (
+              <button 
+                onClick={() => setShowOnboarding(true)}
+                className="p-2 -m-2 rounded-lg hover:bg-muted transition-colors"
+              >
+                <HelpCircle className="w-5 h-5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
-          <div className="p-6">
+          <div className="p-5">
             {/* INTRO STEP */}
             {step === 'intro' && (
-              <div className="text-center space-y-5 py-4">
-                <p className="text-base text-muted-foreground leading-relaxed">
-                  Instead of stars, we focus on what actually stood out — the good and what needs work.
+              <div className="text-center space-y-6 py-4">
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Instead of stars, we focus on what actually matters — the good stuff and what needs work.
                 </p>
-                <div className="space-y-3 text-left bg-muted/50 rounded-xl p-5">
-                  <p className="text-sm"><span className="font-semibold">Step 1:</span> Pick up to 5 Good stamps</p>
-                  <p className="text-sm"><span className="font-semibold">Step 2:</span> Pick up to 2 Needs Work stamps</p>
-                  <p className="text-sm"><span className="font-semibold">Step 3:</span> Add a note (optional)</p>
-                  <p className="text-sm text-primary font-medium">💡 Tap a stamp multiple times to rate it higher!</p>
+                <div className="space-y-4 text-left bg-muted/50 rounded-2xl p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+                    <div>
+                      <p className="font-semibold text-foreground">Pick what stood out</p>
+                      <p className="text-sm text-muted-foreground">Up to 5 good stamps, 2 needs work</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+                    <div>
+                      <p className="font-semibold text-foreground">Tap to set strength</p>
+                      <p className="text-sm text-muted-foreground">Good → Great → Excellent</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+                    <div>
+                      <p className="font-semibold text-foreground">Submit</p>
+                      <p className="text-sm text-muted-foreground">Add optional notes and you're done!</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* STAMP SELECTION STEPS */}
             {(step === 'good' || step === 'improvement') && (
-              <div className="space-y-6">
-                {/* Active stamp preview - larger and more prominent */}
-                <div className="flex flex-col items-center gap-4 text-center">
+              <div className="space-y-5">
+                {/* Active stamp preview - LARGE and centered */}
+                <div className="flex flex-col items-center gap-3 text-center">
+                  {/* Pop text animation */}
+                  <div className="h-8 flex items-center justify-center">
+                    {popText && (
+                      <p className={cn(
+                        "text-2xl font-black uppercase animate-bounce",
+                        isPositive ? "text-primary" : currentLevel === 3 ? "text-destructive" : "text-amber-500"
+                      )}>
+                        {popText}
+                      </p>
+                    )}
+                  </div>
+
                   <button
                     onClick={handleMainStampTap}
-                    disabled={!activeStamp || (currentLevel === 0 && remaining < 1)}
+                    disabled={!activeStamp || (currentLevel === 0 && remainingSlots < 1)}
                     className={cn(
-                      'w-28 h-28 rounded-full border-[3px] flex items-center justify-center transition-all duration-300',
+                      'w-32 h-32 rounded-full border-[3px] flex items-center justify-center transition-all duration-300',
                       'active:scale-90',
                       getActiveStyles(),
                       showFlash && 'scale-110',
-                      (!activeStamp || (currentLevel === 0 && remaining < 1)) && 'opacity-40 cursor-not-allowed'
+                      (!activeStamp || (currentLevel === 0 && remainingSlots < 1)) && 'opacity-40 cursor-not-allowed'
                     )}
                   >
-                    <ActiveIcon size={48} strokeWidth={1.5} />
+                    <ActiveIcon size={56} strokeWidth={1.5} />
                   </button>
 
-                  <div className="space-y-2 w-full max-w-[280px]">
-                    {/* Stamp label - larger font */}
-                    <p className="text-xl font-bold leading-tight">
+                  <div className="space-y-2 w-full max-w-[300px]">
+                    {/* Stamp label - LARGE font, wrapping allowed */}
+                    <p className="text-2xl font-bold leading-tight break-words">
                       {activeStamp?.label || 'Select a stamp'}
                     </p>
 
-                    {/* Intensity label and counter */}
+                    {/* Intensity display */}
                     <div className="flex flex-col items-center gap-2">
+                      {/* Current level text */}
                       <p
                         className={cn(
                           'text-lg font-semibold transition-all',
@@ -401,80 +509,76 @@ export function ReviewPopup({
                             : 'text-muted-foreground'
                         )}
                       >
-                        {showFlash && flashLevel !== null && flashLevel > 0
-                          ? labels[flashLevel]
-                          : currentLevel > 0
-                          ? labels[currentLevel]
-                          : 'Tap to add'}
+                        {currentLevel > 0 ? labels[currentLevel] : 'Tap to add'}
                       </p>
 
-                      {/* Progress indicator - very clear */}
-                      <div className="flex items-center gap-2 bg-muted/60 rounded-full px-4 py-1.5">
+                      {/* Dots + X of 3 indicator */}
+                      <div className="flex items-center gap-3 bg-muted/60 rounded-full px-5 py-2">
                         {renderDots(currentLevel, isPositive ? 'positive' : 'improvement')}
-                        <span className="text-sm font-medium text-muted-foreground ml-1">
+                        <span className="text-base font-semibold text-muted-foreground">
                           {currentLevel} of 3
                         </span>
                       </div>
                     </div>
 
-                    {/* Instructions - larger text */}
-                    <p className="text-sm text-muted-foreground pt-1">
+                    {/* Instructions */}
+                    <p className="text-base text-muted-foreground pt-1">
                       {currentLevel === 0 
-                        ? 'Tap to select this stamp' 
+                        ? 'Tap the icon to select' 
                         : currentLevel < 3 
                         ? 'Tap again to increase strength'
-                        : 'Tap again to deselect'}
+                        : 'Tap again to remove'}
                     </p>
                   </div>
                 </div>
 
                 {/* Limit warning */}
-                {remaining < 1 && currentLevel === 0 && (
+                {remainingSlots < 1 && currentLevel === 0 && (
                   <p className="text-base text-amber-600 text-center bg-amber-500/10 py-3 px-4 rounded-xl font-medium">
-                    You've used all {maxVotes} votes for this step.
+                    You've selected {maxSlots} stamps. Remove one to add another.
                   </p>
                 )}
 
                 {/* Stamp carousel with scroll indicators */}
                 <div className="border-t border-border pt-4">
-                  <p className="text-sm text-muted-foreground text-center mb-3">
+                  <p className="text-base text-muted-foreground text-center mb-3 font-medium">
                     Choose a stamp below
                   </p>
                   
                   <div className="relative">
-                    {/* Left scroll indicator */}
+                    {/* Left scroll button */}
                     {canScrollLeft && (
                       <button
                         onClick={() => scrollCarousel('left')}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background/90 shadow-lg border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/95 shadow-lg border border-border flex items-center justify-center hover:bg-muted transition-colors"
                       >
-                        <ChevronLeft className="w-5 h-5 text-foreground" />
+                        <ChevronLeft className="w-6 h-6 text-foreground" />
                       </button>
                     )}
 
-                    {/* Right scroll indicator */}
+                    {/* Right scroll button */}
                     {canScrollRight && (
                       <button
                         onClick={() => scrollCarousel('right')}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background/90 shadow-lg border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/95 shadow-lg border border-border flex items-center justify-center hover:bg-muted transition-colors"
                       >
-                        <ChevronRight className="w-5 h-5 text-foreground" />
+                        <ChevronRight className="w-6 h-6 text-foreground" />
                       </button>
                     )}
 
                     {/* Left fade */}
                     {canScrollLeft && (
-                      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-[5]" />
+                      <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-background to-transparent pointer-events-none z-[5]" />
                     )}
 
                     {/* Right fade */}
                     {canScrollRight && (
-                      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-[5]" />
+                      <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-background to-transparent pointer-events-none z-[5]" />
                     )}
 
                     <div 
                       ref={scrollContainerRef}
-                      className="w-full overflow-x-auto overscroll-contain scrollbar-hide px-2"
+                      className="w-full overflow-x-auto overscroll-contain scrollbar-hide px-3"
                     >
                       <div className="flex gap-3 py-3">
                         {stamps.map((stamp) => {
@@ -488,21 +592,42 @@ export function ReviewPopup({
                           return (
                             <button
                               key={stamp.id}
-                              onClick={() => handleCarouselStampTap(stamp)}
+                              onClick={() => {
+                                // If tapping a DIFFERENT stamp, just change focus
+                                if (!isActive) {
+                                  setActiveStamp(stamp);
+                                } else {
+                                  // Tapping the SAME stamp = increase intensity
+                                  handleCarouselStampTap(stamp);
+                                }
+                              }}
                               className={cn(
-                                'flex flex-col items-center text-center flex-shrink-0 rounded-2xl transition-all duration-200 p-3',
+                                'flex flex-col items-center text-center flex-shrink-0 rounded-2xl transition-all duration-200 p-3 relative',
                                 isActive
                                   ? 'bg-muted ring-2 ring-primary scale-105'
                                   : isSelected
                                   ? 'bg-muted/50 ring-1 ring-border'
-                                  : 'bg-transparent opacity-50 hover:opacity-80 hover:bg-muted/30'
+                                  : 'bg-transparent opacity-60 hover:opacity-90 hover:bg-muted/30'
                               )}
-                              style={{ minWidth: '90px', maxWidth: '90px' }}
+                              style={{ minWidth: '100px', maxWidth: '100px' }}
                             >
+                              {/* Remove button for selected stamps */}
+                              {isSelected && !isActive && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveStamp(stamp.id, isPositive);
+                                  }}
+                                  className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-muted-foreground/20 hover:bg-destructive/20 flex items-center justify-center transition-colors z-10"
+                                >
+                                  <X className="w-3.5 h-3.5 text-muted-foreground" />
+                                </button>
+                              )}
+
                               <div
                                 className={cn(
                                   'rounded-full border-2 flex items-center justify-center transition-all',
-                                  isActive ? 'w-14 h-14' : 'w-11 h-11',
+                                  isActive ? 'w-16 h-16' : 'w-12 h-12',
                                   level > 0
                                     ? isPositive
                                       ? 'bg-primary/20 text-primary border-primary/60'
@@ -510,21 +635,21 @@ export function ReviewPopup({
                                     : 'bg-muted text-muted-foreground border-border'
                                 )}
                               >
-                                <Icon size={isActive ? 24 : 20} />
+                                <Icon size={isActive ? 28 : 22} />
                               </div>
 
-                              <span className="mt-2 text-sm leading-tight text-foreground font-medium">
+                              <span className="mt-2 text-sm leading-tight text-foreground font-medium whitespace-normal break-words">
                                 {stamp.label}
                               </span>
 
-                              <div className="mt-1.5 h-4 flex items-center">
+                              <div className="mt-1.5 h-5 flex items-center justify-center">
                                 {level > 0 ? (
-                                  <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-1.5">
                                     {[1, 2, 3].map((d) => (
                                       <div
                                         key={d}
                                         className={cn(
-                                          'w-2 h-2 rounded-full transition-all',
+                                          'w-2.5 h-2.5 rounded-full transition-all',
                                           d <= level
                                             ? isPositive
                                               ? 'bg-primary'
@@ -546,9 +671,9 @@ export function ReviewPopup({
                   </div>
                 </div>
 
-                {/* Counter */}
-                <p className="text-sm text-muted-foreground text-center font-medium">
-                  {maxVotes - remaining} of {maxVotes} votes used
+                {/* Counter - FIXED LABELING */}
+                <p className="text-base text-muted-foreground text-center font-semibold">
+                  {stampCount} of {maxSlots} stamps selected
                 </p>
               </div>
             )}
@@ -557,23 +682,25 @@ export function ReviewPopup({
             {step === 'notes' && (
               <div className="space-y-5">
                 <div>
-                  <label className="text-sm font-medium text-foreground">Note for visitors</label>
+                  <label className="text-base font-semibold text-foreground">Public note</label>
+                  <p className="text-sm text-muted-foreground mb-2">Share tips or experiences with visitors</p>
                   <Textarea
                     value={notePublic}
                     onChange={(e) => setNotePublic(e.target.value.slice(0, 250))}
-                    placeholder="Tips or experiences to share..."
-                    className="mt-2 resize-none text-base"
+                    placeholder="What should others know about this place?"
+                    className="mt-1 resize-none text-base"
                     rows={3}
                   />
                   <p className="text-xs text-muted-foreground text-right mt-1">{notePublic.length}/250</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Private note (owner only)</label>
+                  <label className="text-base font-semibold text-foreground">Private note (optional)</label>
+                  <p className="text-sm text-muted-foreground mb-2">Only visible to the owner</p>
                   <Textarea
                     value={notePrivate}
                     onChange={(e) => setNotePrivate(e.target.value.slice(0, 250))}
-                    placeholder="Feedback for the owner..."
-                    className="mt-2 resize-none text-base"
+                    placeholder="Direct feedback for the owner..."
+                    className="mt-1 resize-none text-base"
                     rows={3}
                   />
                   <p className="text-xs text-muted-foreground text-right mt-1">{notePrivate.length}/250</p>
@@ -586,23 +713,23 @@ export function ReviewPopup({
               <div className="space-y-5">
                 {positiveSignals.size > 0 && (
                   <div>
-                    <p className="text-sm font-semibold text-foreground mb-3">Highlights</p>
+                    <p className="text-base font-semibold text-foreground mb-3">✨ Highlights</p>
                     {renderSelectedStamps(positiveSignals, positiveStamps, 'positive')}
                   </div>
                 )}
                 {improvementSignals.size > 0 && (
                   <div>
-                    <p className="text-sm font-semibold text-foreground mb-3">Needs Improvement</p>
+                    <p className="text-base font-semibold text-foreground mb-3">⚠️ Needs Improvement</p>
                     {renderSelectedStamps(improvementSignals, improvementStamps, 'improvement')}
                   </div>
                 )}
                 {positiveSignals.size === 0 && improvementSignals.size === 0 && (
-                  <p className="text-base text-muted-foreground text-center py-6">Add at least one stamp to submit.</p>
+                  <p className="text-lg text-muted-foreground text-center py-8">Add at least one stamp to submit.</p>
                 )}
                 {(notePublic || notePrivate) && (
                   <div className="text-sm text-muted-foreground border-t border-border pt-4 space-y-2">
-                    {notePublic && <p className="break-words"><span className="font-medium">Public note:</span> {notePublic}</p>}
-                    {notePrivate && <p className="break-words text-amber-600"><span className="font-medium">Private note:</span> {notePrivate}</p>}
+                    {notePublic && <p className="break-words"><span className="font-semibold text-foreground">Public note:</span> {notePublic}</p>}
+                    {notePrivate && <p className="break-words text-amber-600"><span className="font-semibold">Private note:</span> {notePrivate}</p>}
                   </div>
                 )}
               </div>
@@ -613,7 +740,7 @@ export function ReviewPopup({
         {/* Footer */}
         <div className="px-4 py-4 border-t border-border bg-background">
           {step === 'confirm' ? (
-            <Button onClick={goNext} disabled={!canGoNext() || isSubmitting} className="w-full h-12 text-base">
+            <Button onClick={goNext} disabled={!canGoNext() || isSubmitting} className="w-full h-12 text-base font-semibold">
               {isSubmitting ? (
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
               ) : (
@@ -622,12 +749,49 @@ export function ReviewPopup({
               {isEditing ? 'Update Review' : 'Submit Review'}
             </Button>
           ) : (
-            <Button onClick={goNext} disabled={!canGoNext()} className="w-full h-12 text-base">
+            <Button onClick={goNext} disabled={!canGoNext()} className="w-full h-12 text-base font-semibold">
               {step === 'intro' ? "Let's Go" : 'Continue'}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           )}
         </div>
+
+        {/* Onboarding Modal Overlay */}
+        {showOnboarding && step !== 'intro' && (
+          <div className="absolute inset-0 bg-background/95 z-50 flex flex-col items-center justify-center p-6">
+            <div className="text-center space-y-6 max-w-sm">
+              <h3 className="text-xl font-bold text-foreground">How Reviews Work</h3>
+              
+              <div className="space-y-4 text-left">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+                  <div>
+                    <p className="font-semibold text-foreground">Pick what stood out</p>
+                    <p className="text-sm text-muted-foreground">Up to 5 good stamps, 2 needs work</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+                  <div>
+                    <p className="font-semibold text-foreground">Tap to set strength</p>
+                    <p className="text-sm text-muted-foreground">1 tap = Good, 2 = Great, 3 = Excellent</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+                  <div>
+                    <p className="font-semibold text-foreground">Strength ≠ Slots</p>
+                    <p className="text-sm text-muted-foreground">Tapping 3× on 1 stamp uses only 1 slot!</p>
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={dismissOnboarding} className="w-full">
+                Got it!
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
