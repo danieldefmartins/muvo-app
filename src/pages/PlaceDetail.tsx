@@ -12,8 +12,10 @@ import {
   AlertCircle,
   Images,
   MessageSquareText,
+  Cloud,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
+import { WeatherBadge } from '@/components/WeatherBadge';
 import { TrustBadge } from '@/components/TrustBadge';
 import { PriceIndicator } from '@/components/PriceIndicator';
 import { SuggestUpdateForm } from '@/components/SuggestUpdateForm';
@@ -181,6 +183,22 @@ const PlaceDetail = () => {
               </p>
             </div>
           )}
+        </section>
+
+        {/* Current Weather */}
+        <section 
+          className="mb-6 animate-fade-in" 
+          style={{ animationDelay: '40ms' }}
+        >
+          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Cloud className="w-5 h-5 text-primary" />
+            Current Weather
+          </h2>
+          <WeatherBadge 
+            latitude={place.latitude} 
+            longitude={place.longitude} 
+            variant="card"
+          />
         </section>
 
         {/* Current Status */}

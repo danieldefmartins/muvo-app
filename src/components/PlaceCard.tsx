@@ -2,6 +2,7 @@ import { MapPin, Droplets, Zap, Wifi, Dog, Truck, ShowerHead, WashingMachine, Wa
 import { Link } from 'react-router-dom';
 import { Place, PlaceFeature } from '@/hooks/usePlaces';
 import { FavoriteButton } from './FavoriteButton';
+import { WeatherBadge } from './WeatherBadge';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from './ui/aspect-ratio';
 
@@ -76,11 +77,17 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
           {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-          {/* Top-left: Category */}
-          <div className="absolute top-3 left-3">
+          {/* Top-left: Category + Weather */}
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5">
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-background/95 text-foreground backdrop-blur-sm shadow-sm">
               {place.primaryCategory}
             </span>
+            <WeatherBadge 
+              latitude={place.latitude} 
+              longitude={place.longitude} 
+              variant="compact"
+              className="shadow-sm"
+            />
           </div>
 
           {/* Top-right: Favorite */}
