@@ -62,6 +62,31 @@ export function useStamps(placeCategory: PlaceCategory | undefined) {
   });
 }
 
+// Fetch all stamp definitions (for looking up labels)
+export function useAllStamps() {
+  return useQuery({
+    queryKey: ['all-stamps'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stamp_definitions')
+        .select('*')
+        .order('category')
+        .order('sort_order');
+
+      if (error) throw error;
+      return (data || []) as StampDefinition[];
+    },
+    staleTime: 1000 * 60 * 60, // Cache for 1 hour
+  });
+}
+
+// Get stamp label by ID
+export function getStampLabel(stamps: StampDefinition[] | undefined, stampId: string): string {
+  if (!stamps) return stampId;
+  const stamp = stamps.find(s => s.id === stampId);
+  return stamp?.label || stampId;
+}
+
 // Fallback stamps if no category-specific stamps exist
 export const FALLBACK_STAMPS = {
   positive: [

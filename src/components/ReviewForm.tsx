@@ -143,6 +143,12 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
     );
   }
 
+  // Calculate total votes used (taps count toward limits)
+  const totalPositiveVotes = Array.from(positiveSignals.values()).reduce((sum, level) => sum + level, 0);
+  const totalImprovementVotes = Array.from(improvementSignals.values()).reduce((sum, level) => sum + level, 0);
+  const remainingPositiveVotes = 5 - totalPositiveVotes;
+  const remainingImprovementVotes = 2 - totalImprovementVotes;
+
   const handlePositiveClick = (stamp: StampDefinition) => {
     // Can't select if already in improvement
     if (improvementSignals.has(stamp.id)) {
@@ -158,11 +164,11 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
     const newMap = new Map(positiveSignals);
 
     if (!current) {
-      // Check limit
-      if (positiveSignals.size >= 5) {
+      // Check if we have at least 1 vote remaining
+      if (remainingPositiveVotes < 1) {
         toast({
           title: "Limit reached",
-          description: "You can select up to 5 strengths",
+          description: "You've used all 5 Good votes",
           variant: "destructive",
         });
         return;
@@ -170,9 +176,24 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
       newMap.set(stamp.id, 1);
       setLastTapLevel(1);
     } else if (current < 3) {
+      // Check if we can add another vote
+      if (remainingPositiveVotes < 1) {
+        toast({
+          title: "Vote limit reached",
+          description: "You've used all 5 Good votes. Tap again to remove.",
+          variant: "destructive",
+        });
+        // Allow removing by tapping when at max
+        if (current === 3) {
+          newMap.delete(stamp.id);
+          setLastTapLevel(null);
+        }
+        return;
+      }
       newMap.set(stamp.id, current + 1);
       setLastTapLevel(current + 1);
     } else {
+      // At level 3, remove the stamp
       newMap.delete(stamp.id);
       setLastTapLevel(null);
     }
@@ -196,11 +217,11 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
     const newMap = new Map(improvementSignals);
 
     if (!current) {
-      // Check limit
-      if (improvementSignals.size >= 2) {
+      // Check if we have at least 1 vote remaining
+      if (remainingImprovementVotes < 1) {
         toast({
           title: "Limit reached",
-          description: "You can select up to 2 improvements",
+          description: "You've used all 2 Improvement votes",
           variant: "destructive",
         });
         return;
@@ -208,9 +229,19 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
       newMap.set(stamp.id, 1);
       setLastTapLevel(1);
     } else if (current < 3) {
+      // Check if we can add another vote (but cap at 2 total for improvements)
+      if (remainingImprovementVotes < 1) {
+        toast({
+          title: "Vote limit reached",
+          description: "You've used all 2 Improvement votes. Tap again to remove.",
+          variant: "destructive",
+        });
+        return;
+      }
       newMap.set(stamp.id, current + 1);
       setLastTapLevel(current + 1);
     } else {
+      // At level 3, remove the stamp
       newMap.delete(stamp.id);
       setLastTapLevel(null);
     }
@@ -229,8 +260,8 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
     // Validation: require at least one stamp
     if (!hasStamps) {
       toast({
-        title: "Please add feedback",
-        description: "Tap at least one thing that stood out — good or bad.",
+        title: "Something needs to stand out",
+        description: "Something needs to stand out to count as a review.",
         variant: "destructive",
       });
       return;
@@ -312,12 +343,12 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Label className="text-base font-semibold">
-              What was GREAT here? (Pick up to 5)
+              What was GREAT here?
             </Label>
             <ReviewHelpButton />
           </div>
           <span className="text-sm text-muted-foreground">
-            {positiveSignals.size} / 5
+            {totalPositiveVotes} / 5 votes
           </span>
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
@@ -337,10 +368,10 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-base font-semibold">
-            What needs IMPROVEMENT? (Pick up to 2)
+            What needs IMPROVEMENT?
           </Label>
           <span className="text-sm text-muted-foreground">
-            {improvementSignals.size} / 2
+            {totalImprovementVotes} / 2 votes
           </span>
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
