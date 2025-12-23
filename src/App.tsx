@@ -7,6 +7,7 @@ import { TrustedCongratsModal } from "@/components/TrustedCongratsModal";
 import Index from "./pages/Index";
 import PlacesToStay from "./pages/PlacesToStay";
 import PlaceDetail from "./pages/PlaceDetail";
+import SearchResults from "./pages/SearchResults";
 import SavedPlaces from "./pages/SavedPlaces";
 import AdminSuggestions from "./pages/AdminSuggestions";
 import AdminPhotos from "./pages/AdminPhotos";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/places" element={<PlacesToStay />} />
           <Route path="/place/:id" element={<PlaceDetail />} />
+          <Route path="/search" element={<SearchResults />} />
           <Route path="/map" element={<MapView />} />
           <Route path="/route" element={<RoutePlanning />} />
           <Route path="/saved" element={<SavedPlaces />} />
