@@ -121,15 +121,28 @@ export function CompactReviewStrip({
         description: "Create an account to post your review. Your selections will be saved!",
       });
       // Store pending review in localStorage so it's not lost
-      localStorage.setItem('pending-review', JSON.stringify({
-        placeId,
-        positiveSignals: Array.from(positiveSignals.entries()),
-        improvementSignals: Array.from(improvementSignals.entries()),
-        notePublic,
-        notePrivate,
-      }));
+      localStorage.setItem(
+        'pending-review',
+        JSON.stringify({
+          placeId,
+          positiveSignals: Array.from(positiveSignals.entries()),
+          improvementSignals: Array.from(improvementSignals.entries()),
+          notePublic,
+          notePrivate,
+        })
+      );
       // Redirect to auth page
       window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
+      return;
+    }
+
+    // Prevent RLS failures: backend requires verified users for review inserts/signals
+    if (!isVerified) {
+      toast({
+        title: "Verify your email to post",
+        description: "Only verified users can submit or edit reviews.",
+        variant: "destructive",
+      });
       return;
     }
 
