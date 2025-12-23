@@ -11,6 +11,7 @@ import {
   ClipboardCheck,
   AlertCircle,
   Images,
+  MessageSquareText,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { TrustBadge } from '@/components/TrustBadge';
@@ -23,6 +24,9 @@ import { PlaceStatusBadge } from '@/components/PlaceStatusBadge';
 import { ReportStatusForm } from '@/components/ReportStatusForm';
 import { PlacePhotoGallery } from '@/components/PlacePhotoGallery';
 import { PhotoUploadForm } from '@/components/PhotoUploadForm';
+import { PlaceSignalSummary } from '@/components/PlaceSignalSummary';
+import { ReviewForm } from '@/components/ReviewForm';
+import { ReviewList } from '@/components/ReviewList';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -34,6 +38,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
+import { useMyReview } from '@/hooks/useReviews';
 
 const PlaceDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,8 +47,10 @@ const PlaceDetail = () => {
   const { data: mapboxToken } = useMapboxToken();
   const [showUpload, setShowUpload] = useState(false);
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { data: myReview } = useMyReview(id || '');
 
   if (isLoading) {
     return (
@@ -339,6 +346,50 @@ const PlaceDetail = () => {
             Check In
           </h2>
           <PlaceCheckin placeId={id!} />
+        </section>
+
+        {/* Reviews Section */}
+        <section 
+          className="mb-6 animate-fade-in" 
+          style={{ animationDelay: '275ms' }}
+        >
+          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            <MessageSquareText className="w-5 h-5 text-primary" />
+            Reviews
+          </h2>
+          
+          {/* Signal Summary - Known for / Common issues */}
+          <div className="bg-card border border-border rounded-lg p-4 mb-4">
+            <PlaceSignalSummary placeId={id!} />
+          </div>
+
+          {/* Write/Edit Review Button */}
+          {user && isVerified && !showReviewForm && (
+            <Button 
+              onClick={() => setShowReviewForm(true)} 
+              variant="outline" 
+              className="w-full mb-4"
+            >
+              {myReview ? 'Edit Your Review' : 'Write a Review'}
+            </Button>
+          )}
+
+          {/* Review Form */}
+          {showReviewForm && (
+            <div className="bg-card border border-border rounded-lg p-4 mb-4">
+              <ReviewForm 
+                placeId={id!}
+                onSuccess={() => setShowReviewForm(false)}
+                onCancel={() => setShowReviewForm(false)}
+              />
+            </div>
+          )}
+
+          {/* Review List */}
+          <ReviewList 
+            placeId={id!} 
+            onEditReview={() => setShowReviewForm(true)}
+          />
         </section>
 
         {/* Disclaimer */}

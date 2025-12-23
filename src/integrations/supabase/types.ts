@@ -455,6 +455,106 @@ export type Database = {
         }
         Relationships: []
       }
+      review_signals: {
+        Row: {
+          created_at: string
+          dimension: Database["public"]["Enums"]["review_dimension"]
+          id: string
+          level: number
+          place_id: string
+          polarity: Database["public"]["Enums"]["signal_polarity"]
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dimension: Database["public"]["Enums"]["review_dimension"]
+          id?: string
+          level: number
+          place_id: string
+          polarity: Database["public"]["Enums"]["signal_polarity"]
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dimension?: Database["public"]["Enums"]["review_dimension"]
+          id?: string
+          level?: number
+          place_id?: string
+          polarity?: Database["public"]["Enums"]["signal_polarity"]
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_signals_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_signals_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_signals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          id: string
+          note_private: string | null
+          note_public: string | null
+          place_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note_private?: string | null
+          note_public?: string | null
+          place_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note_private?: string | null
+          note_public?: string | null
+          place_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -559,6 +659,17 @@ export type Database = {
         | "temporarily_closed"
         | "restrictions_reported"
       price_level: "$" | "$$" | "$$$"
+      review_dimension:
+        | "quality"
+        | "service"
+        | "value"
+        | "cleanliness"
+        | "location"
+        | "comfort"
+        | "reliability"
+        | "speed"
+        | "restrictions"
+      signal_polarity: "positive" | "improvement"
       suggestion_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -738,6 +849,18 @@ export const Constants = {
         "restrictions_reported",
       ],
       price_level: ["$", "$$", "$$$"],
+      review_dimension: [
+        "quality",
+        "service",
+        "value",
+        "cleanliness",
+        "location",
+        "comfort",
+        "reliability",
+        "speed",
+        "restrictions",
+      ],
+      signal_polarity: ["positive", "improvement"],
       suggestion_status: ["pending", "approved", "rejected"],
     },
   },
