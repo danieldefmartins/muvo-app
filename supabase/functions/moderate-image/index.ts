@@ -21,8 +21,9 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     
-    // Get authorization header
+    // Get authorization header - JWT is already verified by Supabase when verify_jwt = true
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -31,13 +32,15 @@ serve(async (req) => {
       });
     }
 
-    // Create client with user's auth
+    // Create service role client for admin operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    
+    // Create user client to get user info from the validated JWT
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    // Get user
+    // Get user from the validated JWT - Supabase has already verified the token
     const { data: { user }, error: userError } = await userClient.auth.getUser();
     if (userError || !user) {
       console.error("Auth error:", userError);
@@ -79,6 +82,15 @@ serve(async (req) => {
 
     if (!file || !placeId) {
       return new Response(JSON.stringify({ error: "Missing file or placeId" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate placeId format (UUID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(placeId)) {
+      return new Response(JSON.stringify({ error: "Invalid placeId format" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
