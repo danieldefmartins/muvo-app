@@ -1,0 +1,229 @@
+import React, { useState } from 'react';
+import { Heart } from 'lucide-react';
+import { ReviewHelper } from './ReviewHelper';
+import { ReviewPopup } from './ReviewPopup';
+import { PlaceStampBadges } from './PlaceStampBadges';
+import { useReviews, useMyReview, ReviewSignal, useCreateReview, useUpdateReview } from '@/hooks/useReviews';
+import { useAuth } from '@/hooks/useAuth';
+import { useStamps, FALLBACK_STAMPS } from '@/hooks/useStamps';
+import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+type PlaceCategory = Database['public']['Enums']['place_category'];
+
+const TUTORIAL_SEEN_KEY = 'review-tutorial-seen';
+
+interface CompactReviewStripProps {
+  placeId: string;
+  placeName: string;
+  placeCategory?: PlaceCategory;
+}
+
+export function CompactReviewStrip({
+  placeId,
+  placeName,
+  placeCategory,
+}: CompactReviewStripProps) {
+  const { user, isVerified } = useAuth();
+  const { toast } = useToast();
+  const { data: reviews, isLoading } = useReviews(placeId);
+  const { data: existingReview } = useMyReview(placeId);
+  const { data: stamps } = useStamps(placeCategory);
+  const createReview = useCreateReview();
+  const updateReview = useUpdateReview();
+  
+  const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  const hasReviews = reviews && reviews.length > 0;
+  const isEditing = !!existingReview;
+
+  // Get stamps to display
+  const positiveStamps = stamps?.positive || FALLBACK_STAMPS.positive.map(f => ({
+    id: f.id,
+    label: f.label,
+    icon: f.icon,
+    category: 'fallback',
+    polarity: 'positive' as const,
+    sort_order: 0,
+  }));
+
+  const improvementStamps = stamps?.improvement || FALLBACK_STAMPS.improvement.map(f => ({
+    id: f.id,
+    label: f.label,
+    icon: f.icon,
+    category: 'fallback',
+    polarity: 'improvement' as const,
+    sort_order: 0,
+  }));
+
+  // Parse existing review into initial state
+  const getInitialPositive = (): Map<string, number> => {
+    if (!existingReview) return new Map();
+    const map = new Map<string, number>();
+    existingReview.signals.forEach((s: ReviewSignal) => {
+      if (s.polarity === 'positive') {
+        const stampId = (s as any).stamp_id || s.dimension;
+        map.set(stampId, s.level);
+      }
+    });
+    return map;
+  };
+
+  const getInitialImprovement = (): Map<string, number> => {
+    if (!existingReview) return new Map();
+    const map = new Map<string, number>();
+    existingReview.signals.forEach((s: ReviewSignal) => {
+      if (s.polarity === 'improvement') {
+        const stampId = (s as any).stamp_id || s.dimension;
+        map.set(stampId, s.level);
+      }
+    });
+    return map;
+  };
+
+  const handleLeaveReviewClick = () => {
+    const tutorialSeen = localStorage.getItem(TUTORIAL_SEEN_KEY) === 'true';
+    const hasCompletedFirstReview = localStorage.getItem('review-first-completed') === 'true';
+    
+    if (!tutorialSeen && !hasCompletedFirstReview) {
+      setShowTutorial(true);
+    } else {
+      setShowReviewPopup(true);
+    }
+  };
+
+  const handleTutorialStart = () => {
+    localStorage.setItem(TUTORIAL_SEEN_KEY, 'true');
+    setShowTutorial(false);
+    setShowReviewPopup(true);
+  };
+
+  const handleTutorialSkip = () => {
+    localStorage.setItem(TUTORIAL_SEEN_KEY, 'true');
+    setShowTutorial(false);
+    setShowReviewPopup(true);
+  };
+
+  const handleSubmit = async (data: {
+    positiveSignals: Map<string, number>;
+    improvementSignals: Map<string, number>;
+    notePublic: string;
+    notePrivate: string;
+  }) => {
+    const { positiveSignals, improvementSignals, notePublic, notePrivate } = data;
+
+    const totalStamps = positiveSignals.size + improvementSignals.size;
+    if (totalStamps === 0) {
+      toast({
+        title: "Something needs to stand out",
+        description: "Add at least one stamp to submit your review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Build signals array
+    const signals: ReviewSignal[] = [
+      ...Array.from(positiveSignals.entries()).map(([stampId, level]) => ({
+        dimension: 'quality' as const,
+        polarity: 'positive' as const,
+        level,
+        stamp_id: stampId,
+      })),
+      ...Array.from(improvementSignals.entries()).map(([stampId, level]) => ({
+        dimension: 'quality' as const,
+        polarity: 'improvement' as const,
+        level,
+        stamp_id: stampId,
+      })),
+    ];
+
+    try {
+      if (isEditing && existingReview) {
+        await updateReview.mutateAsync({
+          reviewId: existingReview.id,
+          placeId,
+          notePublic,
+          notePrivate,
+          signals,
+        });
+        toast({
+          title: "Review updated",
+          description: "Your review has been saved",
+        });
+      } else {
+        await createReview.mutateAsync({
+          placeId,
+          notePublic,
+          notePrivate,
+          signals,
+        });
+        toast({
+          title: "Thanks!",
+          description: "Your review helps people make better decisions",
+        });
+      }
+      localStorage.setItem('review-first-completed', 'true');
+      setShowReviewPopup(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save review",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const isSubmitting = createReview.isPending || updateReview.isPending;
+
+  return (
+    <>
+      <ReviewHelper 
+        autoShowOnFirstTime={showTutorial}
+        onStartReview={handleTutorialStart}
+        onSkip={handleTutorialSkip}
+      />
+
+      <div className="flex items-center gap-3">
+        {/* Stamp badges - max 5 icons */}
+        <div className="flex-1 min-w-0">
+          {hasReviews ? (
+            <PlaceStampBadges placeId={placeId} maxGood={5} maxBad={0} showReviewCount={false} variant="compact" />
+          ) : (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Heart className="w-4 h-4" />
+              <span className="text-sm">No reviews yet</span>
+            </div>
+          )}
+        </div>
+
+        {/* Leave a review link */}
+        {user && isVerified && (
+          <button
+            onClick={handleLeaveReviewClick}
+            className="text-sm text-primary hover:underline whitespace-nowrap flex-shrink-0"
+          >
+            {isEditing ? 'Edit review' : 'Leave a review'}
+          </button>
+        )}
+      </div>
+
+      {/* Review Popup */}
+      <ReviewPopup
+        open={showReviewPopup}
+        onOpenChange={setShowReviewPopup}
+        positiveStamps={positiveStamps}
+        improvementStamps={improvementStamps}
+        placeName={placeName}
+        initialPositive={getInitialPositive()}
+        initialImprovement={getInitialImprovement()}
+        initialNotePublic={existingReview?.note_public || ''}
+        initialNotePrivate={existingReview?.note_private || ''}
+        isEditing={isEditing}
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmit}
+      />
+    </>
+  );
+}

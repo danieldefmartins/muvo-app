@@ -25,7 +25,7 @@ import { PlaceStatusBadge } from '@/components/PlaceStatusBadge';
 import { ReportStatusForm } from '@/components/ReportStatusForm';
 import { PlacePhotoGallery } from '@/components/PlacePhotoGallery';
 import { PhotoUploadForm } from '@/components/PhotoUploadForm';
-import { ReviewsSection } from '@/components/ReviewsSection';
+import { CompactReviewStrip } from '@/components/CompactReviewStrip';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -128,14 +128,6 @@ const PlaceDetail = () => {
           </div>
         </section>
 
-        {/* Reviews Section - MOVED UP near top, under place name */}
-        <ReviewsSection
-          placeId={id!}
-          placeName={place.name}
-          placeCategory={place.primaryCategory}
-          latitude={place.latitude}
-          longitude={place.longitude}
-        />
 
         {/* Hero section */}
         <section className="mb-6 animate-fade-in">
@@ -147,10 +139,19 @@ const PlaceDetail = () => {
           </div>
 
           {/* Location */}
-          <div className="flex items-center gap-2 text-muted-foreground mb-4">
+          <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <MapPin className="w-4 h-4" />
             <span className="text-sm">{locationString}</span>
             <span className="text-sm">• {place.distance} mi away</span>
+          </div>
+
+          {/* Compact Review Strip - right under coordinates */}
+          <div className="mb-4">
+            <CompactReviewStrip
+              placeId={id!}
+              placeName={place.name}
+              placeCategory={place.primaryCategory}
+            />
           </div>
 
           {/* Mini Map */}
