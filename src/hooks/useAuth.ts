@@ -65,6 +65,79 @@ export function useAuth() {
     }
   }
 
+  // Sign in / Sign up with phone (sends OTP)
+  async function signInWithPhone(phone: string) {
+    const { data, error } = await supabase.auth.signInWithOtp({
+      phone,
+    });
+    return { data, error };
+  }
+
+  // Verify phone OTP (works for both signup and signin)
+  async function verifyPhoneOtp(phone: string, token: string) {
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone,
+      token,
+      type: 'sms',
+    });
+    
+    if (!error && data.user) {
+      // Update profile to mark phone as verified
+      await supabase
+        .from('profiles')
+        .update({ 
+          phone_verified: true, 
+          phone_number: phone,
+          phone_verified_at: new Date().toISOString()
+        })
+        .eq('id', data.user.id);
+      
+      // Refresh profile
+      await fetchProfile(data.user.id);
+    }
+    
+    return { data, error };
+  }
+
+  // Sign in with email+password
+  async function signInWithEmail(email: string, password: string) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return { data, error };
+  }
+
+  // Update user's email and password (for phone-first users adding email)
+  async function updateEmailPassword(email: string, password: string) {
+    const { data, error } = await supabase.auth.updateUser({
+      email,
+      password,
+    });
+
+    if (!error && user) {
+      // Update profile to mark email as verified (since they're logged in)
+      await supabase
+        .from('profiles')
+        .update({ 
+          email,
+          email_verified: true,
+          email_verified_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+      
+      await fetchProfile(user.id);
+    }
+
+    return { data, error };
+  }
+
+  async function signOut() {
+    const { error } = await supabase.auth.signOut();
+    return { error };
+  }
+
+  // Legacy methods for backwards compatibility
   async function signUp(email: string, password: string, phone?: string) {
     const redirectUrl = `${window.location.origin}/`;
     
@@ -81,45 +154,11 @@ export function useAuth() {
   }
 
   async function signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    return { data, error };
-  }
-
-  async function signOut() {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    return signInWithEmail(email, password);
   }
 
   async function verifyPhone(phone: string) {
-    const { data, error } = await supabase.auth.signInWithOtp({
-      phone,
-    });
-    return { data, error };
-  }
-
-  async function verifyPhoneOtp(phone: string, token: string) {
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone,
-      token,
-      type: 'sms',
-    });
-    
-    if (!error && user) {
-      // Update profile to mark phone as verified
-      await supabase
-        .from('profiles')
-        .update({ phone_verified: true, phone_number: phone })
-        .eq('id', user.id);
-      
-      // Refresh profile
-      await fetchProfile(user.id);
-    }
-    
-    return { data, error };
+    return signInWithPhone(phone);
   }
 
   async function resendEmailConfirmation() {
@@ -144,11 +183,16 @@ export function useAuth() {
     profile,
     loading,
     isVerified,
+    // New phone-first methods
+    signInWithPhone,
+    verifyPhoneOtp,
+    signInWithEmail,
+    updateEmailPassword,
+    // Legacy methods
     signUp,
     signIn,
     signOut,
     verifyPhone,
-    verifyPhoneOtp,
     resendEmailConfirmation,
     refreshProfile: () => user && fetchProfile(user.id),
   };
