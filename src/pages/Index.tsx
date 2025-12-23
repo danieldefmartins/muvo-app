@@ -78,15 +78,15 @@ const Index = () => {
             loop: true,
             duration: 40,
           }}
-          className="w-full h-full"
+          className="absolute inset-0 w-full h-full"
         >
-          <CarouselContent className="h-full -ml-0">
+          <CarouselContent className="h-full ml-0">
             {heroSlides.map((slide, index) => (
-              <CarouselItem key={index} className="h-full pl-0">
+              <CarouselItem key={index} className="relative h-full pl-0 min-w-full">
                 <img
                   src={slide.src}
                   alt={slide.alt}
-                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+                  className="w-full h-full object-cover"
                   loading={index === 0 ? 'eager' : 'lazy'}
                 />
               </CarouselItem>
