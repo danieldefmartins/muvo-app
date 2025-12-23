@@ -3,36 +3,41 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ReviewSignalIcon } from './ReviewSignalIcon';
+import { StampButton } from './StampButton';
 import { ReviewHelpButton } from './ReviewHelper';
 import {
-  REVIEW_DIMENSIONS,
-  ReviewDimension,
   ReviewSignal,
   useCreateReview,
   useUpdateReview,
   useMyReview,
 } from '@/hooks/useReviews';
+import { useStamps, FALLBACK_STAMPS, type StampDefinition } from '@/hooks/useStamps';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, CheckCircle2 } from 'lucide-react';
+import type { Database } from '@/integrations/supabase/types';
+
+type PlaceCategory = Database['public']['Enums']['place_category'];
 
 const HINTS_STORAGE_KEY = 'review-hints-understood';
 
 interface ReviewFormProps {
   placeId: string;
+  placeCategory?: PlaceCategory;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
+export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: ReviewFormProps) {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { data: existingReview, isLoading: loadingExisting } = useMyReview(placeId);
+  const { data: stamps, isLoading: loadingStamps } = useStamps(placeCategory);
   const createReview = useCreateReview();
   const updateReview = useUpdateReview();
 
-  const [positiveSignals, setPositiveSignals] = useState<Map<ReviewDimension, number>>(new Map());
-  const [improvementSignals, setImprovementSignals] = useState<Map<ReviewDimension, number>>(new Map());
+  // Selected stamps: Map<stampId, level (1-3)>
+  const [positiveSignals, setPositiveSignals] = useState<Map<string, number>>(new Map());
+  const [improvementSignals, setImprovementSignals] = useState<Map<string, number>>(new Map());
   const [notePublic, setNotePublic] = useState('');
   const [notePrivate, setNotePrivate] = useState('');
   
@@ -41,6 +46,26 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
   const [hintsUnderstood, setHintsUnderstood] = useState(false);
   const [showEncouragement, setShowEncouragement] = useState(false);
   const [lastTapLevel, setLastTapLevel] = useState<number | null>(null);
+  const [showTapHint, setShowTapHint] = useState(false);
+
+  // Get stamps to display (fallback if none loaded)
+  const positiveStamps = stamps?.positive || FALLBACK_STAMPS.positive.map(f => ({
+    id: f.id,
+    label: f.label,
+    icon: f.icon,
+    category: 'fallback',
+    polarity: 'positive' as const,
+    sort_order: 0,
+  }));
+  
+  const improvementStamps = stamps?.improvement || FALLBACK_STAMPS.improvement.map(f => ({
+    id: f.id,
+    label: f.label,
+    icon: f.icon,
+    category: 'fallback',
+    polarity: 'improvement' as const,
+    sort_order: 0,
+  }));
 
   // Check if hints have been dismissed before
   useEffect(() => {
@@ -56,7 +81,7 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
     }
   }, [tapCount, hintsUnderstood]);
 
-  // Show encouragement after 3 total icons selected
+  // Show encouragement after 3 total stamps selected
   useEffect(() => {
     const totalSelected = positiveSignals.size + improvementSignals.size;
     if (totalSelected >= 3 && !showEncouragement) {
@@ -64,41 +89,53 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
     }
   }, [positiveSignals.size, improvementSignals.size, showEncouragement]);
 
+  // Show tap hint after first tap
+  useEffect(() => {
+    if (lastTapLevel === 1 && !hintsUnderstood) {
+      setShowTapHint(true);
+      const timer = setTimeout(() => setShowTapHint(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [lastTapLevel, hintsUnderstood]);
+
   const isEditing = !!existingReview;
 
   useEffect(() => {
-    if (existingReview) {
+    if (existingReview && stamps) {
       setNotePublic(existingReview.note_public || '');
       setNotePrivate(existingReview.note_private || '');
       
-      const posMap = new Map<ReviewDimension, number>();
-      const impMap = new Map<ReviewDimension, number>();
+      const posMap = new Map<string, number>();
+      const impMap = new Map<string, number>();
       
+      // Map existing signals to stamp IDs
       existingReview.signals.forEach((s: ReviewSignal) => {
+        // Try to find matching stamp by dimension (legacy) or stamp_id
+        const stampId = (s as any).stamp_id || s.dimension;
         if (s.polarity === 'positive') {
-          posMap.set(s.dimension, s.level);
+          posMap.set(stampId, s.level);
         } else {
-          impMap.set(s.dimension, s.level);
+          impMap.set(stampId, s.level);
         }
       });
       
       setPositiveSignals(posMap);
       setImprovementSignals(impMap);
     }
-  }, [existingReview]);
+  }, [existingReview, stamps]);
 
   if (!profile?.is_verified) {
     return (
       <div className="p-4 bg-muted rounded-lg text-center">
         <p className="text-muted-foreground">Only verified users can write reviews.</p>
         <p className="text-sm text-muted-foreground mt-1">
-          Verify your email and phone to unlock this feature.
+          Verify your email to unlock this feature.
         </p>
       </div>
     );
   }
 
-  if (loadingExisting) {
+  if (loadingExisting || loadingStamps) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -106,9 +143,9 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
     );
   }
 
-  const handlePositiveClick = (dimension: ReviewDimension) => {
+  const handlePositiveClick = (stamp: StampDefinition) => {
     // Can't select if already in improvement
-    if (improvementSignals.has(dimension)) {
+    if (improvementSignals.has(stamp.id)) {
       toast({
         title: "Already marked for improvement",
         description: "Remove from improvements first",
@@ -117,7 +154,7 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
       return;
     }
 
-    const current = positiveSignals.get(dimension);
+    const current = positiveSignals.get(stamp.id);
     const newMap = new Map(positiveSignals);
 
     if (!current) {
@@ -130,13 +167,13 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
         });
         return;
       }
-      newMap.set(dimension, 1);
+      newMap.set(stamp.id, 1);
       setLastTapLevel(1);
     } else if (current < 3) {
-      newMap.set(dimension, current + 1);
+      newMap.set(stamp.id, current + 1);
       setLastTapLevel(current + 1);
     } else {
-      newMap.delete(dimension);
+      newMap.delete(stamp.id);
       setLastTapLevel(null);
     }
 
@@ -144,9 +181,9 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
     setPositiveSignals(newMap);
   };
 
-  const handleImprovementClick = (dimension: ReviewDimension) => {
+  const handleImprovementClick = (stamp: StampDefinition) => {
     // Can't select if already in positive
-    if (positiveSignals.has(dimension)) {
+    if (positiveSignals.has(stamp.id)) {
       toast({
         title: "Already marked as strength",
         description: "Remove from strengths first",
@@ -155,7 +192,7 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
       return;
     }
 
-    const current = improvementSignals.get(dimension);
+    const current = improvementSignals.get(stamp.id);
     const newMap = new Map(improvementSignals);
 
     if (!current) {
@@ -168,13 +205,13 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
         });
         return;
       }
-      newMap.set(dimension, 1);
+      newMap.set(stamp.id, 1);
       setLastTapLevel(1);
     } else if (current < 3) {
-      newMap.set(dimension, current + 1);
+      newMap.set(stamp.id, current + 1);
       setLastTapLevel(current + 1);
     } else {
-      newMap.delete(dimension);
+      newMap.delete(stamp.id);
       setLastTapLevel(null);
     }
 
@@ -199,16 +236,19 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
       return;
     }
 
+    // Build signals array with stamp_id for new system
     const signals: ReviewSignal[] = [
-      ...Array.from(positiveSignals.entries()).map(([dimension, level]) => ({
-        dimension,
+      ...Array.from(positiveSignals.entries()).map(([stampId, level]) => ({
+        dimension: 'quality' as const, // Legacy field, required by type
         polarity: 'positive' as const,
         level,
+        stamp_id: stampId,
       })),
-      ...Array.from(improvementSignals.entries()).map(([dimension, level]) => ({
-        dimension,
+      ...Array.from(improvementSignals.entries()).map(([stampId, level]) => ({
+        dimension: 'quality' as const, // Legacy field, required by type
         polarity: 'improvement' as const,
         level,
+        stamp_id: stampId,
       })),
     ];
 
@@ -249,23 +289,13 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
 
   const isSubmitting = createReview.isPending || updateReview.isPending;
 
-  // Get inline hint message based on tap state
-  const getInlineHint = () => {
-    if (hintsUnderstood || tapCount === 0) return null;
-    if (lastTapLevel === 1) return "Tap again if it was even better";
-    if (lastTapLevel === 2) return "Tap again for excellent";
-    return null;
-  };
-
-  const inlineHint = getInlineHint();
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
 
-      {/* Inline Hint */}
-      {inlineHint && (
+      {/* Tap Hint - shows after first tap */}
+      {showTapHint && (
         <div className="animate-fade-in text-center py-2 px-3 bg-primary/10 rounded-lg border border-primary/20">
-          <p className="text-sm text-primary">{inlineHint}</p>
+          <p className="text-sm text-primary">Tap again if it was even better</p>
         </div>
       )}
 
@@ -287,21 +317,17 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
             <ReviewHelpButton />
           </div>
           <span className="text-sm text-muted-foreground">
-            {positiveSignals.size} / 5 selected
+            {positiveSignals.size} / 5
           </span>
         </div>
-        <div className="grid grid-cols-5 gap-2">
-          {REVIEW_DIMENSIONS.map((dim) => (
-            <ReviewSignalIcon
-              key={dim.id}
-              dimension={dim.id}
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+          {positiveStamps.slice(0, 10).map((stamp) => (
+            <StampButton
+              key={stamp.id}
+              stamp={stamp}
               polarity="positive"
-              level={positiveSignals.get(dim.id) || 0}
-              selected={positiveSignals.has(dim.id)}
-              onClick={() => handlePositiveClick(dim.id)}
-              size="md"
-              showLabel
-              label={dim.label}
+              level={positiveSignals.get(stamp.id) || 0}
+              onClick={() => handlePositiveClick(stamp)}
             />
           ))}
         </div>
@@ -314,21 +340,17 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
             What needs IMPROVEMENT? (Pick up to 2)
           </Label>
           <span className="text-sm text-muted-foreground">
-            {improvementSignals.size} / 2 selected
+            {improvementSignals.size} / 2
           </span>
         </div>
-        <div className="grid grid-cols-5 gap-2">
-          {REVIEW_DIMENSIONS.map((dim) => (
-            <ReviewSignalIcon
-              key={dim.id}
-              dimension={dim.id}
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+          {improvementStamps.slice(0, 10).map((stamp) => (
+            <StampButton
+              key={stamp.id}
+              stamp={stamp}
               polarity="improvement"
-              level={improvementSignals.get(dim.id) || 0}
-              selected={improvementSignals.has(dim.id)}
-              onClick={() => handleImprovementClick(dim.id)}
-              size="md"
-              showLabel
-              label={dim.label}
+              level={improvementSignals.get(stamp.id) || 0}
+              onClick={() => handleImprovementClick(stamp)}
             />
           ))}
         </div>
