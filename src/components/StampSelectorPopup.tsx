@@ -168,160 +168,155 @@ export function StampSelectorPopup({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto p-0 overflow-hidden max-h-[85vh]">
-        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 border-b border-border">
-          <DialogTitle className="text-center text-lg">
+      <DialogContent className="w-[92vw] max-w-sm mx-auto p-0 overflow-hidden">
+        <DialogHeader className="px-4 pt-4 pb-2">
+          <DialogTitle className="text-center text-base font-semibold">
             {polarity === 'positive' ? 'What stood out?' : 'What needs improvement?'}
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(85vh-64px)]">
-          <div className="px-4 sm:px-6 py-4 space-y-4">
-            {/* Large Active Stamp Preview */}
-            <div className="flex flex-col items-center gap-3">
-              <button
-                onClick={handleStampTap}
-                disabled={!activeStamp || (currentLevel === 0 && isLimitReached)}
-                className={cn(
-                  'w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 flex items-center justify-center transition-all duration-300',
-                  'hover:scale-105 active:scale-95',
-                  getActiveStyles(),
-                  animatingLevel !== null && 'scale-110',
-                  (!activeStamp || (currentLevel === 0 && isLimitReached)) &&
-                    'opacity-50 cursor-not-allowed'
+        <div className="px-4 pb-4 space-y-3">
+          {/* Large Active Stamp Preview - Centered */}
+          <div className="flex flex-col items-center gap-2">
+            <button
+              onClick={handleStampTap}
+              disabled={!activeStamp || (currentLevel === 0 && isLimitReached)}
+              className={cn(
+                'w-16 h-16 rounded-full border-2 flex items-center justify-center transition-all duration-300',
+                'hover:scale-105 active:scale-95',
+                getActiveStyles(),
+                animatingLevel !== null && 'scale-110',
+                (!activeStamp || (currentLevel === 0 && isLimitReached)) &&
+                  'opacity-50 cursor-not-allowed'
+              )}
+            >
+              <ActiveIcon size={28} />
+            </button>
+
+            {/* Stamp Label & Level */}
+            <div className="text-center">
+              <p className="text-sm font-semibold">
+                {activeStamp?.label || 'Select a stamp'}
+              </p>
+
+              {/* Level Text */}
+              <div className="h-5 flex items-center justify-center">
+                {showLevelText && animatingLevel !== null && animatingLevel > 0 ? (
+                  <p
+                    className={cn(
+                      'text-sm font-bold transition-all duration-300',
+                      polarity === 'positive'
+                        ? 'text-primary'
+                        : animatingLevel === 3
+                        ? 'text-destructive'
+                        : 'text-amber-500'
+                    )}
+                  >
+                    {labels[animatingLevel]}
+                  </p>
+                ) : currentLevel > 0 ? (
+                  <p
+                    className={cn(
+                      'text-xs font-medium',
+                      polarity === 'positive'
+                        ? 'text-primary'
+                        : currentLevel === 3
+                        ? 'text-destructive'
+                        : 'text-amber-500'
+                    )}
+                  >
+                    {labels[currentLevel]}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Tap to select</p>
                 )}
-              >
-                <ActiveIcon size={40} className="sm:w-12 sm:h-12" />
-              </button>
-
-              {/* Stamp Label */}
-              <div className="text-center">
-                <p className="text-base sm:text-lg font-semibold mb-1">
-                  {activeStamp?.label || 'Select a stamp'}
-                </p>
-
-                {/* Animated Level Text */}
-                <div className="h-6 flex items-center justify-center mb-1">
-                  {showLevelText && animatingLevel !== null && animatingLevel > 0 ? (
-                    <p
-                      className={cn(
-                        'text-base font-bold transition-all duration-300 scale-125',
-                        polarity === 'positive'
-                          ? 'text-primary'
-                          : animatingLevel === 3
-                          ? 'text-destructive'
-                          : 'text-amber-500'
-                      )}
-                    >
-                      {labels[animatingLevel]}
-                    </p>
-                  ) : currentLevel > 0 ? (
-                    <p
-                      className={cn(
-                        'text-sm font-medium',
-                        polarity === 'positive'
-                          ? 'text-primary'
-                          : currentLevel === 3
-                          ? 'text-destructive'
-                          : 'text-amber-500'
-                      )}
-                    >
-                      {labels[currentLevel]}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Tap to select</p>
-                  )}
-                </div>
-
-                {/* Strength Dots */}
-                {renderStrengthDots(currentLevel)}
               </div>
-            </div>
 
-            {/* Limit Reached Warning */}
-            {isLimitReached && currentLevel === 0 && (
-              <div className="flex items-center gap-2 py-2 px-3 bg-amber-500/10 rounded-lg border border-amber-500/20 animate-fade-in">
-                <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                <p className="text-sm text-amber-600">You've reached the max for this review.</p>
-              </div>
-            )}
-
-            {/* Horizontal Scrollable Stamp List */}
-            <div className="border-t border-border pt-3">
-              <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex gap-2 px-1 py-1">
-                  {stamps.map((stamp) => {
-                    const IconComponent = stamp.icon
-                      ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
-                      : LucideIcons.Circle;
-                    const stampLevel = selectedStamps.get(stamp.id) || 0;
-                    const isActive = activeStamp?.id === stamp.id;
-                    const isDisabled = !canSelectStamp(stamp);
-
-                    return (
-                      <button
-                        key={stamp.id}
-                        onClick={() => setActiveStamp(stamp)}
-                        disabled={isDisabled}
-                        className={cn(
-                          'flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all duration-200 flex-shrink-0',
-                          'hover:bg-muted/50',
-                          isActive && 'bg-muted ring-2 ring-primary/50',
-                          stampLevel > 0 && !isActive && 'opacity-80',
-                          isDisabled && 'opacity-30 cursor-not-allowed'
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            'w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all',
-                            stampLevel > 0
-                              ? polarity === 'positive'
-                                ? 'bg-primary/20 text-primary border-primary/50'
-                                : 'bg-amber-500/20 text-amber-500 border-amber-500/50'
-                              : 'bg-muted text-muted-foreground border-border'
-                          )}
-                        >
-                          <IconComponent size={18} />
-                        </div>
-                        <span className="text-[10px] text-center w-12 truncate">
-                          {stamp.label}
-                        </span>
-                        {stampLevel > 0 && (
-                          <div className="flex gap-0.5">
-                            {[1, 2, 3].map((dot) => (
-                              <div
-                                key={dot}
-                                className={cn(
-                                  'w-1.5 h-1.5 rounded-full',
-                                  dot <= stampLevel
-                                    ? polarity === 'positive'
-                                      ? 'bg-primary'
-                                      : 'bg-amber-500'
-                                    : 'bg-muted-foreground/30'
-                                )}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </div>
-
-            {/* Instructions */}
-            <div className="text-center space-y-0.5 pt-2 border-t border-border">
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                1× Good • 2× Great • 3× Excellent
-              </p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                {remainingVotes} of {maxVotes} remaining
-              </p>
+              {/* Strength Dots */}
+              {renderStrengthDots(currentLevel)}
             </div>
           </div>
-        </ScrollArea>
+
+          {/* Limit Reached Warning */}
+          {isLimitReached && currentLevel === 0 && (
+            <div className="flex items-center gap-2 py-1.5 px-2.5 bg-amber-500/10 rounded-lg border border-amber-500/20">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+              <p className="text-xs text-amber-600">Max reached for this review.</p>
+            </div>
+          )}
+
+          {/* Horizontal Scrollable Stamp List */}
+          <div className="border-t border-border pt-2">
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-1.5 py-1">
+                {stamps.map((stamp) => {
+                  const IconComponent = stamp.icon
+                    ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
+                    : LucideIcons.Circle;
+                  const stampLevel = selectedStamps.get(stamp.id) || 0;
+                  const isActive = activeStamp?.id === stamp.id;
+                  const isDisabled = !canSelectStamp(stamp);
+
+                  return (
+                    <button
+                      key={stamp.id}
+                      onClick={() => setActiveStamp(stamp)}
+                      disabled={isDisabled}
+                      className={cn(
+                        'flex flex-col items-center gap-0.5 p-1 rounded-lg transition-all duration-200 flex-shrink-0',
+                        'hover:bg-muted/50',
+                        isActive && 'bg-muted ring-2 ring-primary/50',
+                        stampLevel > 0 && !isActive && 'opacity-80',
+                        isDisabled && 'opacity-30 cursor-not-allowed'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all',
+                          stampLevel > 0
+                            ? polarity === 'positive'
+                              ? 'bg-primary/20 text-primary border-primary/50'
+                              : 'bg-amber-500/20 text-amber-500 border-amber-500/50'
+                            : 'bg-muted text-muted-foreground border-border'
+                        )}
+                      >
+                        <IconComponent size={16} />
+                      </div>
+                      <span className="text-[9px] text-center w-10 truncate leading-tight">
+                        {stamp.label}
+                      </span>
+                      {stampLevel > 0 && (
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3].map((dot) => (
+                            <div
+                              key={dot}
+                              className={cn(
+                                'w-1 h-1 rounded-full',
+                                dot <= stampLevel
+                                  ? polarity === 'positive'
+                                    ? 'bg-primary'
+                                    : 'bg-amber-500'
+                                  : 'bg-muted-foreground/30'
+                              )}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </div>
+
+          {/* Instructions - Compact */}
+          <div className="text-center pt-1 border-t border-border">
+            <p className="text-[10px] text-muted-foreground">
+              1× Good • 2× Great • 3× Excellent · {remainingVotes}/{maxVotes} left
+            </p>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
