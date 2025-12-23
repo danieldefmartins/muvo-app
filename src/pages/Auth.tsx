@@ -15,7 +15,11 @@ import { UserProfileCard } from '@/components/UserProfileCard';
 const signUpSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  phone: z.string().min(10, 'Enter a valid phone number').optional(),
+  // Treat empty string as "not provided" so validation doesn't block sign-up
+  phone: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(10, 'Enter a valid phone number').optional()
+  ),
 });
 
 const signInSchema = z.object({
@@ -48,7 +52,7 @@ export default function Auth() {
 
   const signUpForm = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { email: '', password: '', phone: '' },
+    defaultValues: { email: '', password: '' },
   });
 
   const signInForm = useForm<SignInForm>({
