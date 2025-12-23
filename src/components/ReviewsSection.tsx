@@ -211,6 +211,7 @@ export function ReviewsSection({
           )}
           <ReviewForm
             placeId={placeId}
+            placeName={placeName}
             placeCategory={placeCategory}
             onSuccess={handleReviewSuccess}
             onCancel={() => setShowReviewForm(false)}
