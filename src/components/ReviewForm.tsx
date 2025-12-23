@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ReviewSignalIcon } from './ReviewSignalIcon';
-import { ReviewHelper, ReviewHelpButton } from './ReviewHelper';
+import { ReviewHelpButton } from './ReviewHelper';
 import {
   REVIEW_DIMENSIONS,
   ReviewDimension,
@@ -247,8 +247,6 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Review Helper Banner */}
-      <ReviewHelper />
 
       {/* Inline Hint */}
       {inlineHint && (
