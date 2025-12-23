@@ -160,16 +160,48 @@ Respond ONLY with a JSON object:
     const aiMessage = moderationData.choices?.[0]?.message?.content || "";
     console.log("AI response:", aiMessage);
 
-    // Parse the AI response
-    let moderationResult;
+    // Parse and validate the AI response with strict schema validation
+    let moderationResult: { approved: boolean; reason: string };
     try {
       // Extract JSON from the response
       const jsonMatch = aiMessage.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        moderationResult = JSON.parse(jsonMatch[0]);
-      } else {
+      if (!jsonMatch) {
         throw new Error("No JSON found in response");
       }
+      
+      const parsed = JSON.parse(jsonMatch[0]);
+      
+      // Validate the structure explicitly
+      if (typeof parsed.approved !== 'boolean') {
+        throw new Error("Invalid approved field");
+      }
+      
+      // Sanitize and validate the reason field
+      const rawReason = parsed.reason;
+      if (typeof rawReason !== 'string') {
+        throw new Error("Invalid reason field");
+      }
+      
+      // Sanitize the reason: strip HTML/script tags, limit length, escape special chars
+      const sanitizedReason = rawReason
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/[<>"'&]/g, (char) => {
+          const escapeMap: Record<string, string> = {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+            '&': '&amp;'
+          };
+          return escapeMap[char] || char;
+        })
+        .slice(0, 200) // Limit length
+        .trim();
+      
+      moderationResult = {
+        approved: parsed.approved,
+        reason: sanitizedReason || "No reason provided"
+      };
     } catch (e) {
       console.error("Failed to parse moderation response:", e);
       // Default to rejection if we can't parse
