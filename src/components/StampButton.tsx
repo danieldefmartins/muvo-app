@@ -82,16 +82,29 @@ export function StampButton({
 
   const styles = polarity === 'positive' ? getPositiveStyles() : getImprovementStyles();
 
-  const getLevelLabel = () => {
+  // Render strength dots instead of text labels
+  const renderStrengthDots = () => {
     if (!selected) return null;
-    if (polarity === 'positive') {
-      return level === 1 ? 'Good' : level === 2 ? 'Great' : 'Excellent';
-    } else {
-      return level === 1 ? 'Noted' : level === 2 ? 'Issue' : 'Major';
-    }
+    return (
+      <div className="flex gap-0.5 justify-center mt-0.5">
+        {[1, 2, 3].map((dot) => (
+          <div
+            key={dot}
+            className={cn(
+              'w-1.5 h-1.5 rounded-full transition-all',
+              dot <= level
+                ? polarity === 'positive'
+                  ? 'bg-primary'
+                  : level === 3
+                  ? 'bg-destructive'
+                  : 'bg-amber-500'
+                : 'bg-muted-foreground/30'
+            )}
+          />
+        ))}
+      </div>
+    );
   };
-
-  const levelLabel = getLevelLabel();
 
   return (
     <div className="flex flex-col items-center gap-1.5">
@@ -109,7 +122,7 @@ export function StampButton({
             disabled && 'opacity-50 cursor-not-allowed',
             !disabled && 'cursor-pointer'
           )}
-          aria-label={`${stamp.label}${selected ? ` - ${levelLabel}` : ''}`}
+          aria-label={`${stamp.label}${selected ? ` - Level ${level}` : ''}`}
         >
           <IconComponent size={iconSizes[size]} />
         </button>
@@ -134,15 +147,7 @@ export function StampButton({
         <p className="text-xs font-medium text-foreground leading-tight break-words">
           {stamp.label}
         </p>
-        {levelLabel && (
-          <p className={cn(
-            'text-xs font-medium',
-            polarity === 'positive' ? 'text-primary' : 'text-amber-500',
-            level === 3 && polarity === 'improvement' && 'text-destructive'
-          )}>
-            {levelLabel}
-          </p>
-        )}
+        {renderStrengthDots()}
       </div>
     </div>
   );
