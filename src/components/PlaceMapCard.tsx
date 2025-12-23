@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Place, PlaceFeature } from '@/hooks/usePlaces';
 import { FavoriteButton } from './FavoriteButton';
 import { NavigateButton } from './NavigateButton';
+import { PlaceStampBadges } from './PlaceStampBadges';
 import { cn } from '@/lib/utils';
 
 interface PlaceMapCardProps {
@@ -90,6 +91,16 @@ export function PlaceMapCard({ place, className, onClose, isHighlighted }: Place
             <span className="font-medium text-foreground">{place.priceLevel}</span>
           </div>
         </div>
+
+        {/* Review stamps */}
+        <PlaceStampBadges 
+          placeId={place.id} 
+          variant="compact" 
+          maxGood={2} 
+          maxBad={1}
+          showReviewCount={true}
+          className="mb-2"
+        />
 
         {/* Feature icons */}
         {featureIcons.length > 0 && (

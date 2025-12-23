@@ -204,6 +204,44 @@ export type Database = {
           },
         ]
       }
+      place_stamp_aggregates: {
+        Row: {
+          dimension: Database["public"]["Enums"]["review_dimension"]
+          id: string
+          place_id: string
+          polarity: Database["public"]["Enums"]["signal_polarity"]
+          review_count: number
+          total_votes: number
+          updated_at: string
+        }
+        Insert: {
+          dimension: Database["public"]["Enums"]["review_dimension"]
+          id?: string
+          place_id: string
+          polarity: Database["public"]["Enums"]["signal_polarity"]
+          review_count?: number
+          total_votes?: number
+          updated_at?: string
+        }
+        Update: {
+          dimension?: Database["public"]["Enums"]["review_dimension"]
+          id?: string
+          place_id?: string
+          polarity?: Database["public"]["Enums"]["signal_polarity"]
+          review_count?: number
+          total_votes?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_stamp_aggregates_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       place_status_updates: {
         Row: {
           approved_at: string | null
@@ -354,6 +392,7 @@ export type Database = {
           packages_accepted: Database["public"]["Enums"]["package_acceptance"]
           price_level: Database["public"]["Enums"]["price_level"]
           primary_category: Database["public"]["Enums"]["place_category"]
+          review_count: number
           status_updated_at: string | null
         }
         Insert: {
@@ -374,6 +413,7 @@ export type Database = {
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
+          review_count?: number
           status_updated_at?: string | null
         }
         Update: {
@@ -394,6 +434,7 @@ export type Database = {
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
+          review_count?: number
           status_updated_at?: string | null
         }
         Relationships: []
