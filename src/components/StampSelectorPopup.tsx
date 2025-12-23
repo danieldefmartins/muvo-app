@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import * as LucideIcons from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { StampDefinition } from '@/hooks/useStamps';
 
@@ -41,19 +42,19 @@ export function StampSelectorPopup({
   // Reset active stamp when popup opens
   useEffect(() => {
     if (open) {
-      // Pre-select first stamp if none active
-      if (!activeStamp && stamps.length > 0) {
-        setActiveStamp(stamps[0]);
-      }
+      // Pre-select first unselected stamp, or first stamp if all selected
+      const unselectedStamp = stamps.find(s => !selectedStamps.has(s.id));
+      setActiveStamp(unselectedStamp || stamps[0] || null);
     } else {
       setActiveStamp(null);
       setAnimatingLevel(null);
       setShowLevelText(false);
     }
-  }, [open, stamps]);
+  }, [open, stamps, selectedStamps]);
 
   const currentLevel = activeStamp ? (selectedStamps.get(activeStamp.id) || 0) : 0;
   const labels = polarity === 'positive' ? LEVEL_LABELS : IMPROVEMENT_LABELS;
+  const isLimitReached = remainingVotes <= 0;
 
   const handleStampTap = () => {
     if (!activeStamp) return;
@@ -68,8 +69,8 @@ export function StampSelectorPopup({
     } else if (current < 3) {
       // Check if we can add another vote
       if (remainingVotes < 1) {
-        // Can't increase, remove instead
-        newLevel = 0;
+        // Can't increase, but don't remove - just show limit message
+        return;
       } else {
         newLevel = current + 1;
       }
@@ -88,14 +89,14 @@ export function StampSelectorPopup({
     if (newLevel > 0) {
       setTimeout(() => {
         onOpenChange(false);
-      }, 400);
+      }, 500);
     }
 
     // Reset animation after delay
     setTimeout(() => {
       setShowLevelText(false);
       setAnimatingLevel(null);
-    }, 350);
+    }, 450);
   };
 
   const getActiveIcon = () => {
@@ -107,18 +108,18 @@ export function StampSelectorPopup({
 
   const renderStrengthDots = (level: number) => {
     return (
-      <div className="flex gap-1.5 justify-center">
+      <div className="flex gap-2 justify-center">
         {[1, 2, 3].map((dot) => (
           <div
             key={dot}
             className={cn(
-              'w-3 h-3 rounded-full transition-all duration-200',
+              'w-3.5 h-3.5 rounded-full transition-all duration-300',
               dot <= level
                 ? polarity === 'positive'
-                  ? 'bg-primary scale-110'
+                  ? 'bg-primary scale-125'
                   : level === 3
-                  ? 'bg-destructive scale-110'
-                  : 'bg-amber-500 scale-110'
+                  ? 'bg-destructive scale-125'
+                  : 'bg-amber-500 scale-125'
                 : 'bg-muted-foreground/30'
             )}
           />
@@ -159,6 +160,12 @@ export function StampSelectorPopup({
     }
   };
 
+  // Check if a stamp can be selected (not already selected and has remaining votes)
+  const canSelectStamp = (stamp: StampDefinition) => {
+    const isSelected = selectedStamps.has(stamp.id);
+    return isSelected || remainingVotes > 0;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -173,26 +180,28 @@ export function StampSelectorPopup({
           <div className="flex flex-col items-center gap-4">
             <button
               onClick={handleStampTap}
+              disabled={!activeStamp || (currentLevel === 0 && isLimitReached)}
               className={cn(
-                'w-24 h-24 rounded-full border-2 flex items-center justify-center transition-all duration-200',
+                'w-28 h-28 rounded-full border-2 flex items-center justify-center transition-all duration-300',
                 'hover:scale-105 active:scale-95',
                 getActiveStyles(),
-                animatingLevel !== null && 'scale-110'
+                animatingLevel !== null && 'scale-110',
+                (!activeStamp || (currentLevel === 0 && isLimitReached)) && 'opacity-50 cursor-not-allowed'
               )}
             >
-              <ActiveIcon size={48} />
+              <ActiveIcon size={52} />
             </button>
 
             {/* Stamp Label */}
-            <div className="text-center">
-              <p className="text-lg font-semibold">{activeStamp?.label || 'Select a stamp'}</p>
+            <div className="text-center min-h-[80px]">
+              <p className="text-lg font-semibold mb-2">{activeStamp?.label || 'Select a stamp'}</p>
               
               {/* Animated Level Text */}
-              <div className="h-8 flex items-center justify-center">
+              <div className="h-8 flex items-center justify-center mb-2">
                 {showLevelText && animatingLevel !== null && animatingLevel > 0 ? (
                   <p
                     className={cn(
-                      'text-sm font-medium animate-scale-in',
+                      'text-base font-bold transition-all duration-300 scale-125',
                       polarity === 'positive' ? 'text-primary' : animatingLevel === 3 ? 'text-destructive' : 'text-amber-500'
                     )}
                   >
@@ -217,26 +226,39 @@ export function StampSelectorPopup({
             </div>
           </div>
 
+          {/* Limit Reached Warning */}
+          {isLimitReached && currentLevel === 0 && (
+            <div className="flex items-center gap-2 py-2 px-3 bg-amber-500/10 rounded-lg border border-amber-500/20 animate-fade-in">
+              <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              <p className="text-sm text-amber-600">
+                You've reached the max for this review.
+              </p>
+            </div>
+          )}
+
           {/* Horizontal Scrollable Stamp List */}
           <div className="border-t border-border pt-4">
             <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex gap-4 px-2 py-2">
+              <div className="flex gap-3 px-2 py-2">
                 {stamps.map((stamp) => {
                   const IconComponent = stamp.icon
                     ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
                     : LucideIcons.Circle;
                   const stampLevel = selectedStamps.get(stamp.id) || 0;
                   const isActive = activeStamp?.id === stamp.id;
+                  const isDisabled = !canSelectStamp(stamp);
 
                   return (
                     <button
                       key={stamp.id}
                       onClick={() => setActiveStamp(stamp)}
+                      disabled={isDisabled}
                       className={cn(
                         'flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all duration-200',
                         'hover:bg-muted/50',
                         isActive && 'bg-muted ring-2 ring-primary/50',
-                        stampLevel > 0 && !isActive && 'opacity-60'
+                        stampLevel > 0 && !isActive && 'opacity-80',
+                        isDisabled && 'opacity-30 cursor-not-allowed'
                       )}
                     >
                       <div
@@ -280,7 +302,7 @@ export function StampSelectorPopup({
           {/* Instructions */}
           <div className="text-center space-y-1 pt-2 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              Tap the stamp: 1× Good • 2× Great • 3× Excellent
+              1× Good • 2× Great • 3× Excellent
             </p>
             <p className="text-xs text-muted-foreground">
               {remainingVotes} of {maxVotes} remaining

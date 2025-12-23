@@ -1,6 +1,6 @@
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { StampDefinition } from '@/hooks/useStamps';
 
@@ -40,10 +40,10 @@ export function SelectedStampsArea({
   maxPositiveVotes,
   maxImprovementVotes,
 }: SelectedStampsAreaProps) {
-  const hasPositiveSelections = selectedPositive.size > 0;
-  const hasImprovementSelections = selectedImprovement.size > 0;
   const canAddPositive = totalPositiveVotes < maxPositiveVotes;
   const canAddImprovement = totalImprovementVotes < maxImprovementVotes;
+  const positiveAtLimit = !canAddPositive;
+  const improvementAtLimit = !canAddImprovement;
 
   const renderSelectedStamp = (
     stamp: StampDefinition,
@@ -85,7 +85,7 @@ export function SelectedStampsArea({
     };
 
     return (
-      <div key={stamp.id} className="flex flex-col items-center gap-1.5 relative group">
+      <div key={stamp.id} className="flex flex-col items-center gap-1.5 relative group animate-fade-in">
         {/* Remove button */}
         <button
           type="button"
@@ -145,7 +145,7 @@ export function SelectedStampsArea({
       disabled={disabled}
       className={cn(
         'flex flex-col items-center gap-1.5',
-        disabled && 'opacity-50 cursor-not-allowed'
+        disabled && 'opacity-40 cursor-not-allowed'
       )}
     >
       <div
@@ -153,13 +153,19 @@ export function SelectedStampsArea({
           'w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center transition-all duration-200',
           !disabled && 'hover:scale-105 active:scale-95',
           polarity === 'positive'
-            ? 'border-primary/50 text-primary/50 hover:border-primary hover:text-primary'
-            : 'border-amber-500/50 text-amber-500/50 hover:border-amber-500 hover:text-amber-500'
+            ? disabled
+              ? 'border-muted-foreground/30 text-muted-foreground/30'
+              : 'border-primary/50 text-primary/50 hover:border-primary hover:text-primary'
+            : disabled
+              ? 'border-muted-foreground/30 text-muted-foreground/30'
+              : 'border-amber-500/50 text-amber-500/50 hover:border-amber-500 hover:text-amber-500'
         )}
       >
         <Plus size={24} />
       </div>
-      <p className="text-xs text-muted-foreground">Add</p>
+      <p className="text-xs text-muted-foreground">
+        {polarity === 'positive' ? '+ Add what stood out' : '+ Add issue'}
+      </p>
     </button>
   );
 
@@ -169,8 +175,11 @@ export function SelectedStampsArea({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold">What was GREAT?</h3>
-          <span className="text-sm text-muted-foreground">
-            {totalPositiveVotes} / {maxPositiveVotes} selected
+          <span className={cn(
+            'text-sm',
+            positiveAtLimit ? 'text-amber-500 font-medium' : 'text-muted-foreground'
+          )}>
+            {totalPositiveVotes} / {maxPositiveVotes}
           </span>
         </div>
         
@@ -188,14 +197,27 @@ export function SelectedStampsArea({
           })}
           {renderAddButton(onAddPositive, !canAddPositive, 'positive')}
         </div>
+
+        {/* Limit reached hint */}
+        {positiveAtLimit && selectedPositive.size > 0 && (
+          <div className="flex items-center gap-2 py-2 px-3 bg-amber-500/10 rounded-lg border border-amber-500/20 animate-fade-in">
+            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+            <p className="text-xs text-amber-600">
+              You've reached the max for Good stamps.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Improvement Stamps Section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold">What needs IMPROVEMENT?</h3>
-          <span className="text-sm text-muted-foreground">
-            {totalImprovementVotes} / {maxImprovementVotes} selected
+          <span className={cn(
+            'text-sm',
+            improvementAtLimit ? 'text-amber-500 font-medium' : 'text-muted-foreground'
+          )}>
+            {totalImprovementVotes} / {maxImprovementVotes}
           </span>
         </div>
         
@@ -213,6 +235,16 @@ export function SelectedStampsArea({
           })}
           {renderAddButton(onAddImprovement, !canAddImprovement, 'improvement')}
         </div>
+
+        {/* Limit reached hint */}
+        {improvementAtLimit && selectedImprovement.size > 0 && (
+          <div className="flex items-center gap-2 py-2 px-3 bg-amber-500/10 rounded-lg border border-amber-500/20 animate-fade-in">
+            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+            <p className="text-xs text-amber-600">
+              You've reached the max for Improvement stamps.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
