@@ -43,7 +43,8 @@ type AuthMode =
   | 'signin-choice'    // Sign in: Choose method
   | 'signin-phone'     // Sign in via phone
   | 'signin-phone-otp' // Sign in: verify SMS
-  | 'signin-email';    // Sign in via email+password
+  | 'signin-email'     // Sign in via email+password
+  | 'signup-email';    // Create account via email+password
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function Auth() {
     signInWithPhone, 
     verifyPhoneOtp, 
     signInWithEmail,
+    signUp,
     updateEmailPassword,
     signOut,
     refreshProfile
@@ -273,14 +275,30 @@ export default function Auth() {
         <Header title="Complete Setup" showBack />
         <main className="container px-4 py-8 max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-center gap-2 text-green-600 mb-4">
-              <CheckCircle className="w-5 h-5" />
-              <span className="text-sm font-medium">Phone verified</span>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 text-green-600">
+                <CheckCircle className="w-5 h-5" />
+                <span className="text-sm font-medium">Phone verified</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  await signOut();
+                  setMode('phone-entry');
+                  phoneForm.reset();
+                  otpForm.reset();
+                  setPendingPhone('');
+                  navigate('/auth');
+                }}
+              >
+                Sign out
+              </Button>
             </div>
-            
+
             <h1 className="font-display text-xl font-semibold mb-2">Add email & password</h1>
             <p className="text-muted-foreground text-sm mb-6">
-              To upload photos and contribute, please add your email and create a password.
+              You're signed in with your phone. Add email + password to upload photos and contribute.
             </p>
 
             <form onSubmit={emailPasswordForm.handleSubmit(handleAddEmailPassword)} className="space-y-4">
@@ -345,29 +363,25 @@ export default function Auth() {
         <main className="container px-4 py-8 max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-6">
             <h1 className="font-display text-xl font-semibold mb-6">Welcome back</h1>
-            
+
             <div className="space-y-3">
-              <Button 
-                className="w-full" 
-                onClick={() => setMode('signin-phone')}
-              >
+              <Button className="w-full" onClick={() => setMode('signin-phone')}>
                 <Phone className="w-4 h-4 mr-2" />
                 Sign in with phone
               </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => setMode('signin-email')}
-              >
+
+              <Button variant="outline" className="w-full" onClick={() => setMode('signin-email')}>
                 <Mail className="w-4 h-4 mr-2" />
                 Sign in with email
               </Button>
             </div>
 
-            <div className="mt-6 text-center">
+            <div className="mt-6 space-y-2 text-center">
               <Button variant="link" onClick={() => setMode('phone-entry')}>
-                Don't have an account? Sign up
+                Don't have an account? Sign up with phone
+              </Button>
+              <Button variant="link" onClick={() => setMode('signup-email')}>
+                Prefer email? Create an account with email
               </Button>
             </div>
           </div>
@@ -470,6 +484,99 @@ export default function Auth() {
                 }}
               >
                 Use a different number
+              </Button>
+            </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Create account with email
+  if (mode === 'signup-email') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Create Account" showBack />
+        <main className="container px-4 py-8 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-4 -ml-2"
+              onClick={() => setMode('signin-choice')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
+
+            <h1 className="font-display text-xl font-semibold mb-2">Create account with email</h1>
+            <p className="text-muted-foreground text-sm mb-6">
+              You can create an account with email + password, or go back to sign up with phone.
+            </p>
+
+            <form
+              onSubmit={emailPasswordForm.handleSubmit(async (data) => {
+                setIsSubmitting(true);
+                const { error } = await signUp(data.email, data.password);
+                setIsSubmitting(false);
+
+                if (error) {
+                  toast({
+                    title: 'Sign up failed',
+                    description: error.message,
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+
+                toast({
+                  title: 'Account created',
+                  description: 'You can now sign in with your email and password.',
+                });
+
+                setMode('signin-email');
+              })}
+              className="space-y-4"
+            >
+              <div>
+                <Label htmlFor="signup-email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    className="pl-10"
+                    {...emailPasswordForm.register('email')}
+                  />
+                </div>
+                {emailPasswordForm.formState.errors.email && (
+                  <p className="text-sm text-destructive mt-1">
+                    {emailPasswordForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="signup-password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="pl-10"
+                    {...emailPasswordForm.register('password')}
+                  />
+                </div>
+                {emailPasswordForm.formState.errors.password && (
+                  <p className="text-sm text-destructive mt-1">
+                    {emailPasswordForm.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating...' : 'Create account'}
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </form>
           </div>
