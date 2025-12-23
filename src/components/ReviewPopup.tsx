@@ -5,9 +5,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import * as LucideIcons from 'lucide-react';
-import { ArrowLeft, ArrowRight, X, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { StampDefinition } from '@/hooks/useStamps';
 
@@ -239,23 +238,36 @@ export function ReviewPopup({
     </div>
   );
 
-  const renderSelectedStamps = (stampMap: Map<string, number>, stampList: StampDefinition[], polarity: 'positive' | 'improvement') => {
+  const renderSelectedStamps = (
+    stampMap: Map<string, number>,
+    stampList: StampDefinition[],
+    polarity: 'positive' | 'improvement'
+  ) => {
     if (stampMap.size === 0) return null;
     return (
-      <div className="flex flex-wrap gap-2 justify-center">
+      <div className="flex flex-wrap gap-3 justify-center">
         {Array.from(stampMap.entries()).map(([id, level]) => {
-          const stamp = stampList.find(s => s.id === id);
+          const stamp = stampList.find((s) => s.id === id);
           if (!stamp) return null;
-          const Icon = stamp.icon ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle : LucideIcons.Circle;
+          const Icon = stamp.icon
+            ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
+            : LucideIcons.Circle;
+
           return (
-            <div key={id} className="flex flex-col items-center gap-0.5">
-              <div className={cn(
-                'w-10 h-10 rounded-full border-2 flex items-center justify-center',
-                polarity === 'positive' ? 'bg-primary/20 text-primary border-primary/50' : 'bg-amber-500/20 text-amber-500 border-amber-500/50'
-              )}>
-                <Icon size={18} />
+            <div key={id} className="flex flex-col items-center gap-1 max-w-[96px]">
+              <div
+                className={cn(
+                  'w-12 h-12 rounded-full border-2 flex items-center justify-center',
+                  polarity === 'positive'
+                    ? 'bg-primary/20 text-primary border-primary/50'
+                    : 'bg-amber-500/20 text-amber-500 border-amber-500/50'
+                )}
+              >
+                <Icon size={20} />
               </div>
-              <span className="text-[9px] text-center w-12 truncate">{stamp.label}</span>
+              <span className="text-[11px] text-center leading-tight whitespace-normal break-words">
+                {stamp.label}
+              </span>
               {renderDots(level, polarity)}
             </div>
           );
@@ -267,23 +279,23 @@ export function ReviewPopup({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[94vw] max-w-sm mx-auto p-0 overflow-hidden gap-0 flex flex-col max-h-[85vh]">
-        {/* Header */}
+        {/* Header (Radix close button is already rendered by DialogContent) */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <div className="w-8">
+          <div className="w-10">
             {step !== 'intro' && (
-              <button onClick={goBack} className="p-1 rounded hover:bg-muted transition-colors">
+              <button onClick={goBack} className="p-2 -m-2 rounded hover:bg-muted transition-colors">
                 <ArrowLeft className="w-5 h-5 text-muted-foreground" />
               </button>
             )}
           </div>
-          <h2 className="text-base font-semibold text-center flex-1">{getStepTitle()}</h2>
-          <button onClick={() => onOpenChange(false)} className="p-1 rounded hover:bg-muted transition-colors">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
+          <h2 className="text-base font-semibold text-center flex-1 px-6">
+            {getStepTitle()}
+          </h2>
+          <div className="w-10" />
         </div>
 
         {/* Content */}
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
           <div className="p-5">
             {/* INTRO STEP */}
             {step === 'intro' && (
@@ -309,19 +321,19 @@ export function ReviewPopup({
                     onClick={handleStampTap}
                     disabled={!activeStamp || (currentLevel === 0 && remaining < 1)}
                     className={cn(
-                      'w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all duration-200',
+                      'w-24 h-24 rounded-full border-2 flex items-center justify-center transition-all duration-200',
                       'active:scale-95',
-                      'shadow-sm',
+                      'shadow-md',
                       getActiveStyles(),
                       showFlash && 'animate-enter',
                       (!activeStamp || (currentLevel === 0 && remaining < 1)) && 'opacity-50 cursor-not-allowed'
                     )}
                   >
-                    <ActiveIcon size={34} />
+                    <ActiveIcon size={40} />
                   </button>
 
-                  <div className="space-y-1">
-                    <p className="text-base font-semibold leading-tight">
+                  <div className="space-y-1 max-w-[260px]">
+                    <p className="text-lg font-semibold leading-tight">
                       {activeStamp?.label || 'Select a stamp'}
                     </p>
 
@@ -365,10 +377,10 @@ export function ReviewPopup({
                   </p>
                 )}
 
-                {/* Stamp carousel */}
+                {/* Stamp carousel (native horizontal scroll for mobile) */}
                 <div className="border-t border-border pt-3">
-                  <ScrollArea className="w-full">
-                    <div className="flex gap-3 py-2">
+                  <div className="w-full overflow-x-auto overscroll-contain">
+                    <div className="flex gap-3 py-2 px-1">
                       {stamps.map((stamp) => {
                         const Icon = stamp.icon
                           ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
@@ -376,7 +388,6 @@ export function ReviewPopup({
                         const level = signals.get(stamp.id) || 0;
                         const isActive = activeStamp?.id === stamp.id;
 
-                        const isMuted = !isActive && level === 0;
                         const isSelected = level > 0;
 
                         return (
@@ -384,22 +395,19 @@ export function ReviewPopup({
                             key={stamp.id}
                             onClick={() => setActiveStamp(stamp)}
                             className={cn(
-                              'flex flex-col items-center text-center flex-shrink-0 rounded-xl transition-all duration-200',
-                              'w-[92px] px-2 py-2',
+                              'flex flex-col items-center text-center flex-shrink-0 rounded-2xl transition-all duration-200',
+                              'w-[104px] px-2.5 py-2.5',
                               isActive
                                 ? 'bg-muted ring-2 ring-primary/50'
                                 : isSelected
                                 ? 'bg-muted/40 ring-1 ring-border'
-                                : 'bg-transparent',
-                              isMuted && 'opacity-55 hover:opacity-80',
-                              isSelected && !isActive && 'opacity-90',
-                              'hover:bg-muted/40'
+                                : 'bg-transparent opacity-60 hover:opacity-90 hover:bg-muted/30'
                             )}
                           >
                             <div
                               className={cn(
                                 'rounded-full border-2 flex items-center justify-center transition-all',
-                                isActive ? 'w-12 h-12' : 'w-10 h-10',
+                                isActive ? 'w-14 h-14' : 'w-12 h-12',
                                 level > 0
                                   ? isPositive
                                     ? 'bg-primary/20 text-primary border-primary/50'
@@ -407,10 +415,10 @@ export function ReviewPopup({
                                   : 'bg-muted text-muted-foreground border-border'
                               )}
                             >
-                              <Icon size={18} />
+                              <Icon size={20} />
                             </div>
 
-                            <span className="mt-2 text-[11px] leading-tight text-foreground whitespace-normal break-words">
+                            <span className="mt-2 text-[12px] leading-snug text-foreground whitespace-normal break-words">
                               {stamp.label}
                             </span>
 
@@ -439,8 +447,7 @@ export function ReviewPopup({
                         );
                       })}
                     </div>
-                    <ScrollBar orientation="horizontal" />
-                  </ScrollArea>
+                  </div>
                 </div>
 
                 {/* Counter */}
@@ -498,14 +505,14 @@ export function ReviewPopup({
                 )}
                 {(notePublic || notePrivate) && (
                   <div className="text-xs text-muted-foreground border-t border-border pt-2">
-                    {notePublic && <p className="truncate">Note: {notePublic}</p>}
-                    {notePrivate && <p className="truncate text-amber-600">Private: {notePrivate}</p>}
+                    {notePublic && <p className="break-words">Note: {notePublic}</p>}
+                    {notePrivate && <p className="break-words text-amber-600">Private: {notePrivate}</p>}
                   </div>
                 )}
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Footer */}
         <div className="px-4 py-3 border-t border-border flex gap-2">
