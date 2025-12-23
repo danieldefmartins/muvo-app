@@ -40,14 +40,9 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
     );
   }
 
+  // Empty state is now handled by ReviewsSection
   if (!reviews || reviews.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p>No reviews yet</p>
-        <p className="text-sm">Be the first to share your experience!</p>
-      </div>
-    );
+    return null;
   }
 
   const handleDelete = async (reviewId: string) => {
