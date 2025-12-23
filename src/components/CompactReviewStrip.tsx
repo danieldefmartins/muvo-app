@@ -185,15 +185,15 @@ export function CompactReviewStrip({
         onSkip={handleTutorialSkip}
       />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {/* Stamp badges - max 5 icons */}
         <div className="flex-1 min-w-0">
           {hasReviews ? (
             <PlaceStampBadges placeId={placeId} maxGood={5} maxBad={0} showReviewCount={false} variant="compact" />
           ) : (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Heart className="w-4 h-4" />
-              <span className="text-sm">No reviews yet</span>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Heart className="w-5 h-5" />
+              <span className="text-base font-medium">No reviews yet</span>
             </div>
           )}
         </div>
@@ -202,7 +202,7 @@ export function CompactReviewStrip({
         {user && isVerified && (
           <button
             onClick={handleLeaveReviewClick}
-            className="text-sm text-primary hover:underline whitespace-nowrap flex-shrink-0"
+            className="text-base font-semibold text-primary hover:underline whitespace-nowrap flex-shrink-0"
           >
             {isEditing ? 'Edit review' : 'Leave a review'}
           </button>
