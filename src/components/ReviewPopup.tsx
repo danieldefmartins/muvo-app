@@ -56,6 +56,9 @@ export function ReviewPopup({
   const [notePrivate, setNotePrivate] = useState('');
   const [activeStamp, setActiveStamp] = useState<StampDefinition | null>(null);
 
+  const [flashLevel, setFlashLevel] = useState<number | null>(null);
+  const [showFlash, setShowFlash] = useState(false);
+
   // Initialize state when popup opens
   useEffect(() => {
     if (open) {
@@ -65,16 +68,18 @@ export function ReviewPopup({
       setNotePrivate(initialNotePrivate);
       setStep(isEditing ? 'good' : 'intro');
       setActiveStamp(null);
+      setFlashLevel(null);
+      setShowFlash(false);
     }
   }, [open, initialPositive, initialImprovement, initialNotePublic, initialNotePrivate, isEditing]);
 
   // Reset active stamp when step changes
   useEffect(() => {
     if (step === 'good' && positiveStamps.length > 0) {
-      const unselected = positiveStamps.find(s => !positiveSignals.has(s.id));
+      const unselected = positiveStamps.find((s) => !positiveSignals.has(s.id));
       setActiveStamp(unselected || positiveStamps[0]);
     } else if (step === 'improvement' && improvementStamps.length > 0) {
-      const unselected = improvementStamps.find(s => !improvementSignals.has(s.id));
+      const unselected = improvementStamps.find((s) => !improvementSignals.has(s.id));
       setActiveStamp(unselected || improvementStamps[0]);
     } else {
       setActiveStamp(null);
@@ -115,6 +120,14 @@ export function ReviewPopup({
       newMap.set(activeStamp.id, newLevel);
     }
     setSignals(newMap);
+
+    // Visual feedback
+    if (newLevel > 0) {
+      setFlashLevel(newLevel);
+      setShowFlash(true);
+      window.setTimeout(() => setShowFlash(false), 450);
+      window.setTimeout(() => setFlashLevel(null), 500);
+    }
   };
 
   const handleRemoveStamp = (stampId: string, isPositive: boolean) => {
@@ -253,7 +266,7 @@ export function ReviewPopup({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[94vw] max-w-sm mx-auto p-0 overflow-hidden gap-0">
+      <DialogContent className="w-[94vw] max-w-sm mx-auto p-0 overflow-hidden gap-0 flex flex-col max-h-[85vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="w-8">
@@ -270,176 +283,239 @@ export function ReviewPopup({
         </div>
 
         {/* Content */}
-        <div className="p-4">
-          {/* INTRO STEP */}
-          {step === 'intro' && (
-            <div className="text-center space-y-4 py-4">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Instead of stars, we focus on what actually stood out — the good and what needs work.
-              </p>
-              <div className="space-y-2 text-left bg-muted/50 rounded-lg p-3">
-                <p className="text-xs"><span className="font-medium">Step 1:</span> Pick up to 5 Good stamps</p>
-                <p className="text-xs"><span className="font-medium">Step 2:</span> Pick up to 2 Needs Work stamps</p>
-                <p className="text-xs"><span className="font-medium">Step 3:</span> Add a note (optional)</p>
-                <p className="text-xs"><span className="font-medium">Tip:</span> Tap a stamp again to rate it higher</p>
-              </div>
-            </div>
-          )}
-
-          {/* STAMP SELECTION STEPS */}
-          {(step === 'good' || step === 'improvement') && (
-            <div className="space-y-3">
-              {/* Active stamp preview */}
-              <div className="flex flex-col items-center gap-2">
-                <button
-                  onClick={handleStampTap}
-                  disabled={!activeStamp || (currentLevel === 0 && remaining < 1)}
-                  className={cn(
-                    'w-16 h-16 rounded-full border-2 flex items-center justify-center transition-all duration-200',
-                    'active:scale-95',
-                    getActiveStyles(),
-                    (!activeStamp || (currentLevel === 0 && remaining < 1)) && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  <ActiveIcon size={28} />
-                </button>
-                <div className="text-center">
-                  <p className="text-sm font-medium">{activeStamp?.label || 'Select'}</p>
-                  <p className={cn(
-                    'text-xs',
-                    currentLevel > 0
-                      ? isPositive ? 'text-primary font-medium' : currentLevel === 3 ? 'text-destructive font-medium' : 'text-amber-500 font-medium'
-                      : 'text-muted-foreground'
-                  )}>
-                    {currentLevel > 0 ? labels[currentLevel] : 'Tap to add'}
-                  </p>
-                  {renderDots(currentLevel, isPositive ? 'positive' : 'improvement')}
+        <ScrollArea className="flex-1">
+          <div className="p-5">
+            {/* INTRO STEP */}
+            {step === 'intro' && (
+              <div className="text-center space-y-4 py-2">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Instead of stars, we focus on what actually stood out — the good and what needs work.
+                </p>
+                <div className="space-y-2 text-left bg-muted/50 rounded-lg p-4">
+                  <p className="text-xs"><span className="font-medium">Step 1:</span> Pick up to 5 Good stamps</p>
+                  <p className="text-xs"><span className="font-medium">Step 2:</span> Pick up to 2 Needs Work stamps</p>
+                  <p className="text-xs"><span className="font-medium">Step 3:</span> Add a note (optional)</p>
+                  <p className="text-xs"><span className="font-medium">Tip:</span> Tap a stamp again to rate it higher</p>
                 </div>
               </div>
+            )}
 
-              {/* Limit warning */}
-              {remaining < 1 && currentLevel === 0 && (
-                <p className="text-xs text-amber-600 text-center bg-amber-500/10 py-1.5 px-2 rounded">
-                  Max reached — tap a selected stamp to adjust
-                </p>
-              )}
+            {/* STAMP SELECTION STEPS */}
+            {(step === 'good' || step === 'improvement') && (
+              <div className="space-y-5">
+                {/* Active stamp preview */}
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <button
+                    onClick={handleStampTap}
+                    disabled={!activeStamp || (currentLevel === 0 && remaining < 1)}
+                    className={cn(
+                      'w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all duration-200',
+                      'active:scale-95',
+                      'shadow-sm',
+                      getActiveStyles(),
+                      showFlash && 'animate-enter',
+                      (!activeStamp || (currentLevel === 0 && remaining < 1)) && 'opacity-50 cursor-not-allowed'
+                    )}
+                  >
+                    <ActiveIcon size={34} />
+                  </button>
 
-              {/* Stamp carousel */}
-              <div className="border-t border-border pt-2">
-                <ScrollArea className="w-full whitespace-nowrap">
-                  <div className="flex gap-1.5 py-1">
-                    {stamps.map((stamp) => {
-                      const Icon = stamp.icon ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle : LucideIcons.Circle;
-                      const level = signals.get(stamp.id) || 0;
-                      const isActive = activeStamp?.id === stamp.id;
-                      return (
-                        <button
-                          key={stamp.id}
-                          onClick={() => setActiveStamp(stamp)}
-                          className={cn(
-                            'flex flex-col items-center gap-0.5 p-1 rounded-lg transition-all flex-shrink-0',
-                            isActive && 'bg-muted ring-2 ring-primary/50',
-                            level > 0 && !isActive && 'opacity-80'
-                          )}
-                        >
-                          <div className={cn(
-                            'w-9 h-9 rounded-full border-2 flex items-center justify-center',
-                            level > 0
-                              ? isPositive ? 'bg-primary/20 text-primary border-primary/50' : 'bg-amber-500/20 text-amber-500 border-amber-500/50'
-                              : 'bg-muted text-muted-foreground border-border'
-                          )}>
-                            <Icon size={16} />
-                          </div>
-                          <span className="text-[9px] w-10 truncate text-center">{stamp.label}</span>
-                          {level > 0 && (
-                            <div className="flex gap-0.5">
-                              {[1,2,3].map(d => (
-                                <div key={d} className={cn('w-1 h-1 rounded-full', d <= level ? (isPositive ? 'bg-primary' : 'bg-amber-500') : 'bg-muted-foreground/30')} />
-                              ))}
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-1">
+                    <p className="text-base font-semibold leading-tight">
+                      {activeStamp?.label || 'Select a stamp'}
+                    </p>
+
+                    <div className="flex items-center justify-center gap-2">
+                      <p
+                        className={cn(
+                          'text-sm',
+                          currentLevel > 0
+                            ? isPositive
+                              ? 'text-primary font-semibold'
+                              : currentLevel === 3
+                              ? 'text-destructive font-semibold'
+                              : 'text-amber-500 font-semibold'
+                            : 'text-muted-foreground'
+                        )}
+                      >
+                        {showFlash && flashLevel !== null && flashLevel > 0
+                          ? labels[flashLevel]
+                          : currentLevel > 0
+                          ? labels[currentLevel]
+                          : 'Tap to add'}
+                      </p>
+
+                      <span className="text-xs text-muted-foreground">
+                        {currentLevel > 0 ? `${currentLevel} of 3` : '0 of 3'}
+                      </span>
+                    </div>
+
+                    {renderDots(currentLevel, isPositive ? 'positive' : 'improvement')}
+
+                    <p className="text-xs text-muted-foreground">
+                      Tap again to increase strength (Good → Great → Excellent)
+                    </p>
                   </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              </div>
-
-              {/* Counter */}
-              <p className="text-[10px] text-muted-foreground text-center">
-                {maxVotes - remaining} of {maxVotes} votes used
-              </p>
-            </div>
-          )}
-
-          {/* NOTES STEP */}
-          {step === 'notes' && (
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Note for visitors</label>
-                <Textarea
-                  value={notePublic}
-                  onChange={(e) => setNotePublic(e.target.value.slice(0, 250))}
-                  placeholder="Tips or experiences..."
-                  className="mt-1 resize-none text-sm"
-                  rows={2}
-                />
-                <p className="text-[10px] text-muted-foreground text-right mt-0.5">{notePublic.length}/250</p>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Private note (owner only)</label>
-                <Textarea
-                  value={notePrivate}
-                  onChange={(e) => setNotePrivate(e.target.value.slice(0, 250))}
-                  placeholder="Feedback for owner..."
-                  className="mt-1 resize-none text-sm"
-                  rows={2}
-                />
-                <p className="text-[10px] text-muted-foreground text-right mt-0.5">{notePrivate.length}/250</p>
-              </div>
-            </div>
-          )}
-
-          {/* CONFIRM STEP */}
-          {step === 'confirm' && (
-            <div className="space-y-4">
-              {positiveSignals.size > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Highlights</p>
-                  {renderSelectedStamps(positiveSignals, positiveStamps, 'positive')}
                 </div>
-              )}
-              {improvementSignals.size > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Improvements</p>
-                  {renderSelectedStamps(improvementSignals, improvementStamps, 'improvement')}
+
+                {/* Limit warning */}
+                {remaining < 1 && currentLevel === 0 && (
+                  <p className="text-sm text-amber-600 text-center bg-amber-500/10 py-2 px-3 rounded-lg">
+                    You’ve reached the max for this step.
+                  </p>
+                )}
+
+                {/* Stamp carousel */}
+                <div className="border-t border-border pt-3">
+                  <ScrollArea className="w-full">
+                    <div className="flex gap-3 py-2">
+                      {stamps.map((stamp) => {
+                        const Icon = stamp.icon
+                          ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
+                          : LucideIcons.Circle;
+                        const level = signals.get(stamp.id) || 0;
+                        const isActive = activeStamp?.id === stamp.id;
+
+                        const isMuted = !isActive && level === 0;
+                        const isSelected = level > 0;
+
+                        return (
+                          <button
+                            key={stamp.id}
+                            onClick={() => setActiveStamp(stamp)}
+                            className={cn(
+                              'flex flex-col items-center text-center flex-shrink-0 rounded-xl transition-all duration-200',
+                              'w-[92px] px-2 py-2',
+                              isActive
+                                ? 'bg-muted ring-2 ring-primary/50'
+                                : isSelected
+                                ? 'bg-muted/40 ring-1 ring-border'
+                                : 'bg-transparent',
+                              isMuted && 'opacity-55 hover:opacity-80',
+                              isSelected && !isActive && 'opacity-90',
+                              'hover:bg-muted/40'
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                'rounded-full border-2 flex items-center justify-center transition-all',
+                                isActive ? 'w-12 h-12' : 'w-10 h-10',
+                                level > 0
+                                  ? isPositive
+                                    ? 'bg-primary/20 text-primary border-primary/50'
+                                    : 'bg-amber-500/20 text-amber-500 border-amber-500/50'
+                                  : 'bg-muted text-muted-foreground border-border'
+                              )}
+                            >
+                              <Icon size={18} />
+                            </div>
+
+                            <span className="mt-2 text-[11px] leading-tight text-foreground whitespace-normal break-words">
+                              {stamp.label}
+                            </span>
+
+                            <div className="mt-1">
+                              {level > 0 ? (
+                                <div className="flex items-center justify-center gap-1">
+                                  {[1, 2, 3].map((d) => (
+                                    <div
+                                      key={d}
+                                      className={cn(
+                                        'w-1.5 h-1.5 rounded-full',
+                                        d <= level
+                                          ? isPositive
+                                            ? 'bg-primary'
+                                            : 'bg-amber-500'
+                                          : 'bg-muted-foreground/30'
+                                      )}
+                                    />
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="h-[6px]" />
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
                 </div>
-              )}
-              {positiveSignals.size === 0 && improvementSignals.size === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Add at least one stamp to submit.
+
+                {/* Counter */}
+                <p className="text-xs text-muted-foreground text-center">
+                  {maxVotes - remaining} of {maxVotes} votes used
                 </p>
-              )}
-              {(notePublic || notePrivate) && (
-                <div className="text-xs text-muted-foreground border-t border-border pt-2">
-                  {notePublic && <p className="truncate">Note: {notePublic}</p>}
-                  {notePrivate && <p className="truncate text-amber-600">Private: {notePrivate}</p>}
+              </div>
+            )}
+
+            {/* NOTES STEP */}
+            {step === 'notes' && (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Note for visitors</label>
+                  <Textarea
+                    value={notePublic}
+                    onChange={(e) => setNotePublic(e.target.value.slice(0, 250))}
+                    placeholder="Tips or experiences..."
+                    className="mt-1 resize-none text-sm"
+                    rows={3}
+                  />
+                  <p className="text-[10px] text-muted-foreground text-right mt-0.5">{notePublic.length}/250</p>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Private note (owner only)</label>
+                  <Textarea
+                    value={notePrivate}
+                    onChange={(e) => setNotePrivate(e.target.value.slice(0, 250))}
+                    placeholder="Feedback for owner..."
+                    className="mt-1 resize-none text-sm"
+                    rows={3}
+                  />
+                  <p className="text-[10px] text-muted-foreground text-right mt-0.5">{notePrivate.length}/250</p>
+                </div>
+              </div>
+            )}
+
+            {/* CONFIRM STEP */}
+            {step === 'confirm' && (
+              <div className="space-y-4">
+                {positiveSignals.size > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Highlights</p>
+                    {renderSelectedStamps(positiveSignals, positiveStamps, 'positive')}
+                  </div>
+                )}
+                {improvementSignals.size > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Improvements</p>
+                    {renderSelectedStamps(improvementSignals, improvementStamps, 'improvement')}
+                  </div>
+                )}
+                {positiveSignals.size === 0 && improvementSignals.size === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">Add at least one stamp to submit.</p>
+                )}
+                {(notePublic || notePrivate) && (
+                  <div className="text-xs text-muted-foreground border-t border-border pt-2">
+                    {notePublic && <p className="truncate">Note: {notePublic}</p>}
+                    {notePrivate && <p className="truncate text-amber-600">Private: {notePrivate}</p>}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </ScrollArea>
 
         {/* Footer */}
         <div className="px-4 py-3 border-t border-border flex gap-2">
           {step === 'confirm' ? (
-            <Button
-              onClick={goNext}
-              disabled={!canGoNext() || isSubmitting}
-              className="flex-1"
-            >
-              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
+            <Button onClick={goNext} disabled={!canGoNext() || isSubmitting} className="flex-1">
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Check className="w-4 h-4 mr-2" />
+              )}
               {isEditing ? 'Update' : 'Submit'}
             </Button>
           ) : (
