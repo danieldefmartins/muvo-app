@@ -48,6 +48,7 @@ export interface StampAggregate {
   polarity: SignalPolarity;
   total_votes: number;
   review_count: number;
+  avg_intensity: number;
   stamp_id?: string;
 }
 
@@ -152,19 +153,23 @@ export function useMyReview(placeId: string) {
 
 // Fetch aggregated stamp data from the database (not calculated on frontend)
 // Applies noise filter: ignore stamps with fewer than 2 total votes
+// Ranking: total_votes (primary), review_count (tie-breaker)
 export function usePlaceStampAggregates(placeId: string) {
   return useQuery({
     queryKey: ['place-stamp-aggregates', placeId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('place_stamp_aggregates')
-        .select('dimension, polarity, total_votes, review_count, stamp_id')
+        .select('dimension, polarity, total_votes, review_count, avg_intensity, stamp_id')
         .eq('place_id', placeId)
         .gte('total_votes', 2) // Noise filter: ignore stamps with < 2 votes
         .order('total_votes', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as StampAggregate[];
+      return (data || []).map(d => ({
+        ...d,
+        avg_intensity: Number(d.avg_intensity) || 0,
+      })) as StampAggregate[];
     },
     enabled: !!placeId,
   });
