@@ -326,7 +326,9 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
       {/* Tap Hint - shows after first tap */}
       {showTapHint && (
         <div className="animate-fade-in text-center py-2 px-3 bg-primary/10 rounded-lg border border-primary/20">
-          <p className="text-sm text-primary">Tap again if it was even better</p>
+          <p className="text-sm text-primary">
+            Tap again to mark it as Great • Tap 3× for Excellent
+          </p>
         </div>
       )}
 
@@ -339,7 +341,7 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
       )}
 
       {/* Section A: Strengths */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Label className="text-base font-semibold">
@@ -348,19 +350,61 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
             <ReviewHelpButton />
           </div>
           <span className="text-sm text-muted-foreground">
-            {totalPositiveVotes} / 5 votes
+            {totalPositiveVotes} / 5 selected
           </span>
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-          {positiveStamps.slice(0, 10).map((stamp) => (
-            <StampButton
-              key={stamp.id}
-              stamp={stamp}
-              polarity="positive"
-              level={positiveSignals.get(stamp.id) || 0}
-              onClick={() => handlePositiveClick(stamp)}
-            />
-          ))}
+        
+        {/* Grouped Stamps */}
+        <div className="space-y-4">
+          {/* Safety & Comfort */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Safety & Comfort</p>
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+              {positiveStamps.slice(0, 4).map((stamp) => (
+                <StampButton
+                  key={stamp.id}
+                  stamp={stamp}
+                  polarity="positive"
+                  level={positiveSignals.get(stamp.id) || 0}
+                  onClick={() => handlePositiveClick(stamp)}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Site Quality */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Site Quality</p>
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+              {positiveStamps.slice(4, 7).map((stamp) => (
+                <StampButton
+                  key={stamp.id}
+                  stamp={stamp}
+                  polarity="positive"
+                  level={positiveSignals.get(stamp.id) || 0}
+                  onClick={() => handlePositiveClick(stamp)}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Logistics */}
+          {positiveStamps.length > 7 && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Logistics & Amenities</p>
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                {positiveStamps.slice(7, 10).map((stamp) => (
+                  <StampButton
+                    key={stamp.id}
+                    stamp={stamp}
+                    polarity="positive"
+                    level={positiveSignals.get(stamp.id) || 0}
+                    onClick={() => handlePositiveClick(stamp)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -371,7 +415,7 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
             What needs IMPROVEMENT?
           </Label>
           <span className="text-sm text-muted-foreground">
-            {totalImprovementVotes} / 2 votes
+            {totalImprovementVotes} / 2 selected
           </span>
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
@@ -387,8 +431,14 @@ export function ReviewForm({ placeId, placeCategory, onSuccess, onCancel }: Revi
         </div>
       </div>
 
-      {/* Gentle Nudge */}
-      {showNudge && (
+      {/* Contextual Helper Message */}
+      {hasStamps ? (
+        <div className="text-center py-3 px-4 bg-muted/50 rounded-lg border border-border/50">
+          <p className="text-sm text-muted-foreground">
+            Nice — you can add more, or submit when ready.
+          </p>
+        </div>
+      ) : showNudge && (
         <div className="text-center py-3 px-4 bg-muted/50 rounded-lg border border-border/50">
           <p className="text-sm text-muted-foreground">
             Tap at least one thing that stood out — good or bad.
