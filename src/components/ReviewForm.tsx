@@ -14,7 +14,8 @@ import {
   useMyReview,
 } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2, Minus } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const HINTS_STORAGE_KEY = 'review-hints-understood';
 
@@ -35,6 +36,7 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
   const [improvementSignals, setImprovementSignals] = useState<Map<ReviewDimension, number>>(new Map());
   const [notePublic, setNotePublic] = useState('');
   const [notePrivate, setNotePrivate] = useState('');
+  const [nothingStoodOut, setNothingStoodOut] = useState(false);
   
   // Inline hints state
   const [tapCount, setTapCount] = useState(0);
@@ -182,8 +184,31 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
     setImprovementSignals(newMap);
   };
 
+  const handleNothingStoodOutChange = (checked: boolean) => {
+    setNothingStoodOut(checked);
+    if (checked) {
+      // Clear all stamps when "Nothing Stood Out" is selected
+      setPositiveSignals(new Map());
+      setImprovementSignals(new Map());
+    }
+  };
+
+  const totalStamps = positiveSignals.size + improvementSignals.size;
+  const hasInput = totalStamps > 0 || nothingStoodOut;
+  const showNudge = !hasInput && tapCount === 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation: require at least one stamp OR "Nothing Stood Out" selected
+    if (!hasInput) {
+      toast({
+        title: "Please add feedback",
+        description: "Tap at least one thing that stood out — good or bad.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const signals: ReviewSignal[] = [
       ...Array.from(positiveSignals.entries()).map(([dimension, level]) => ({
@@ -317,6 +342,34 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
               label={dim.label}
             />
           ))}
+        </div>
+      </div>
+
+      {/* Gentle Nudge */}
+      {showNudge && (
+        <div className="text-center py-3 px-4 bg-muted/50 rounded-lg border border-border/50">
+          <p className="text-sm text-muted-foreground">
+            Tap at least one thing that stood out — good or bad.
+          </p>
+        </div>
+      )}
+
+      {/* Nothing Stood Out Option */}
+      <div className="flex items-center space-x-3 py-3 px-4 bg-muted/30 rounded-lg border border-border/50">
+        <Checkbox
+          id="nothing-stood-out"
+          checked={nothingStoodOut}
+          onCheckedChange={handleNothingStoodOutChange}
+          disabled={totalStamps > 0}
+        />
+        <div className="flex items-center gap-2">
+          <Minus className="w-4 h-4 text-muted-foreground" />
+          <Label 
+            htmlFor="nothing-stood-out" 
+            className="text-sm font-normal text-muted-foreground cursor-pointer"
+          >
+            Nothing Stood Out
+          </Label>
         </div>
       </div>
 
