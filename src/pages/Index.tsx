@@ -1,34 +1,104 @@
 import { Tent, Route, Map, Star, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { HomeSearchBar } from '@/components/HomeSearchBar';
-import heroImage from '@/assets/hero-rv-landscape.jpg';
 import { usePlaces } from '@/hooks/usePlaces';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from '@/components/ui/carousel';
+
+// Import all hero images
+import heroMountains from '@/assets/hero-mountains.jpg';
+import heroWaterfall from '@/assets/hero-waterfall.jpg';
+import heroNorthernLights from '@/assets/hero-northern-lights.jpg';
+import heroBeach from '@/assets/hero-beach.jpg';
+import heroGlacier from '@/assets/hero-glacier.jpg';
+import heroRushmore from '@/assets/hero-rushmore.jpg';
+import heroCanyon from '@/assets/hero-canyon.jpg';
+import heroRedwoods from '@/assets/hero-redwoods.jpg';
+
+const heroSlides = [
+  { src: heroMountains, alt: 'RV parked in alpine meadow with snow-capped mountains at golden hour' },
+  { src: heroWaterfall, alt: 'RV at scenic overlook with majestic waterfall and lush green forest' },
+  { src: heroNorthernLights, alt: 'RV campsite under the northern lights aurora borealis' },
+  { src: heroBeach, alt: 'RV parked near tropical beach with palm trees at sunset' },
+  { src: heroGlacier, alt: 'RV adventure at massive glacier with ice formations in Alaska' },
+  { src: heroRushmore, alt: 'RV road trip to Mount Rushmore national memorial' },
+  { src: heroCanyon, alt: 'RV on scenic overlook at red rock canyon at sunset' },
+  { src: heroRedwoods, alt: 'RV on forest road among massive ancient redwood trees' },
+];
 
 const Index = () => {
   const { data: places } = usePlaces();
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
   
   // Get top rated places for discovery section
   const topPlaces = places?.slice(0, 4) || [];
+
+  // Auto-advance carousel
+  useEffect(() => {
+    if (!api) return;
+
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [api]);
+
+  // Track current slide
+  const onSelect = useCallback(() => {
+    if (!api) return;
+    setCurrent(api.selectedScrollSnap());
+  }, [api]);
+
+  useEffect(() => {
+    if (!api) return;
+    onSelect();
+    api.on('select', onSelect);
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api, onSelect]);
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section with Search */}
+      {/* Hero Section with Carousel */}
       <section className="relative h-[60vh] min-h-[400px] max-h-[600px] w-full overflow-hidden">
-        {/* Hero Image */}
-        <img
-          src={heroImage}
-          alt="RV parked at scenic mountain campsite during sunset"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <Carousel
+          setApi={setApi}
+          opts={{
+            loop: true,
+            duration: 40,
+          }}
+          className="w-full h-full"
+        >
+          <CarouselContent className="h-full -ml-0">
+            {heroSlides.map((slide, index) => (
+              <CarouselItem key={index} className="h-full pl-0">
+                <img
+                  src={slide.src}
+                  alt={slide.alt}
+                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
         
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
         
         {/* Hero Content */}
-        <div className="relative h-full flex flex-col items-center justify-center px-4 pt-safe">
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-safe">
           <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center mb-3 text-balance max-w-2xl drop-shadow-lg">
             Find your next adventure
           </h1>
@@ -38,6 +108,22 @@ const Index = () => {
           
           {/* Search Bar with Autocomplete */}
           <HomeSearchBar className="w-full max-w-md px-4" />
+        </div>
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {heroSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => api?.scrollTo(index)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === current 
+                  ? 'bg-white w-6' 
+                  : 'bg-white/50 hover:bg-white/75'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
       </section>
 
