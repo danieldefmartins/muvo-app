@@ -206,6 +206,7 @@ export type Database = {
       }
       place_stamp_aggregates: {
         Row: {
+          avg_intensity: number | null
           dimension: Database["public"]["Enums"]["review_dimension"]
           id: string
           place_id: string
@@ -216,6 +217,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avg_intensity?: number | null
           dimension: Database["public"]["Enums"]["review_dimension"]
           id?: string
           place_id: string
@@ -226,6 +228,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avg_intensity?: number | null
           dimension?: Database["public"]["Enums"]["review_dimension"]
           id?: string
           place_id?: string
