@@ -274,6 +274,16 @@ const PlacesMapWithRoute = forwardRef<PlacesMapRef, PlacesMapWithRouteProps>(
       openPopup: (placeId: string) => {
         // Implementation
       },
+      selectPlace: (placeId: string, centerOnPlace?: boolean) => {
+        // Not used in route planning
+      },
+      getCenter: () => {
+        if (map.current) {
+          const center = map.current.getCenter();
+          return { lng: center.lng, lat: center.lat };
+        }
+        return null;
+      },
     }), []);
 
     // Create supercluster
