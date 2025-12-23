@@ -23,11 +23,14 @@ interface PlacesMapProps {
   selectedPlaceId?: string | null;
   onPlaceSelect?: (place: Place) => void;
   onBoundsChange?: (visiblePlaceIds: string[]) => void;
+  onCenterChange?: (center: { lng: number; lat: number }) => void;
 }
 
 export interface PlacesMapRef {
   flyTo: (lng: number, lat: number, zoom?: number) => void;
   openPopup: (placeId: string) => void;
+  selectPlace: (placeId: string, centerOnPlace?: boolean) => void;
+  getCenter: () => { lng: number; lat: number } | null;
 }
 
 // Create a separate query client for the popup
@@ -45,7 +48,7 @@ interface PointProperties {
 type ClusterFeature = Supercluster.PointFeature<PointProperties> | Supercluster.ClusterFeature<PointProperties>;
 
 export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function PlacesMap(
-  { places, mapboxToken, className, initialCenter, initialZoom, showSearch = false, selectedPlaceId, onPlaceSelect, onBoundsChange },
+  { places, mapboxToken, className, initialCenter, initialZoom, showSearch = false, selectedPlaceId, onPlaceSelect, onBoundsChange, onCenterChange },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -157,7 +160,26 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
         }, 1100);
       }
     },
-  }), [openPopupForPlace]);
+    selectPlace: (placeId: string, centerOnPlace: boolean = true) => {
+      const place = placesMapRef.current.get(placeId);
+      if (place && map.current) {
+        if (centerOnPlace) {
+          map.current.easeTo({
+            center: [place.longitude, place.latitude],
+            duration: 500,
+          });
+        }
+        onPlaceSelect?.(place);
+      }
+    },
+    getCenter: () => {
+      if (map.current) {
+        const center = map.current.getCenter();
+        return { lng: center.lng, lat: center.lat };
+      }
+      return null;
+    },
+  }), [openPopupForPlace, onPlaceSelect]);
 
   // Request user location
   const requestLocation = useCallback(() => {
@@ -188,7 +210,15 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
 
   // Notify about visible places when bounds change
   const notifyBoundsChange = useCallback(() => {
-    if (!map.current || !onBoundsChange) return;
+    if (!map.current) return;
+
+    // Notify about center change
+    if (onCenterChange) {
+      const center = map.current.getCenter();
+      onCenterChange({ lng: center.lng, lat: center.lat });
+    }
+
+    if (!onBoundsChange) return;
 
     const bounds = map.current.getBounds();
     const visibleIds = places
@@ -196,7 +226,7 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
       .map((p) => p.id);
     
     onBoundsChange(visibleIds);
-  }, [places, onBoundsChange]);
+  }, [places, onBoundsChange, onCenterChange]);
 
   // Update markers based on current zoom/bounds
   const updateMarkers = useCallback(() => {

@@ -5,6 +5,7 @@ import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
 import { QuickFilterChips } from '@/components/QuickFilterChips';
 import { MapSearchBox } from '@/components/MapSearchBox';
+import { MapPlaceCarousel } from '@/components/MapPlaceCarousel';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,6 +18,11 @@ const MapView = () => {
   const [searchParams] = useSearchParams();
   const { data: places, isLoading: isLoadingPlaces, error: placesError } = usePlaces();
   const mapRef = useRef<PlacesMapRef>(null);
+  
+  // Carousel state
+  const [visiblePlaceIds, setVisiblePlaceIds] = useState<string[]>([]);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [mapCenter, setMapCenter] = useState<{ lng: number; lat: number } | undefined>(undefined);
 
   // Parse URL params for initial map position
   const initialCenter = useMemo(() => {
@@ -108,10 +114,37 @@ const MapView = () => {
 
   const handleSearchPlaceSelect = useCallback((place: Place) => {
     mapRef.current?.flyTo(place.longitude, place.latitude, 14);
+    setSelectedPlaceId(place.id);
     setTimeout(() => {
       mapRef.current?.openPopup(place.id);
     }, 1100);
   }, []);
+
+  // Handle bounds/center changes from map (debounced via map component)
+  const handleBoundsChange = useCallback((placeIds: string[]) => {
+    setVisiblePlaceIds(placeIds);
+  }, []);
+
+  const handleCenterChange = useCallback((center: { lng: number; lat: number }) => {
+    setMapCenter(center);
+  }, []);
+
+  // Handle place selection from map pin click
+  const handleMapPlaceSelect = useCallback((place: Place) => {
+    setSelectedPlaceId(place.id);
+  }, []);
+
+  // Handle carousel place selection - sync with map
+  const handleCarouselPlaceSelect = useCallback((place: Place) => {
+    setSelectedPlaceId(place.id);
+    mapRef.current?.selectPlace(place.id, true);
+  }, []);
+
+  // Get visible places for carousel
+  const visiblePlaces = useMemo(() => {
+    if (!places) return [];
+    return filteredPlaces.filter((p) => visiblePlaceIds.includes(p.id));
+  }, [places, filteredPlaces, visiblePlaceIds]);
 
   return (
     <div 
@@ -164,13 +197,13 @@ const MapView = () => {
 
       {/* Quick filter chips - scrollable row */}
       <QuickFilterChips filters={filters} onFiltersChange={setFilters} />
-      {/* Map container - fills remaining viewport */}
+      {/* Map container - fills remaining viewport, leaving room for carousel */}
       <div 
         className="flex-1 relative"
         style={{ 
-          minHeight: '300px',
-          // Adjust height for chips row (~44px)
-          height: 'calc(100vh - 224px)',
+          minHeight: '200px',
+          // Reserve space for carousel at bottom
+          paddingBottom: '160px',
         }}
       >
         {/* Loading state */}
@@ -225,6 +258,10 @@ const MapView = () => {
             initialCenter={initialCenter}
             initialZoom={initialZoom}
             showSearch={false}
+            selectedPlaceId={selectedPlaceId}
+            onPlaceSelect={handleMapPlaceSelect}
+            onBoundsChange={handleBoundsChange}
+            onCenterChange={handleCenterChange}
           />
         )}
 
@@ -245,6 +282,18 @@ const MapView = () => {
           </div>
         )}
       </div>
+
+      {/* Always-on bottom carousel */}
+      {mapboxToken && !isLoading && !hasError && (
+        <div className="fixed bottom-0 left-0 right-0 z-[40]" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <MapPlaceCarousel
+            places={visiblePlaces.length > 0 ? visiblePlaces : filteredPlaces}
+            selectedPlaceId={selectedPlaceId}
+            onPlaceSelect={handleCarouselPlaceSelect}
+            mapCenter={mapCenter}
+          />
+        </div>
+      )}
     </div>
   );
 };
