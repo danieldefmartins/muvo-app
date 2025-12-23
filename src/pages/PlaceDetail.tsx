@@ -30,6 +30,7 @@ import { PlaceSignalSummary } from '@/components/PlaceSignalSummary';
 import { ReviewForm } from '@/components/ReviewForm';
 import { ReviewList } from '@/components/ReviewList';
 import { ReviewFooterMessage } from '@/components/ReviewFooterMessage';
+import { ReviewHelper } from '@/components/ReviewHelper';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -376,6 +377,9 @@ const PlaceDetail = () => {
             <MessageSquareText className="w-5 h-5 text-primary" />
             Reviews
           </h2>
+
+          {/* Review Helper Banner - Always visible */}
+          <ReviewHelper className="mb-4" />
           
           {/* Signal Summary - Known for / Common issues */}
           <div className="bg-card border border-border rounded-lg p-4 mb-4">
