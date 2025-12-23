@@ -162,10 +162,10 @@ export function ReviewsSection({
         <div className="text-center py-8 px-4 bg-secondary/30 border border-dashed border-border rounded-lg mb-4">
           <Heart className="w-10 h-10 mx-auto mb-3 text-primary/60" />
           <h3 className="font-medium text-foreground mb-1">
-            Be the first to help other travelers
+            Be the first to share what stood out here
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Share an honest review of this place
+            Your review helps other travelers make better decisions
           </p>
           <Button onClick={handleLeaveReviewClick} className="min-w-[180px]">
             Leave the first review
@@ -181,7 +181,7 @@ export function ReviewsSection({
             No reviews yet
           </h3>
           <p className="text-sm text-muted-foreground">
-            Be the first to share your real experience
+            Be the first to share what stood out here
           </p>
         </div>
       )}

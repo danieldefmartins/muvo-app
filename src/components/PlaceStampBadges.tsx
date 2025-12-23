@@ -1,22 +1,8 @@
 import React from 'react';
-import { usePlaceStampAggregates, usePlaceReviewCount, REVIEW_DIMENSIONS, ReviewDimension } from '@/hooks/useReviews';
-import { 
-  Star, HeartHandshake, DollarSign, Sparkles, MapPin, Sofa, Shield, Zap, Ban,
-  MessageSquareText
-} from 'lucide-react';
+import { usePlaceStampAggregates, usePlaceReviewCount } from '@/hooks/useReviews';
+import { useAllStamps, getStampLabel } from '@/hooks/useStamps';
+import { CheckCircle, AlertTriangle, MessageSquareText } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const iconMap: Record<ReviewDimension, React.ElementType> = {
-  quality: Star,
-  service: HeartHandshake,
-  value: DollarSign,
-  cleanliness: Sparkles,
-  location: MapPin,
-  comfort: Sofa,
-  reliability: Shield,
-  speed: Zap,
-  restrictions: Ban,
-};
 
 interface PlaceStampBadgesProps {
   placeId: string;
@@ -37,17 +23,22 @@ export function PlaceStampBadges({
 }: PlaceStampBadgesProps) {
   const { data: aggregates, isLoading } = usePlaceStampAggregates(placeId);
   const { data: reviewCount } = usePlaceReviewCount(placeId);
+  const { data: allStamps } = useAllStamps();
 
   if (isLoading || !aggregates || aggregates.length === 0) return null;
 
-  const positiveStamps = aggregates
+  // Sort by total_votes descending, then review_count as tie-breaker
+  const sortedAggregates = [...aggregates].sort((a, b) => {
+    if (b.total_votes !== a.total_votes) return b.total_votes - a.total_votes;
+    return b.review_count - a.review_count;
+  });
+
+  const positiveStamps = sortedAggregates
     .filter(a => a.polarity === 'positive')
-    .sort((a, b) => b.total_votes - a.total_votes)
     .slice(0, maxGood);
 
-  const improvementStamps = aggregates
+  const improvementStamps = sortedAggregates
     .filter(a => a.polarity === 'improvement')
-    .sort((a, b) => b.total_votes - a.total_votes)
     .slice(0, maxBad);
 
   if (positiveStamps.length === 0 && improvementStamps.length === 0) return null;
@@ -70,12 +61,13 @@ export function PlaceStampBadges({
 
       {/* Positive stamps */}
       {positiveStamps.map((stamp) => {
-        const Icon = iconMap[stamp.dimension];
-        const label = REVIEW_DIMENSIONS.find(d => d.id === stamp.dimension)?.label || stamp.dimension;
+        const label = stamp.stamp_id 
+          ? getStampLabel(allStamps, stamp.stamp_id)
+          : stamp.dimension;
         
         return (
           <div
-            key={`${stamp.dimension}-positive`}
+            key={stamp.stamp_id || `${stamp.dimension}-positive`}
             className={cn(
               'flex items-center gap-1 rounded-full',
               isOverlay 
@@ -86,9 +78,12 @@ export function PlaceStampBadges({
             )}
             title={`${label}: ${stamp.total_votes} votes`}
           >
-            <Icon className={cn(isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5')} />
+            <CheckCircle className={cn(isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5')} />
             {!isCompact && (
-              <span className="text-xs font-medium">{label}</span>
+              <>
+                <span className="text-xs font-medium">{label}</span>
+                <span className="text-xs opacity-70">({stamp.total_votes})</span>
+              </>
             )}
           </div>
         );
@@ -96,12 +91,13 @@ export function PlaceStampBadges({
 
       {/* Improvement stamps */}
       {improvementStamps.map((stamp) => {
-        const Icon = iconMap[stamp.dimension];
-        const label = REVIEW_DIMENSIONS.find(d => d.id === stamp.dimension)?.label || stamp.dimension;
+        const label = stamp.stamp_id 
+          ? getStampLabel(allStamps, stamp.stamp_id)
+          : stamp.dimension;
         
         return (
           <div
-            key={`${stamp.dimension}-improvement`}
+            key={stamp.stamp_id || `${stamp.dimension}-improvement`}
             className={cn(
               'flex items-center gap-1 rounded-full',
               isOverlay 
@@ -112,9 +108,12 @@ export function PlaceStampBadges({
             )}
             title={`${label}: ${stamp.total_votes} votes`}
           >
-            <Icon className={cn(isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5')} />
+            <AlertTriangle className={cn(isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5')} />
             {!isCompact && (
-              <span className="text-xs font-medium">{label}</span>
+              <>
+                <span className="text-xs font-medium">{label}</span>
+                <span className="text-xs opacity-70">({stamp.total_votes})</span>
+              </>
             )}
           </div>
         );
