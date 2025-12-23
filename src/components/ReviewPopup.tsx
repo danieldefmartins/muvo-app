@@ -72,14 +72,15 @@ export function ReviewPopup({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Check scroll position
+  // Check scroll position - always show right indicator initially if content overflows
   const updateScrollIndicators = () => {
     const container = scrollContainerRef.current;
     if (!container) return;
     
     const { scrollLeft, scrollWidth, clientWidth } = container;
-    setCanScrollLeft(scrollLeft > 10);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    setCanScrollLeft(scrollLeft > 5);
+    // Show right scroll indicator if there's more content to scroll
+    setCanScrollRight(scrollWidth > clientWidth && scrollLeft < scrollWidth - clientWidth - 5);
   };
 
   useEffect(() => {
@@ -390,6 +391,13 @@ export function ReviewPopup({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      <style>{`
+        @keyframes popScale {
+          0% { transform: scale(0.5); opacity: 0; }
+          50% { transform: scale(1.3); opacity: 1; }
+          100% { transform: scale(1); opacity: 0; }
+        }
+      `}</style>
       <DialogContent className="w-[95vw] max-w-md mx-auto p-0 overflow-hidden gap-0 flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background">
@@ -428,29 +436,29 @@ export function ReviewPopup({
             {/* INTRO STEP */}
             {step === 'intro' && (
               <div className="text-center space-y-6 py-4">
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-xl text-muted-foreground leading-relaxed">
                   Instead of stars, we focus on what actually matters — the good stuff and what needs work.
                 </p>
-                <div className="space-y-4 text-left bg-muted/50 rounded-2xl p-6">
+                <div className="space-y-5 text-left bg-muted/50 rounded-2xl p-6">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+                    <div className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-base flex-shrink-0">1</div>
                     <div>
-                      <p className="font-semibold text-foreground">Pick what stood out</p>
-                      <p className="text-sm text-muted-foreground">Up to 5 good stamps, 2 needs work</p>
+                      <p className="font-semibold text-foreground text-lg">Pick what stood out</p>
+                      <p className="text-base text-muted-foreground">Up to 5 good stamps, 2 needs work</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+                    <div className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-base flex-shrink-0">2</div>
                     <div>
-                      <p className="font-semibold text-foreground">Tap to set strength</p>
-                      <p className="text-sm text-muted-foreground">Good → Great → Excellent</p>
+                      <p className="font-semibold text-foreground text-lg">Tap to set strength</p>
+                      <p className="text-base text-muted-foreground">Good → Great → Excellent</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+                    <div className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-base flex-shrink-0">3</div>
                     <div>
-                      <p className="font-semibold text-foreground">Submit</p>
-                      <p className="text-sm text-muted-foreground">Add optional notes and you're done!</p>
+                      <p className="font-semibold text-foreground text-lg">Submit</p>
+                      <p className="text-base text-muted-foreground">Add optional notes and you're done!</p>
                     </div>
                   </div>
                 </div>
@@ -462,13 +470,19 @@ export function ReviewPopup({
               <div className="space-y-5">
                 {/* Active stamp preview - LARGE and centered */}
                 <div className="flex flex-col items-center gap-3 text-center">
-                  {/* Pop text animation */}
-                  <div className="h-8 flex items-center justify-center">
+                  {/* Pop text animation - Enhanced scale animation */}
+                  <div className="h-10 flex items-center justify-center overflow-visible">
                     {popText && (
-                      <p className={cn(
-                        "text-2xl font-black uppercase animate-bounce",
-                        isPositive ? "text-primary" : currentLevel === 3 ? "text-destructive" : "text-amber-500"
-                      )}>
+                      <p 
+                        key={`${popText}-${Date.now()}`}
+                        className={cn(
+                          "text-3xl font-black uppercase",
+                          isPositive ? "text-primary" : currentLevel === 3 ? "text-destructive" : "text-amber-500"
+                        )}
+                        style={{
+                          animation: 'popScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                        }}
+                      >
                         {popText}
                       </p>
                     )}
@@ -542,7 +556,7 @@ export function ReviewPopup({
                 {/* Stamp carousel with scroll indicators */}
                 <div className="border-t border-border pt-4">
                   <p className="text-base text-muted-foreground text-center mb-3 font-medium">
-                    Choose a stamp below
+                    Tap a stamp to select it
                   </p>
                   
                   <div className="relative">
@@ -593,9 +607,15 @@ export function ReviewPopup({
                             <button
                               key={stamp.id}
                               onClick={() => {
-                                // If tapping a DIFFERENT stamp, just change focus
+                                // First tap on ANY stamp = select it with level 1
+                                // Subsequent taps on same stamp = increase intensity
+                                // Tapping different stamp when already selected = switch focus and select new one with level 1
                                 if (!isActive) {
                                   setActiveStamp(stamp);
+                                  // If not already selected, also select it with level 1
+                                  if (!isSelected) {
+                                    handleCarouselStampTap(stamp);
+                                  }
                                 } else {
                                   // Tapping the SAME stamp = increase intensity
                                   handleCarouselStampTap(stamp);
