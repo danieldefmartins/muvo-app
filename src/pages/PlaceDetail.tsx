@@ -29,6 +29,7 @@ import { PhotoUploadForm } from '@/components/PhotoUploadForm';
 import { PlaceSignalSummary } from '@/components/PlaceSignalSummary';
 import { ReviewForm } from '@/components/ReviewForm';
 import { ReviewList } from '@/components/ReviewList';
+import { ReviewFooterMessage } from '@/components/ReviewFooterMessage';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -408,6 +409,9 @@ const PlaceDetail = () => {
             placeId={id!} 
             onEditReview={() => setShowReviewForm(true)}
           />
+
+          {/* Footer Message */}
+          <ReviewFooterMessage />
         </section>
 
         {/* Disclaimer */}
