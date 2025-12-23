@@ -217,7 +217,7 @@ const Index = () => {
                       </div>
                     </div>
                     <div className="p-3">
-                      <h3 className="font-medium text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                      <h3 className="font-medium text-sm text-foreground leading-tight group-hover:text-primary transition-colors">
                         {place.name}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-0.5">

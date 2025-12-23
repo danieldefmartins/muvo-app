@@ -108,8 +108,8 @@ export function HomeSearchBar({ className }: HomeSearchBarProps) {
                     <MapPin className="w-4 h-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-foreground truncate">{place.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{place.primaryCategory}</p>
+                    <p className="font-medium text-sm text-foreground">{place.name}</p>
+                    <p className="text-xs text-muted-foreground">{place.primaryCategory}</p>
                   </div>
                   <WeatherBadge 
                     latitude={place.latitude} 

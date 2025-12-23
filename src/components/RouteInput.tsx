@@ -155,7 +155,7 @@ export function RouteInput({
               onClick={() => handleSelect(result)}
             >
               <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-              <span className="text-sm truncate">{result.place_name}</span>
+              <span className="text-sm">{result.place_name}</span>
             </button>
           ))}
         </div>

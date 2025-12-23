@@ -165,8 +165,8 @@ export function MapSearchBox({
                 >
                   <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{place.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="font-medium text-sm">{place.name}</p>
+                    <p className="text-xs text-muted-foreground">
                       {place.primaryCategory} • {place.distance} mi
                     </p>
                   </div>
@@ -189,7 +189,7 @@ export function MapSearchBox({
                 >
                   <Search className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-sm truncate">{result.place_name}</p>
+                    <p className="text-sm">{result.place_name}</p>
                   </div>
                 </button>
               ))}
