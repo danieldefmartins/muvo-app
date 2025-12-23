@@ -74,36 +74,36 @@ export function Header({ title, showBack = false, showMap = false, className }: 
           {user && (
             <>
               <NotificationBell />
-              <Link to="/saved">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "text-muted-foreground hover:text-foreground",
-                    location.pathname === '/saved' && "text-primary"
-                  )}
-                  aria-label="Saved places"
-                >
-                  <Heart className="w-5 h-5" />
-                </Button>
-              </Link>
-            </>
-          )}
-
-          {isAdmin && (
-            <Link to="/admin/suggestions">
               <Button
+                asChild
                 variant="ghost"
                 size="icon"
                 className={cn(
                   "text-muted-foreground hover:text-foreground",
-                  location.pathname === '/admin/suggestions' && "text-primary"
+                  location.pathname === '/saved' && "text-primary"
                 )}
-                aria-label="Admin panel"
               >
-                <Shield className="w-5 h-5" />
+                <Link to="/saved" aria-label="Saved places">
+                  <Heart className="w-5 h-5" />
+                </Link>
               </Button>
-            </Link>
+            </>
+          )}
+
+          {isAdmin && (
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "text-muted-foreground hover:text-foreground",
+                location.pathname === '/admin/suggestions' && "text-primary"
+              )}
+            >
+              <Link to="/admin/suggestions" aria-label="Admin panel">
+                <Shield className="w-5 h-5" />
+              </Link>
+            </Button>
           )}
 
           {user ? (
@@ -117,16 +117,16 @@ export function Header({ title, showBack = false, showMap = false, className }: 
               <LogOut className="w-5 h-5" />
             </Button>
           ) : (
-            <Link to="/auth">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground"
-                aria-label="Sign in"
-              >
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Link to="/auth" aria-label="Sign in">
                 <User className="w-5 h-5" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           )}
         </div>
       </div>
