@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, Phone, ArrowRight, CheckCircle } from 'lucide-react';
+import { Mail, Lock, Phone, ArrowRight, CheckCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,21 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Header } from '@/components/Header';
 import { UserProfileCard } from '@/components/UserProfileCard';
 
-const signUpSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  // Treat empty string as "not provided" so validation doesn't block sign-up
-  phone: z.preprocess(
-    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
-    z.string().min(10, 'Enter a valid phone number').optional()
-  ),
-});
-
-const signInSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
+// Schemas
 const phoneSchema = z.object({
   phone: z.string().min(10, 'Enter a valid phone number'),
 });
@@ -35,30 +21,49 @@ const otpSchema = z.object({
   otp: z.string().length(6, 'Enter the 6-digit code'),
 });
 
-type SignUpForm = z.infer<typeof signUpSchema>;
-type SignInForm = z.infer<typeof signInSchema>;
+const emailPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+const signInEmailSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
 type PhoneForm = z.infer<typeof phoneSchema>;
 type OtpForm = z.infer<typeof otpSchema>;
+type EmailPasswordForm = z.infer<typeof emailPasswordSchema>;
+type SignInEmailForm = z.infer<typeof signInEmailSchema>;
 
-type AuthMode = 'signin' | 'signup' | 'verify-phone' | 'verify-otp';
+type AuthMode = 
+  | 'phone-entry'      // Step 1: Enter phone number
+  | 'phone-otp'        // Step 2: Verify SMS code
+  | 'add-email'        // Step 3: Add email+password (after phone verified)
+  | 'signin-choice'    // Sign in: Choose method
+  | 'signin-phone'     // Sign in via phone
+  | 'signin-phone-otp' // Sign in: verify SMS
+  | 'signin-email';    // Sign in via email+password
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { user, profile, loading, signUp, signIn, verifyPhone, verifyPhoneOtp, resendEmailConfirmation } = useAuth();
-  const [mode, setMode] = useState<AuthMode>('signin');
+  const { 
+    user, 
+    profile, 
+    loading, 
+    signInWithPhone, 
+    verifyPhoneOtp, 
+    signInWithEmail,
+    updateEmailPassword,
+    signOut,
+    refreshProfile
+  } = useAuth();
+  
+  const [mode, setMode] = useState<AuthMode>('phone-entry');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingPhone, setPendingPhone] = useState('');
-
-  const signUpForm = useForm<SignUpForm>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { email: '', password: '' },
-  });
-
-  const signInForm = useForm<SignInForm>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: { email: '', password: '' },
-  });
 
   const phoneForm = useForm<PhoneForm>({
     resolver: zodResolver(phoneSchema),
@@ -70,65 +75,40 @@ export default function Auth() {
     defaultValues: { otp: '' },
   });
 
-  // Redirect if fully verified - but show profile if they want to see it
-  useEffect(() => {
-    if (!loading && user && profile?.is_verified && mode === 'signin') {
-      // Don't auto-redirect, show profile instead
-    }
-  }, [user, profile, loading, navigate, mode]);
+  const emailPasswordForm = useForm<EmailPasswordForm>({
+    resolver: zodResolver(emailPasswordSchema),
+    defaultValues: { email: '', password: '' },
+  });
 
-  // If logged in but not verified, show verification steps
+  const signInEmailForm = useForm<SignInEmailForm>({
+    resolver: zodResolver(signInEmailSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  // Check URL params for mode
   useEffect(() => {
-    if (user && profile) {
-      if (!profile.email_verified) {
-        // Email not verified - show message
-        setMode('signin');
-      } else if (!profile.phone_verified) {
-        // Email verified, phone not verified
-        setMode('verify-phone');
+    const urlMode = searchParams.get('mode');
+    if (urlMode === 'signin') {
+      setMode('signin-choice');
+    }
+  }, [searchParams]);
+
+  // Determine what to show based on user state
+  useEffect(() => {
+    if (!loading && user && profile) {
+      // User is logged in, check what they need
+      if (profile.phone_verified && !profile.email_verified) {
+        // Phone verified but no email - prompt to add email
+        setMode('add-email');
       }
     }
-  }, [user, profile]);
+  }, [user, profile, loading]);
 
-  async function handleSignUp(data: SignUpForm) {
-    setIsSubmitting(true);
-    const { error } = await signUp(data.email, data.password, data.phone);
-    setIsSubmitting(false);
-
-    if (error) {
-      toast({
-        title: 'Sign up failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    toast({
-      title: 'Check your email',
-      description: 'We sent you a confirmation link. Click it to verify your account.',
-    });
-  }
-
-  async function handleSignIn(data: SignInForm) {
-    setIsSubmitting(true);
-    const { error } = await signIn(data.email, data.password);
-    setIsSubmitting(false);
-
-    if (error) {
-      toast({
-        title: 'Sign in failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-      return;
-    }
-  }
-
-  async function handleSendPhoneOtp(data: PhoneForm) {
+  // Phone entry for signup
+  async function handlePhoneEntry(data: PhoneForm) {
     setIsSubmitting(true);
     const formattedPhone = data.phone.startsWith('+') ? data.phone : `+1${data.phone}`;
-    const { error } = await verifyPhone(formattedPhone);
+    const { error } = await signInWithPhone(formattedPhone);
     setIsSubmitting(false);
 
     if (error) {
@@ -141,14 +121,15 @@ export default function Auth() {
     }
 
     setPendingPhone(formattedPhone);
-    setMode('verify-otp');
+    setMode('phone-otp');
     toast({
       title: 'Code sent',
       description: 'Check your phone for the verification code.',
     });
   }
 
-  async function handleVerifyOtp(data: OtpForm) {
+  // Verify OTP for signup
+  async function handlePhoneOtp(data: OtpForm) {
     setIsSubmitting(true);
     const { error } = await verifyPhoneOtp(pendingPhone, data.otp);
     setIsSubmitting(false);
@@ -164,25 +145,98 @@ export default function Auth() {
 
     toast({
       title: 'Phone verified!',
-      description: 'Your account is now fully verified.',
+      description: 'Your account has been created.',
+    });
+    
+    // Refresh profile and navigate
+    await refreshProfile();
+    navigate('/');
+  }
+
+  // Sign in with phone
+  async function handleSignInPhone(data: PhoneForm) {
+    setIsSubmitting(true);
+    const formattedPhone = data.phone.startsWith('+') ? data.phone : `+1${data.phone}`;
+    const { error } = await signInWithPhone(formattedPhone);
+    setIsSubmitting(false);
+
+    if (error) {
+      toast({
+        title: 'Failed to send code',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setPendingPhone(formattedPhone);
+    setMode('signin-phone-otp');
+    toast({
+      title: 'Code sent',
+      description: 'Check your phone for the verification code.',
+    });
+  }
+
+  // Verify OTP for sign in
+  async function handleSignInOtp(data: OtpForm) {
+    setIsSubmitting(true);
+    const { error } = await verifyPhoneOtp(pendingPhone, data.otp);
+    setIsSubmitting(false);
+
+    if (error) {
+      toast({
+        title: 'Verification failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Welcome back!',
     });
     navigate('/');
   }
 
-  async function handleResendEmail() {
-    const { error } = await resendEmailConfirmation();
+  // Sign in with email
+  async function handleSignInEmail(data: SignInEmailForm) {
+    setIsSubmitting(true);
+    const { error } = await signInWithEmail(data.email, data.password);
+    setIsSubmitting(false);
+
     if (error) {
       toast({
-        title: 'Failed to resend',
+        title: 'Sign in failed',
         description: error.message,
         variant: 'destructive',
       });
-    } else {
-      toast({
-        title: 'Email sent',
-        description: 'Check your inbox for the confirmation link.',
-      });
+      return;
     }
+
+    navigate('/');
+  }
+
+  // Add email+password to account
+  async function handleAddEmailPassword(data: EmailPasswordForm) {
+    setIsSubmitting(true);
+    const { error } = await updateEmailPassword(data.email, data.password);
+    setIsSubmitting(false);
+
+    if (error) {
+      toast({
+        title: 'Failed to add email',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Email added!',
+      description: 'Your account is now fully set up.',
+    });
+    await refreshProfile();
+    navigate('/');
   }
 
   if (loading) {
@@ -201,7 +255,7 @@ export default function Auth() {
   }
 
   // User is fully verified - show profile
-  if (user && profile && profile.is_verified) {
+  if (user && profile && profile.phone_verified && profile.email_verified) {
     return (
       <div className="min-h-screen bg-background">
         <Header title="My Profile" showBack />
@@ -212,219 +266,376 @@ export default function Auth() {
     );
   }
 
-  // User is logged in but email not verified
-  if (user && profile && !profile.email_verified) {
+  // User has verified phone but needs email (for contributions)
+  if (user && profile && profile.phone_verified && !profile.email_verified && mode === 'add-email') {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Verify Email" showBack />
+        <Header title="Complete Setup" showBack />
         <main className="container px-4 py-8 max-w-md mx-auto">
-          <div className="bg-card border border-border rounded-lg p-6 text-center">
-            <Mail className="w-12 h-12 mx-auto text-primary mb-4" />
-            <h1 className="font-display text-xl font-semibold mb-2">Check your email</h1>
-            <p className="text-muted-foreground mb-4">
-              We sent a confirmation link to <strong>{user.email}</strong>. 
-              Click the link to verify your account.
+          <div className="bg-card border border-border rounded-lg p-6">
+            <div className="flex items-center gap-2 text-green-600 mb-4">
+              <CheckCircle className="w-5 h-5" />
+              <span className="text-sm font-medium">Phone verified</span>
+            </div>
+            
+            <h1 className="font-display text-xl font-semibold mb-2">Add email & password</h1>
+            <p className="text-muted-foreground text-sm mb-6">
+              To upload photos and contribute, please add your email and create a password.
             </p>
-            <Button variant="outline" onClick={handleResendEmail}>
-              Resend confirmation email
-            </Button>
+
+            <form onSubmit={emailPasswordForm.handleSubmit(handleAddEmailPassword)} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    className="pl-10"
+                    {...emailPasswordForm.register('email')}
+                  />
+                </div>
+                {emailPasswordForm.formState.errors.email && (
+                  <p className="text-sm text-destructive mt-1">
+                    {emailPasswordForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="pl-10"
+                    {...emailPasswordForm.register('password')}
+                  />
+                </div>
+                {emailPasswordForm.formState.errors.password && (
+                  <p className="text-sm text-destructive mt-1">
+                    {emailPasswordForm.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save & continue'}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </form>
+
+            <div className="mt-4 text-center">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+                Skip for now
+              </Button>
+            </div>
           </div>
         </main>
       </div>
     );
   }
 
-  // User is logged in, email verified, but phone not verified
-  if (user && profile && profile.email_verified && !profile.phone_verified) {
+  // Sign in choice screen
+  if (mode === 'signin-choice') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Sign In" showBack />
+        <main className="container px-4 py-8 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h1 className="font-display text-xl font-semibold mb-6">Welcome back</h1>
+            
+            <div className="space-y-3">
+              <Button 
+                className="w-full" 
+                onClick={() => setMode('signin-phone')}
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Sign in with phone
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setMode('signin-email')}
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Sign in with email
+              </Button>
+            </div>
+
+            <div className="mt-6 text-center">
+              <Button variant="link" onClick={() => setMode('phone-entry')}>
+                Don't have an account? Sign up
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Sign in with phone
+  if (mode === 'signin-phone') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Sign In" showBack />
+        <main className="container px-4 py-8 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mb-4 -ml-2"
+              onClick={() => setMode('signin-choice')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
+            
+            <h1 className="font-display text-xl font-semibold mb-2">Sign in with phone</h1>
+            <p className="text-muted-foreground text-sm mb-6">
+              We'll send you a verification code.
+            </p>
+
+            <form onSubmit={phoneForm.handleSubmit(handleSignInPhone)} className="space-y-4">
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1 (555) 123-4567"
+                    className="pl-10"
+                    {...phoneForm.register('phone')}
+                  />
+                </div>
+                {phoneForm.formState.errors.phone && (
+                  <p className="text-sm text-destructive mt-1">
+                    {phoneForm.formState.errors.phone.message}
+                  </p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Sending...' : 'Send code'}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Sign in OTP verification
+  if (mode === 'signin-phone-otp') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Verify Code" showBack />
+        <main className="container px-4 py-8 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h1 className="font-display text-xl font-semibold mb-2">Enter verification code</h1>
+            <p className="text-muted-foreground text-sm mb-6">
+              We sent a code to {pendingPhone}
+            </p>
+
+            <form onSubmit={otpForm.handleSubmit(handleSignInOtp)} className="space-y-4">
+              <div>
+                <Label htmlFor="otp">Verification Code</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  placeholder="123456"
+                  maxLength={6}
+                  className="text-center text-lg tracking-widest"
+                  {...otpForm.register('otp')}
+                />
+                {otpForm.formState.errors.otp && (
+                  <p className="text-sm text-destructive mt-1">
+                    {otpForm.formState.errors.otp.message}
+                  </p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Verifying...' : 'Verify & sign in'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setMode('signin-phone');
+                  otpForm.reset();
+                }}
+              >
+                Use a different number
+              </Button>
+            </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Sign in with email
+  if (mode === 'signin-email') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Sign In" showBack />
+        <main className="container px-4 py-8 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mb-4 -ml-2"
+              onClick={() => setMode('signin-choice')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
+            
+            <h1 className="font-display text-xl font-semibold mb-6">Sign in with email</h1>
+
+            <form onSubmit={signInEmailForm.handleSubmit(handleSignInEmail)} className="space-y-4">
+              <div>
+                <Label htmlFor="signin-email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    className="pl-10"
+                    {...signInEmailForm.register('email')}
+                  />
+                </div>
+                {signInEmailForm.formState.errors.email && (
+                  <p className="text-sm text-destructive mt-1">
+                    {signInEmailForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="signin-password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="pl-10"
+                    {...signInEmailForm.register('password')}
+                  />
+                </div>
+                {signInEmailForm.formState.errors.password && (
+                  <p className="text-sm text-destructive mt-1">
+                    {signInEmailForm.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Signing in...' : 'Sign in'}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Phone OTP verification (signup)
+  if (mode === 'phone-otp') {
     return (
       <div className="min-h-screen bg-background">
         <Header title="Verify Phone" showBack />
         <main className="container px-4 py-8 max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-center gap-2 text-success mb-4">
-              <CheckCircle className="w-5 h-5" />
-              <span className="text-sm font-medium">Email verified</span>
-            </div>
-            
-            <h1 className="font-display text-xl font-semibold mb-2">Verify your phone</h1>
-            <p className="text-muted-foreground mb-6 text-sm">
-              To upload photos and contribute, please verify your phone number.
+            <h1 className="font-display text-xl font-semibold mb-2">Enter verification code</h1>
+            <p className="text-muted-foreground text-sm mb-6">
+              We sent a code to {pendingPhone}
             </p>
 
-            {mode === 'verify-phone' ? (
-              <form onSubmit={phoneForm.handleSubmit(handleSendPhoneOtp)} className="space-y-4">
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+1 (555) 123-4567"
-                      className="pl-10"
-                      {...phoneForm.register('phone')}
-                    />
-                  </div>
-                  {phoneForm.formState.errors.phone && (
-                    <p className="text-sm text-destructive mt-1">
-                      {phoneForm.formState.errors.phone.message}
-                    </p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Sending...' : 'Send verification code'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
-            ) : (
-              <form onSubmit={otpForm.handleSubmit(handleVerifyOtp)} className="space-y-4">
-                <div>
-                  <Label htmlFor="otp">Verification Code</Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="123456"
-                    maxLength={6}
-                    className="text-center text-lg tracking-widest"
-                    {...otpForm.register('otp')}
-                  />
-                  {otpForm.formState.errors.otp && (
-                    <p className="text-sm text-destructive mt-1">
-                      {otpForm.formState.errors.otp.message}
-                    </p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Verifying...' : 'Verify phone'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => setMode('verify-phone')}
-                >
-                  Use a different number
-                </Button>
-              </form>
-            )}
+            <form onSubmit={otpForm.handleSubmit(handlePhoneOtp)} className="space-y-4">
+              <div>
+                <Label htmlFor="otp">Verification Code</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  placeholder="123456"
+                  maxLength={6}
+                  className="text-center text-lg tracking-widest"
+                  {...otpForm.register('otp')}
+                />
+                {otpForm.formState.errors.otp && (
+                  <p className="text-sm text-destructive mt-1">
+                    {otpForm.formState.errors.otp.message}
+                  </p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Verifying...' : 'Verify phone'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setMode('phone-entry');
+                  otpForm.reset();
+                }}
+              >
+                Use a different number
+              </Button>
+            </form>
           </div>
         </main>
       </div>
     );
   }
 
-  // Not logged in - show sign in/sign up
+  // Default: Phone entry (signup)
   return (
     <div className="min-h-screen bg-background">
-      <Header title={mode === 'signin' ? 'Sign In' : 'Create Account'} showBack />
+      <Header title="Create Account" showBack />
       <main className="container px-4 py-8 max-w-md mx-auto">
         <div className="bg-card border border-border rounded-lg p-6">
-          {mode === 'signin' ? (
-            <>
-              <h1 className="font-display text-xl font-semibold mb-6">Welcome back</h1>
-              <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      className="pl-10"
-                      {...signInForm.register('email')}
-                    />
-                  </div>
-                  {signInForm.formState.errors.email && (
-                    <p className="text-sm text-destructive mt-1">
-                      {signInForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      className="pl-10"
-                      {...signInForm.register('password')}
-                    />
-                  </div>
-                  {signInForm.formState.errors.password && (
-                    <p className="text-sm text-destructive mt-1">
-                      {signInForm.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Signing in...' : 'Sign in'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
-              <div className="mt-4 text-center">
-                <Button variant="link" onClick={() => setMode('signup')}>
-                  Don't have an account? Sign up
-                </Button>
+          <h1 className="font-display text-xl font-semibold mb-2">Get started</h1>
+          <p className="text-muted-foreground text-sm mb-6">
+            Enter your phone number to create an account. We'll send you a verification code.
+          </p>
+
+          <form onSubmit={phoneForm.handleSubmit(handlePhoneEntry)} className="space-y-4">
+            <div>
+              <Label htmlFor="phone">Phone Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+1 (555) 123-4567"
+                  className="pl-10"
+                  {...phoneForm.register('phone')}
+                />
               </div>
-            </>
-          ) : (
-            <>
-              <h1 className="font-display text-xl font-semibold mb-2">Create your account</h1>
-              <p className="text-muted-foreground text-sm mb-6">
-                Verified accounts can upload photos and contribute updates.
-              </p>
-              <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                <div>
-                  <Label htmlFor="signup-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      className="pl-10"
-                      {...signUpForm.register('email')}
-                    />
-                  </div>
-                  {signUpForm.formState.errors.email && (
-                    <p className="text-sm text-destructive mt-1">
-                      {signUpForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor="signup-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="••••••••"
-                      className="pl-10"
-                      {...signUpForm.register('password')}
-                    />
-                  </div>
-                  {signUpForm.formState.errors.password && (
-                    <p className="text-sm text-destructive mt-1">
-                      {signUpForm.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Creating account...' : 'Create account'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
-              <div className="mt-4 text-center">
-                <Button variant="link" onClick={() => setMode('signin')}>
-                  Already have an account? Sign in
-                </Button>
-              </div>
-            </>
-          )}
+              {phoneForm.formState.errors.phone && (
+                <p className="text-sm text-destructive mt-1">
+                  {phoneForm.formState.errors.phone.message}
+                </p>
+              )}
+            </div>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Sending...' : 'Send verification code'}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <Button variant="link" onClick={() => setMode('signin-choice')}>
+              Already have an account? Sign in
+            </Button>
+          </div>
         </div>
       </main>
     </div>
