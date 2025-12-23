@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ReviewSignalIcon } from './ReviewSignalIcon';
+import { ReviewHelper, ReviewHelpButton } from './ReviewHelper';
 import {
   REVIEW_DIMENSIONS,
   ReviewDimension,
@@ -13,7 +14,9 @@ import {
   useMyReview,
 } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
+
+const HINTS_STORAGE_KEY = 'review-hints-understood';
 
 interface ReviewFormProps {
   placeId: string;
@@ -32,6 +35,34 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
   const [improvementSignals, setImprovementSignals] = useState<Map<ReviewDimension, number>>(new Map());
   const [notePublic, setNotePublic] = useState('');
   const [notePrivate, setNotePrivate] = useState('');
+  
+  // Inline hints state
+  const [tapCount, setTapCount] = useState(0);
+  const [hintsUnderstood, setHintsUnderstood] = useState(false);
+  const [showEncouragement, setShowEncouragement] = useState(false);
+  const [lastTapLevel, setLastTapLevel] = useState<number | null>(null);
+
+  // Check if hints have been dismissed before
+  useEffect(() => {
+    const understood = localStorage.getItem(HINTS_STORAGE_KEY) === 'true';
+    setHintsUnderstood(understood);
+  }, []);
+
+  // Mark hints as understood after 3 taps
+  useEffect(() => {
+    if (tapCount >= 3 && !hintsUnderstood) {
+      localStorage.setItem(HINTS_STORAGE_KEY, 'true');
+      setHintsUnderstood(true);
+    }
+  }, [tapCount, hintsUnderstood]);
+
+  // Show encouragement after 3 total icons selected
+  useEffect(() => {
+    const totalSelected = positiveSignals.size + improvementSignals.size;
+    if (totalSelected >= 3 && !showEncouragement) {
+      setShowEncouragement(true);
+    }
+  }, [positiveSignals.size, improvementSignals.size, showEncouragement]);
 
   const isEditing = !!existingReview;
 
@@ -100,12 +131,16 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
         return;
       }
       newMap.set(dimension, 1);
+      setLastTapLevel(1);
     } else if (current < 3) {
       newMap.set(dimension, current + 1);
+      setLastTapLevel(current + 1);
     } else {
       newMap.delete(dimension);
+      setLastTapLevel(null);
     }
 
+    setTapCount(prev => prev + 1);
     setPositiveSignals(newMap);
   };
 
@@ -134,12 +169,16 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
         return;
       }
       newMap.set(dimension, 1);
+      setLastTapLevel(1);
     } else if (current < 3) {
       newMap.set(dimension, current + 1);
+      setLastTapLevel(current + 1);
     } else {
       newMap.delete(dimension);
+      setLastTapLevel(null);
     }
 
+    setTapCount(prev => prev + 1);
     setImprovementSignals(newMap);
   };
 
@@ -180,8 +219,8 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
           signals,
         });
         toast({
-          title: "Review submitted",
-          description: "Thanks for sharing your experience!",
+          title: "Thanks!",
+          description: "Your review helps people make better decisions",
         });
       }
       onSuccess?.();
@@ -196,21 +235,49 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
 
   const isSubmitting = createReview.isPending || updateReview.isPending;
 
+  // Get inline hint message based on tap state
+  const getInlineHint = () => {
+    if (hintsUnderstood || tapCount === 0) return null;
+    if (lastTapLevel === 1) return "Tap again if it was even better";
+    if (lastTapLevel === 2) return "Tap again for excellent";
+    return null;
+  };
+
+  const inlineHint = getInlineHint();
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Review Helper Banner */}
+      <ReviewHelper />
+
+      {/* Inline Hint */}
+      {inlineHint && (
+        <div className="animate-fade-in text-center py-2 px-3 bg-primary/10 rounded-lg border border-primary/20">
+          <p className="text-sm text-primary">{inlineHint}</p>
+        </div>
+      )}
+
+      {/* Encouragement Message */}
+      {showEncouragement && !isEditing && (
+        <div className="animate-fade-in flex items-center gap-2 py-2 px-3 bg-success/10 rounded-lg border border-success/20">
+          <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+          <p className="text-sm text-success">Nice! This already helps other travelers</p>
+        </div>
+      )}
+
       {/* Section A: Strengths */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-base font-semibold">
-            What was GREAT here? (Pick up to 5)
-          </Label>
+          <div className="flex items-center gap-2">
+            <Label className="text-base font-semibold">
+              What was GREAT here? (Pick up to 5)
+            </Label>
+            <ReviewHelpButton />
+          </div>
           <span className="text-sm text-muted-foreground">
             {positiveSignals.size} / 5 selected
           </span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Tap to cycle: Good → Great → Excellent → Off
-        </p>
         <div className="grid grid-cols-5 gap-2">
           {REVIEW_DIMENSIONS.map((dim) => (
             <ReviewSignalIcon
@@ -238,9 +305,6 @@ export function ReviewForm({ placeId, onSuccess, onCancel }: ReviewFormProps) {
             {improvementSignals.size} / 2 selected
           </span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Tap to cycle: Needs work → Could be better → Major issue → Off
-        </p>
         <div className="grid grid-cols-5 gap-2">
           {REVIEW_DIMENSIONS.map((dim) => (
             <ReviewSignalIcon
