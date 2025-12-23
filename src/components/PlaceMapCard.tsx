@@ -45,7 +45,7 @@ export function PlaceMapCard({ place, className, onClose, isHighlighted }: Place
   return (
     <div
       className={cn(
-        'bg-card border border-border rounded-xl shadow-lg overflow-hidden w-64',
+        'bg-card border border-border rounded-xl shadow-lg overflow-hidden w-72',
         isHighlighted && 'ring-2 ring-primary',
         className
       )}
@@ -79,7 +79,7 @@ export function PlaceMapCard({ place, className, onClose, isHighlighted }: Place
 
       {/* Content */}
       <div className="p-3">
-        <h3 className="font-display font-semibold text-foreground text-sm leading-tight mb-1 line-clamp-1">
+        <h3 className="font-display font-semibold text-foreground text-sm leading-tight mb-1">
           {place.name}
         </h3>
 

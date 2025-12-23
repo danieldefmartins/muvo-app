@@ -54,7 +54,7 @@ export function Header({ title, showBack = false, showMap = false, className }: 
               <span className="font-display font-semibold text-foreground text-lg">RoadWise</span>
             </Link>
           ) : (
-            <h1 className="font-display font-semibold text-foreground text-lg truncate">
+            <h1 className="font-display font-semibold text-foreground text-lg leading-tight">
               {title}
             </h1>
           )}

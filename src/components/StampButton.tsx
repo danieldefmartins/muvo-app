@@ -131,7 +131,7 @@ export function StampButton({
       
       {/* Label */}
       <div className="text-center w-16">
-        <p className="text-xs font-medium text-foreground truncate">
+        <p className="text-xs font-medium text-foreground leading-tight break-words">
           {stamp.label}
         </p>
         {levelLabel && (
