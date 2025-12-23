@@ -364,6 +364,7 @@ const PlaceDetail = () => {
         <ReviewsSection
           placeId={id!}
           placeName={place.name}
+          placeCategory={place.primaryCategory}
           latitude={place.latitude}
           longitude={place.longitude}
         />

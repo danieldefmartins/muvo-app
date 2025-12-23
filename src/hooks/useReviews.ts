@@ -19,6 +19,7 @@ export interface ReviewSignal {
   dimension: ReviewDimension;
   polarity: SignalPolarity;
   level: number;
+  stamp_id?: string;
 }
 
 export interface Review {
@@ -47,6 +48,7 @@ export interface StampAggregate {
   polarity: SignalPolarity;
   total_votes: number;
   review_count: number;
+  stamp_id?: string;
 }
 
 export const REVIEW_DIMENSIONS: { id: ReviewDimension; label: string; icon: string }[] = [
@@ -99,6 +101,7 @@ export function useReviews(placeId: string) {
             dimension: s.dimension as ReviewDimension,
             polarity: s.polarity as SignalPolarity,
             level: s.level,
+            stamp_id: s.stamp_id,
           })),
       }));
 
@@ -139,6 +142,7 @@ export function useMyReview(placeId: string) {
           dimension: s.dimension as ReviewDimension,
           polarity: s.polarity as SignalPolarity,
           level: s.level,
+          stamp_id: s.stamp_id,
         })),
       };
     },
@@ -153,7 +157,7 @@ export function usePlaceStampAggregates(placeId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('place_stamp_aggregates')
-        .select('dimension, polarity, total_votes, review_count')
+        .select('dimension, polarity, total_votes, review_count, stamp_id')
         .eq('place_id', placeId)
         .order('total_votes', { ascending: false });
 
@@ -258,6 +262,7 @@ export function useCreateReview() {
           dimension: s.dimension,
           polarity: s.polarity,
           level: s.level,
+          stamp_id: s.stamp_id || null,
         }));
 
         const { error: signalsError } = await supabase
@@ -316,6 +321,7 @@ export function useUpdateReview() {
           dimension: s.dimension,
           polarity: s.polarity,
           level: s.level,
+          stamp_id: s.stamp_id || null,
         }));
 
         const { error: signalsError } = await supabase

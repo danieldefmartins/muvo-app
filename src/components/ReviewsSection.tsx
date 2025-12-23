@@ -8,10 +8,14 @@ import { ReviewList } from './ReviewList';
 import { ReviewFooterMessage } from './ReviewFooterMessage';
 import { useReviews, useMyReview, usePlaceReviewCount } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
+import type { Database } from '@/integrations/supabase/types';
+
+type PlaceCategory = Database['public']['Enums']['place_category'];
 
 interface ReviewsSectionProps {
   placeId: string;
   placeName: string;
+  placeCategory?: PlaceCategory;
   // Optional location info - will show GPS if not provided
   city?: string;
   state?: string;
@@ -24,6 +28,7 @@ const FIRST_REVIEW_CELEBRATION_KEY = 'first-review-celebrated';
 export function ReviewsSection({
   placeId,
   placeName,
+  placeCategory,
   city,
   state,
   latitude,
@@ -177,6 +182,7 @@ export function ReviewsSection({
           )}
           <ReviewForm
             placeId={placeId}
+            placeCategory={placeCategory}
             onSuccess={handleReviewSuccess}
             onCancel={() => setShowReviewForm(false)}
           />

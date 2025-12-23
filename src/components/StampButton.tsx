@@ -1,0 +1,149 @@
+import React, { useState } from 'react';
+import * as LucideIcons from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { StampDefinition } from '@/hooks/useStamps';
+
+interface StampButtonProps {
+  stamp: StampDefinition;
+  polarity: 'positive' | 'improvement';
+  level: number; // 0 = not selected, 1-3 = intensity
+  onClick: () => void;
+  disabled?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export function StampButton({
+  stamp,
+  polarity,
+  level,
+  onClick,
+  disabled = false,
+  size = 'md',
+}: StampButtonProps) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const selected = level > 0;
+
+  // Get icon component from lucide-react
+  const IconComponent = stamp.icon 
+    ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
+    : LucideIcons.Circle;
+
+  const sizeClasses = {
+    sm: 'w-10 h-10',
+    md: 'w-14 h-14',
+    lg: 'w-18 h-18',
+  };
+
+  const iconSizes = {
+    sm: 18,
+    md: 24,
+    lg: 32,
+  };
+
+  const handleClick = () => {
+    if (disabled) return;
+    
+    // Trigger bounce animation
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 200);
+    
+    onClick();
+  };
+
+  const getPositiveStyles = () => {
+    if (!selected) return 'bg-muted text-muted-foreground border-border hover:border-primary/50';
+    
+    switch (level) {
+      case 1: // Good - filled
+        return 'bg-primary/20 text-primary border-primary/50';
+      case 2: // Great - filled + ring
+        return 'bg-primary/40 text-primary border-primary ring-2 ring-primary/40';
+      case 3: // Excellent - filled + ring + accent badge
+        return 'bg-primary text-primary-foreground border-primary ring-2 ring-primary/60 shadow-lg shadow-primary/30';
+      default:
+        return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const getImprovementStyles = () => {
+    if (!selected) return 'bg-muted text-muted-foreground border-border hover:border-amber-500/50';
+    
+    switch (level) {
+      case 1: // Needs work - outlined
+        return 'bg-transparent text-amber-500 border-amber-500';
+      case 2: // Could be better - solid warning
+        return 'bg-amber-500/30 text-amber-600 border-amber-500 ring-2 ring-amber-500/30';
+      case 3: // Major issue - solid + alert accent
+        return 'bg-destructive text-destructive-foreground border-destructive ring-2 ring-destructive/40 shadow-lg shadow-destructive/30';
+      default:
+        return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const styles = polarity === 'positive' ? getPositiveStyles() : getImprovementStyles();
+
+  const getLevelLabel = () => {
+    if (!selected) return null;
+    if (polarity === 'positive') {
+      return level === 1 ? 'Good' : level === 2 ? 'Great' : 'Excellent';
+    } else {
+      return level === 1 ? 'Noted' : level === 2 ? 'Issue' : 'Major';
+    }
+  };
+
+  const levelLabel = getLevelLabel();
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative">
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={disabled}
+          className={cn(
+            'rounded-full border-2 flex items-center justify-center transition-all duration-200',
+            sizeClasses[size],
+            styles,
+            isAnimating && 'scale-125',
+            !isAnimating && 'hover:scale-110 active:scale-95',
+            disabled && 'opacity-50 cursor-not-allowed',
+            !disabled && 'cursor-pointer'
+          )}
+          aria-label={`${stamp.label}${selected ? ` - ${levelLabel}` : ''}`}
+        >
+          <IconComponent size={iconSizes[size]} />
+        </button>
+        
+        {/* Level indicator badge for level 3 */}
+        {level === 3 && (
+          <div 
+            className={cn(
+              'absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold',
+              polarity === 'positive' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-destructive text-destructive-foreground'
+            )}
+          >
+            ★
+          </div>
+        )}
+      </div>
+      
+      {/* Label */}
+      <div className="text-center w-16">
+        <p className="text-xs font-medium text-foreground truncate">
+          {stamp.label}
+        </p>
+        {levelLabel && (
+          <p className={cn(
+            'text-xs font-medium',
+            polarity === 'positive' ? 'text-primary' : 'text-amber-500',
+            level === 3 && polarity === 'improvement' && 'text-destructive'
+          )}>
+            {levelLabel}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
