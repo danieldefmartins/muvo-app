@@ -39,6 +39,14 @@ export interface DimensionSummary {
   count: number;
   avgLevel: number;
   totalScore: number;
+  totalVotes: number;
+}
+
+export interface StampAggregate {
+  dimension: ReviewDimension;
+  polarity: SignalPolarity;
+  total_votes: number;
+  review_count: number;
 }
 
 export const REVIEW_DIMENSIONS: { id: ReviewDimension; label: string; icon: string }[] = [
@@ -138,46 +146,79 @@ export function useMyReview(placeId: string) {
   });
 }
 
-export function usePlaceSignalSummary(placeId: string) {
+// Fetch aggregated stamp data from the database (not calculated on frontend)
+export function usePlaceStampAggregates(placeId: string) {
   return useQuery({
-    queryKey: ['place-signals', placeId],
+    queryKey: ['place-stamp-aggregates', placeId],
     queryFn: async () => {
-      const { data: signals, error } = await supabase
-        .from('review_signals')
-        .select('*')
-        .eq('place_id', placeId);
+      const { data, error } = await supabase
+        .from('place_stamp_aggregates')
+        .select('dimension, polarity, total_votes, review_count')
+        .eq('place_id', placeId)
+        .order('total_votes', { ascending: false });
 
       if (error) throw error;
-
-      const positiveMap = new Map<ReviewDimension, { count: number; totalLevel: number }>();
-      const improvementMap = new Map<ReviewDimension, { count: number; totalLevel: number }>();
-
-      (signals || []).forEach((s: any) => {
-        const map = s.polarity === 'positive' ? positiveMap : improvementMap;
-        const current = map.get(s.dimension) || { count: 0, totalLevel: 0 };
-        map.set(s.dimension, {
-          count: current.count + 1,
-          totalLevel: current.totalLevel + s.level,
-        });
-      });
-
-      const toSummary = (map: Map<ReviewDimension, { count: number; totalLevel: number }>): DimensionSummary[] => {
-        return Array.from(map.entries())
-          .map(([dimension, data]) => ({
-            dimension,
-            count: data.count,
-            avgLevel: data.totalLevel / data.count,
-            totalScore: data.count * data.totalLevel,
-          }))
-          .sort((a, b) => b.totalScore - a.totalScore);
-      };
-
-      return {
-        knownFor: toSummary(positiveMap).slice(0, 3),
-        commonIssues: toSummary(improvementMap).slice(0, 2),
-      };
+      return (data || []) as StampAggregate[];
     },
     enabled: !!placeId,
+  });
+}
+
+// Get place review count
+export function usePlaceReviewCount(placeId: string) {
+  return useQuery({
+    queryKey: ['place-review-count', placeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('places')
+        .select('review_count')
+        .eq('id', placeId)
+        .single();
+
+      if (error) throw error;
+      return data?.review_count || 0;
+    },
+    enabled: !!placeId,
+  });
+}
+
+// Legacy hook - now uses aggregated data from DB
+export function usePlaceSignalSummary(placeId: string) {
+  const { data: aggregates, isLoading } = usePlaceStampAggregates(placeId);
+
+  return useQuery({
+    queryKey: ['place-signals', placeId, aggregates],
+    queryFn: async () => {
+      if (!aggregates) return { knownFor: [], commonIssues: [] };
+
+      const positive = aggregates
+        .filter(a => a.polarity === 'positive')
+        .map(a => ({
+          dimension: a.dimension,
+          count: a.review_count,
+          avgLevel: a.review_count > 0 ? a.total_votes / a.review_count : 0,
+          totalScore: a.total_votes,
+          totalVotes: a.total_votes,
+        }))
+        .sort((a, b) => b.totalVotes - a.totalVotes);
+
+      const improvement = aggregates
+        .filter(a => a.polarity === 'improvement')
+        .map(a => ({
+          dimension: a.dimension,
+          count: a.review_count,
+          avgLevel: a.review_count > 0 ? a.total_votes / a.review_count : 0,
+          totalScore: a.total_votes,
+          totalVotes: a.total_votes,
+        }))
+        .sort((a, b) => b.totalVotes - a.totalVotes);
+
+      return {
+        knownFor: positive.slice(0, 3),
+        commonIssues: improvement.slice(0, 2),
+      };
+    },
+    enabled: !!placeId && !isLoading,
   });
 }
 
@@ -232,6 +273,10 @@ export function useCreateReview() {
       queryClient.invalidateQueries({ queryKey: ['reviews', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['my-review', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-signals', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['place-stamp-aggregates', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['place-review-count', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['places'] });
+      queryClient.invalidateQueries({ queryKey: ['place', variables.placeId] });
     },
   });
 }
@@ -286,6 +331,10 @@ export function useUpdateReview() {
       queryClient.invalidateQueries({ queryKey: ['reviews', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['my-review', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-signals', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['place-stamp-aggregates', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['place-review-count', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['places'] });
+      queryClient.invalidateQueries({ queryKey: ['place', variables.placeId] });
     },
   });
 }
@@ -307,6 +356,10 @@ export function useDeleteReview() {
       queryClient.invalidateQueries({ queryKey: ['reviews', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['my-review', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-signals', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['place-stamp-aggregates', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['place-review-count', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['places'] });
+      queryClient.invalidateQueries({ queryKey: ['place', variables.placeId] });
     },
   });
 }

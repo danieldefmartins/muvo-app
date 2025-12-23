@@ -1,8 +1,9 @@
-import { MapPin, Droplets, Zap, Wifi, Dog, Truck, ShowerHead, WashingMachine, Waves, Flame } from 'lucide-react';
+import { MapPin, Droplets, Zap, Wifi, Dog, Truck, ShowerHead, WashingMachine, Waves, Flame, MessageSquareText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Place, PlaceFeature } from '@/hooks/usePlaces';
 import { FavoriteButton } from './FavoriteButton';
 import { WeatherBadge } from './WeatherBadge';
+import { PlaceStampBadges } from './PlaceStampBadges';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from './ui/aspect-ratio';
 
@@ -101,6 +102,16 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
             <h3 className="font-display font-semibold text-white text-lg leading-tight mb-1 drop-shadow-md">
               {place.name}
             </h3>
+
+            {/* Review stamps badges */}
+            <PlaceStampBadges 
+              placeId={place.id} 
+              variant="overlay" 
+              maxGood={2} 
+              maxBad={1}
+              showReviewCount={true}
+              className="mb-2"
+            />
 
             {/* Distance and price */}
             <div className="flex items-center justify-between">

@@ -1,14 +1,16 @@
 import React from 'react';
-import { usePlaceSignalSummary, REVIEW_DIMENSIONS } from '@/hooks/useReviews';
+import { usePlaceSignalSummary, usePlaceReviewCount, REVIEW_DIMENSIONS } from '@/hooks/useReviews';
 import { ReviewSignalIcon } from './ReviewSignalIcon';
-import { ThumbsUp, AlertTriangle } from 'lucide-react';
+import { ThumbsUp, AlertTriangle, MessageSquareText } from 'lucide-react';
 
 interface PlaceSignalSummaryProps {
   placeId: string;
+  showReviewCount?: boolean;
 }
 
-export function PlaceSignalSummary({ placeId }: PlaceSignalSummaryProps) {
+export function PlaceSignalSummary({ placeId, showReviewCount = true }: PlaceSignalSummaryProps) {
   const { data: summary, isLoading } = usePlaceSignalSummary(placeId);
+  const { data: reviewCount } = usePlaceReviewCount(placeId);
 
   if (isLoading || !summary) return null;
 
@@ -23,13 +25,23 @@ export function PlaceSignalSummary({ placeId }: PlaceSignalSummaryProps) {
 
   return (
     <div className="space-y-4">
+      {/* Review Count Header */}
+      {showReviewCount && reviewCount !== undefined && reviewCount > 0 && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground pb-2 border-b border-border">
+          <MessageSquareText className="h-4 w-4" />
+          <span>
+            {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}
+          </span>
+        </div>
+      )}
+
       {hasPositive && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-primary">
             <ThumbsUp className="h-4 w-4" />
             <span className="font-medium text-sm">Known for</span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {summary.knownFor.map((item) => (
               <div key={item.dimension} className="flex items-center gap-2">
                 <ReviewSignalIcon
@@ -42,7 +54,7 @@ export function PlaceSignalSummary({ placeId }: PlaceSignalSummaryProps) {
                 <div>
                   <p className="text-sm font-medium">{getDimensionLabel(item.dimension)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {item.count} {item.count === 1 ? 'review' : 'reviews'}
+                    {item.totalVotes} {item.totalVotes === 1 ? 'vote' : 'votes'} · {item.count} {item.count === 1 ? 'review' : 'reviews'}
                   </p>
                 </div>
               </div>
@@ -57,7 +69,7 @@ export function PlaceSignalSummary({ placeId }: PlaceSignalSummaryProps) {
             <AlertTriangle className="h-4 w-4" />
             <span className="font-medium text-sm">Common issues</span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {summary.commonIssues.map((item) => (
               <div key={item.dimension} className="flex items-center gap-2">
                 <ReviewSignalIcon
@@ -70,7 +82,7 @@ export function PlaceSignalSummary({ placeId }: PlaceSignalSummaryProps) {
                 <div>
                   <p className="text-sm font-medium">{getDimensionLabel(item.dimension)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {item.count} {item.count === 1 ? 'mention' : 'mentions'}
+                    {item.totalVotes} {item.totalVotes === 1 ? 'vote' : 'votes'} · {item.count} {item.count === 1 ? 'mention' : 'mentions'}
                   </p>
                 </div>
               </div>

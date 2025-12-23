@@ -6,7 +6,7 @@ import { PlaceSignalSummary } from './PlaceSignalSummary';
 import { ReviewForm } from './ReviewForm';
 import { ReviewList } from './ReviewList';
 import { ReviewFooterMessage } from './ReviewFooterMessage';
-import { useReviews, useMyReview } from '@/hooks/useReviews';
+import { useReviews, useMyReview, usePlaceReviewCount } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ReviewsSectionProps {
@@ -32,6 +32,7 @@ export function ReviewsSection({
   const { user, isVerified } = useAuth();
   const { data: reviews, isLoading } = useReviews(placeId);
   const { data: myReview } = useMyReview(placeId);
+  const { data: reviewCount } = usePlaceReviewCount(placeId);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showFirstReviewCelebration, setShowFirstReviewCelebration] = useState(false);
   const [justSubmittedFirst, setJustSubmittedFirst] = useState(false);
@@ -78,10 +79,17 @@ export function ReviewsSection({
     <section className="mb-6 animate-fade-in" style={{ animationDelay: '275ms' }}>
       {/* Section Header with Location */}
       <div className="mb-4">
-        <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
-          <MessageSquareText className="w-5 h-5 text-primary" />
-          Reviews
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
+            <MessageSquareText className="w-5 h-5 text-primary" />
+            Reviews
+          </h2>
+          {reviewCount !== undefined && reviewCount > 0 && (
+            <span className="text-sm text-muted-foreground">
+              {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}
+            </span>
+          )}
+        </div>
         {locationString && (
           <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
             <MapPin className="w-3.5 h-3.5" />
@@ -108,10 +116,10 @@ export function ReviewsSection({
         </div>
       )}
 
-      {/* Signal Summary - Known for / Common issues */}
+      {/* Signal Summary - Known for / Common issues (hide review count since we show it in header) */}
       {hasReviews && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4">
-          <PlaceSignalSummary placeId={placeId} />
+          <PlaceSignalSummary placeId={placeId} showReviewCount={false} />
         </div>
       )}
 
