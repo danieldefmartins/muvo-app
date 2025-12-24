@@ -16,6 +16,15 @@ type PlaceCategory = Database["public"]["Enums"]["place_category"];
 type PlaceFeature = Database["public"]["Enums"]["place_feature"];
 type PriceLevel = Database["public"]["Enums"]["price_level"];
 
+interface EntranceData {
+  name?: string;
+  latitude?: number;
+  longitude?: number;
+  road?: string;
+  notes?: string;
+  is_primary?: boolean;
+}
+
 interface ParsedPlace {
   name: string;
   latitude: number;
@@ -23,6 +32,7 @@ interface ParsedPlace {
   primary_category: PlaceCategory;
   price_level?: PriceLevel;
   features?: PlaceFeature[];
+  entrances: EntranceData[];
   valid: boolean;
   error?: string;
 }
@@ -82,6 +92,19 @@ export default function ImportPlaces() {
     const priceIdx = headers.findIndex(h => h === 'price' || h === 'price_level');
     const featuresIdx = headers.findIndex(h => h === 'features');
 
+    // Entrance column indices (1-6)
+    const entranceIndices: Record<number, { name: number; lat: number; lng: number; road: number; notes: number; primary: number }> = {};
+    for (let i = 1; i <= 6; i++) {
+      entranceIndices[i] = {
+        name: headers.findIndex(h => h === `entrance_${i}_name`),
+        lat: headers.findIndex(h => h === `entrance_${i}_latitude`),
+        lng: headers.findIndex(h => h === `entrance_${i}_longitude`),
+        road: headers.findIndex(h => h === `entrance_${i}_road`),
+        notes: headers.findIndex(h => h === `entrance_${i}_notes`),
+        primary: headers.findIndex(h => h === `entrance_${i}_is_primary`),
+      };
+    }
+
     if (nameIdx === -1 || latIdx === -1 || lngIdx === -1) {
       toast({
         title: "Invalid CSV format",
@@ -116,6 +139,41 @@ export default function ImportPlaces() {
       const rawPrice = values[priceIdx]?.replace(/"/g, '') || '$$';
       const rawFeatures = values[featuresIdx]?.replace(/"/g, '') || '';
 
+      // Parse entrances
+      const entrances: EntranceData[] = [];
+      let foundPrimary = false;
+      
+      for (let i = 1; i <= 6; i++) {
+        const idx = entranceIndices[i];
+        const eName = idx.name >= 0 ? values[idx.name]?.replace(/"/g, '').trim() : undefined;
+        const eLat = idx.lat >= 0 ? parseFloat(values[idx.lat]) : undefined;
+        const eLng = idx.lng >= 0 ? parseFloat(values[idx.lng]) : undefined;
+        const eRoad = idx.road >= 0 ? values[idx.road]?.replace(/"/g, '').trim() : undefined;
+        const eNotes = idx.notes >= 0 ? values[idx.notes]?.replace(/"/g, '').trim() : undefined;
+        const eIsPrimary = idx.primary >= 0 ? values[idx.primary]?.toLowerCase() === 'true' || values[idx.primary] === '1' : false;
+
+        // Only add entrance if it has name and valid coordinates
+        if (eName && !isNaN(eLat!) && !isNaN(eLng!)) {
+          // Enforce only one primary
+          let isPrimary = eIsPrimary;
+          if (isPrimary && foundPrimary) {
+            isPrimary = false; // Already have a primary, ignore this one
+          }
+          if (isPrimary) {
+            foundPrimary = true;
+          }
+
+          entrances.push({
+            name: eName,
+            latitude: eLat,
+            longitude: eLng,
+            road: eRoad || undefined,
+            notes: eNotes || undefined,
+            is_primary: isPrimary,
+          });
+        }
+      }
+
       // Validate
       const errors: string[] = [];
       
@@ -146,6 +204,7 @@ export default function ImportPlaces() {
         primary_category: category,
         price_level: priceLevel,
         features: featuresList,
+        entrances,
         valid: errors.length === 0,
         error: errors.length > 0 ? errors.join(", ") : undefined
       };
@@ -179,16 +238,63 @@ export default function ImportPlaces() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('places')
-        .insert(validPlaces.map(p => ({
+      const placesToInsert = validPlaces.map(p => {
+        const placeData = {
           name: p.name,
           latitude: p.latitude,
           longitude: p.longitude,
           primary_category: p.primary_category,
-          price_level: p.price_level || '$$',
-          features: p.features || []
-        })))
+          price_level: p.price_level || '$$' as const,
+          features: p.features || [],
+          // Entrance 1
+          entrance_1_name: p.entrances[0]?.name || null,
+          entrance_1_latitude: p.entrances[0]?.latitude || null,
+          entrance_1_longitude: p.entrances[0]?.longitude || null,
+          entrance_1_road: p.entrances[0]?.road || null,
+          entrance_1_notes: p.entrances[0]?.notes || null,
+          entrance_1_is_primary: p.entrances[0]?.is_primary || false,
+          // Entrance 2
+          entrance_2_name: p.entrances[1]?.name || null,
+          entrance_2_latitude: p.entrances[1]?.latitude || null,
+          entrance_2_longitude: p.entrances[1]?.longitude || null,
+          entrance_2_road: p.entrances[1]?.road || null,
+          entrance_2_notes: p.entrances[1]?.notes || null,
+          entrance_2_is_primary: p.entrances[1]?.is_primary || false,
+          // Entrance 3
+          entrance_3_name: p.entrances[2]?.name || null,
+          entrance_3_latitude: p.entrances[2]?.latitude || null,
+          entrance_3_longitude: p.entrances[2]?.longitude || null,
+          entrance_3_road: p.entrances[2]?.road || null,
+          entrance_3_notes: p.entrances[2]?.notes || null,
+          entrance_3_is_primary: p.entrances[2]?.is_primary || false,
+          // Entrance 4
+          entrance_4_name: p.entrances[3]?.name || null,
+          entrance_4_latitude: p.entrances[3]?.latitude || null,
+          entrance_4_longitude: p.entrances[3]?.longitude || null,
+          entrance_4_road: p.entrances[3]?.road || null,
+          entrance_4_notes: p.entrances[3]?.notes || null,
+          entrance_4_is_primary: p.entrances[3]?.is_primary || false,
+          // Entrance 5
+          entrance_5_name: p.entrances[4]?.name || null,
+          entrance_5_latitude: p.entrances[4]?.latitude || null,
+          entrance_5_longitude: p.entrances[4]?.longitude || null,
+          entrance_5_road: p.entrances[4]?.road || null,
+          entrance_5_notes: p.entrances[4]?.notes || null,
+          entrance_5_is_primary: p.entrances[4]?.is_primary || false,
+          // Entrance 6
+          entrance_6_name: p.entrances[5]?.name || null,
+          entrance_6_latitude: p.entrances[5]?.latitude || null,
+          entrance_6_longitude: p.entrances[5]?.longitude || null,
+          entrance_6_road: p.entrances[5]?.road || null,
+          entrance_6_notes: p.entrances[5]?.notes || null,
+          entrance_6_is_primary: p.entrances[5]?.is_primary || false,
+        };
+        return placeData;
+      });
+
+      const { data, error } = await supabase
+        .from('places')
+        .insert(placesToInsert)
         .select();
 
       if (error) throw error;
@@ -211,8 +317,24 @@ export default function ImportPlaces() {
   };
 
   const downloadTemplate = () => {
-    const headers = "name,latitude,longitude,category,price,features";
-    const example = '"Yosemite Valley Campground",37.7456,-119.5938,"National Park","$$","Dump Station|Fresh Water|Showers"';
+    // Base columns
+    const baseHeaders = ["name", "latitude", "longitude", "category", "price", "features"];
+    
+    // Entrance columns (1-6)
+    const entranceHeaders: string[] = [];
+    for (let i = 1; i <= 6; i++) {
+      entranceHeaders.push(
+        `entrance_${i}_name`,
+        `entrance_${i}_latitude`,
+        `entrance_${i}_longitude`,
+        `entrance_${i}_road`,
+        `entrance_${i}_notes`,
+        `entrance_${i}_is_primary`
+      );
+    }
+    
+    const headers = [...baseHeaders, ...entranceHeaders].join(',');
+    const example = '"Yosemite National Park",37.8651,-119.5383,"National Park","$$","Dump Station|Fresh Water|Showers","Arch Rock Entrance",37.6842,-119.8453,"Highway 140","Main entrance from Merced",true,"Big Oak Flat Entrance",37.8065,-119.8777,"Highway 120","Northern entrance",,,,,,,,,,,,,,,,,,,,';
     const csv = `${headers}\n${example}`;
     
     const blob = new Blob([csv], { type: 'text/csv' });

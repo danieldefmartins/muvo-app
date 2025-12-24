@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   MapPin,
   Package,
@@ -28,6 +28,7 @@ import { ReportStatusForm } from '@/components/ReportStatusForm';
 import { PlacePhotoGallery } from '@/components/PlacePhotoGallery';
 import { PhotoUploadForm } from '@/components/PhotoUploadForm';
 import { CompactReviewStrip } from '@/components/CompactReviewStrip';
+import { PlaceEntrances, extractEntrances, Entrance } from '@/components/PlaceEntrances';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -38,6 +39,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const PlaceDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +50,25 @@ const PlaceDetail = () => {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showLogistics, setShowLogistics] = useState(false);
   const queryClient = useQueryClient();
+
+  // Fetch raw place data to extract entrances
+  const [entrances, setEntrances] = useState<Entrance[]>([]);
+  
+  useMemo(() => {
+    if (!id) return;
+    
+    supabase
+      .from('places')
+      .select('entrance_1_name, entrance_1_latitude, entrance_1_longitude, entrance_1_road, entrance_1_notes, entrance_1_is_primary, entrance_2_name, entrance_2_latitude, entrance_2_longitude, entrance_2_road, entrance_2_notes, entrance_2_is_primary, entrance_3_name, entrance_3_latitude, entrance_3_longitude, entrance_3_road, entrance_3_notes, entrance_3_is_primary, entrance_4_name, entrance_4_latitude, entrance_4_longitude, entrance_4_road, entrance_4_notes, entrance_4_is_primary, entrance_5_name, entrance_5_latitude, entrance_5_longitude, entrance_5_road, entrance_5_notes, entrance_5_is_primary, entrance_6_name, entrance_6_latitude, entrance_6_longitude, entrance_6_road, entrance_6_notes, entrance_6_is_primary')
+      .eq('id', id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          const extracted = extractEntrances(data as Record<string, unknown>);
+          setEntrances(extracted);
+        }
+      });
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -162,6 +183,11 @@ const PlaceDetail = () => {
             )}
           </div>
         </section>
+
+        {/* Entrances Section (only if entrances exist) */}
+        {entrances.length > 0 && (
+          <PlaceEntrances entrances={entrances} placeName={place.name} />
+        )}
 
         {/* 4. Current Conditions (Weather + Status combined) */}
         <section className="animate-fade-in">
