@@ -35,56 +35,66 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section - Full Screen */}
-      <section className="relative h-screen w-full overflow-hidden">
+      {/* Hero Section - 100vh / 100dvh for mobile */}
+      <section 
+        className="relative w-full overflow-hidden"
+        style={{ 
+          height: '100dvh',
+          minHeight: '-webkit-fill-available',
+        }}
+      >
         <img
           src={heroRvLandscape}
           alt="RV adventure in beautiful landscape"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
         
-        {/* Hero Content - Positioned higher with space for icons */}
-        <div className="absolute inset-x-0 top-1/3 -translate-y-1/2 flex flex-col items-center px-4">
-          {/* Search Bar */}
-          <HomeSearchBar className="w-full max-w-lg px-4" />
+        {/* Hero Content - Positioned for optimal visibility */}
+        <div className="absolute inset-0 flex flex-col pt-safe">
+          {/* Spacer for header */}
+          <div className="h-16" />
           
-          <p className="text-white/80 text-base sm:text-lg text-center mt-4 font-medium tracking-wide">
-            Camp. Drive. Explore.
-          </p>
-        </div>
+          {/* Search area - centered in upper portion */}
+          <div className="flex-1 flex flex-col items-center justify-center px-4 pb-32">
+            <HomeSearchBar className="w-full max-w-lg" />
+            <p className="text-white/90 text-base sm:text-lg text-center mt-4 font-medium tracking-wide">
+              Camp. Drive. Explore.
+            </p>
+          </div>
+          
+          {/* Floating Action Icons - Bottom with safe area */}
+          <div className="pb-8 px-4" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
+            <div className="flex justify-center gap-10 max-w-md mx-auto">
+              <Link to="/map" className="group flex flex-col items-center">
+                <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
+                  <Map className="w-6 h-6 text-primary" />
+                </div>
+                <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
+                  Map View
+                </span>
+              </Link>
 
-        {/* Floating Action Icons - Bottom of Hero */}
-        <div className="absolute bottom-8 left-0 right-0 px-4">
-          <div className="flex justify-center gap-8 max-w-md mx-auto">
-            <Link to="/map" className="group flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
-                <Map className="w-6 h-6 text-primary" />
-              </div>
-              <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
-                Map View
-              </span>
-            </Link>
+              <Link to="/places" className="group flex flex-col items-center">
+                <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
+                  <Navigation className="w-6 h-6 text-primary" />
+                </div>
+                <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
+                  Places
+                </span>
+              </Link>
 
-            <Link to="/places" className="group flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
-                <Navigation className="w-6 h-6 text-primary" />
-              </div>
-              <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
-                Places
-              </span>
-            </Link>
-
-            <Link to="/route" className="group flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
-                <Route className="w-6 h-6 text-primary" />
-              </div>
-              <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
-                Routes
-              </span>
-            </Link>
+              <Link to="/route" className="group flex flex-col items-center">
+                <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
+                  <Route className="w-6 h-6 text-primary" />
+                </div>
+                <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
+                  Routes
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
