@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef } from 'react';
 import { Search, X, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -10,13 +10,13 @@ interface HomeSearchBarProps {
   className?: string;
 }
 
-export function HomeSearchBar({ className }: HomeSearchBarProps) {
+export const HomeSearchBar = forwardRef<HTMLDivElement, HomeSearchBarProps>(
+  function HomeSearchBar({ className }, ref) {
   const navigate = useNavigate();
   const { data: places } = usePlaces();
   
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Filter matching places based on query
@@ -29,16 +29,20 @@ export function HomeSearchBar({ className }: HomeSearchBarProps) {
         .slice(0, 5)
     : [];
 
+  // Combine refs for click-outside detection
+  const internalRef = useRef<HTMLDivElement>(null);
+  const combinedRef = (ref || internalRef) as React.RefObject<HTMLDivElement>;
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (combinedRef.current && !combinedRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [combinedRef]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -68,7 +72,7 @@ export function HomeSearchBar({ className }: HomeSearchBarProps) {
   const showSuggestions = isOpen && query.trim().length >= 2;
 
   return (
-    <div ref={containerRef} className={cn('relative', className)}>
+    <div ref={combinedRef} className={cn('relative', className)}>
       <form onSubmit={handleSubmit}>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -152,4 +156,4 @@ export function HomeSearchBar({ className }: HomeSearchBarProps) {
       )}
     </div>
   );
-}
+});
