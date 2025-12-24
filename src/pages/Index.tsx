@@ -1,8 +1,9 @@
-import { Map, Navigation, Route, Check } from 'lucide-react';
+import { Map, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { HomeSearchBar } from '@/components/HomeSearchBar';
+import { BottomNav } from '@/components/BottomNav';
 import { usePlaces } from '@/hooks/usePlaces';
 import { PlaceStampBadges } from '@/components/PlaceStampBadges';
 import {
@@ -32,75 +33,17 @@ const Index = () => {
   }, [carouselApi]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <Header />
 
-      {/* Hero Section - Exactly one full screen */}
+      {/* Hero Section - Full viewport height */}
       <section 
-        className="relative w-full overflow-hidden hero-section"
+        className="relative w-full overflow-hidden"
         style={{ 
-          height: '100dvh',
-          minHeight: '100vh',
+          height: 'calc(100dvh - 56px)',
+          minHeight: 'calc(100vh - 56px)',
         }}
       >
-        {/* Responsive height styles for guaranteed visibility */}
-        <style>{`
-          .hero-section {
-            --icon-size: 54px;
-            --icon-gap: 2rem;
-            --label-size: 0.8125rem;
-            --tagline-size: 0.9375rem;
-            --content-gap: 0.875rem;
-            --bottom-pad: 1.5rem;
-          }
-          @media (max-height: 750px) {
-            .hero-section {
-              --icon-size: 50px;
-              --icon-gap: 1.75rem;
-              --label-size: 0.75rem;
-              --tagline-size: 0.875rem;
-              --content-gap: 0.75rem;
-              --bottom-pad: 1.25rem;
-            }
-          }
-          @media (max-height: 680px) {
-            .hero-section {
-              --icon-size: 46px;
-              --icon-gap: 1.5rem;
-              --label-size: 0.6875rem;
-              --tagline-size: 0.8125rem;
-              --content-gap: 0.625rem;
-              --bottom-pad: 1rem;
-            }
-          }
-          @media (max-height: 600px) {
-            .hero-section {
-              --icon-size: 42px;
-              --icon-gap: 1.25rem;
-              --label-size: 0.625rem;
-              --tagline-size: 0.75rem;
-              --content-gap: 0.5rem;
-              --bottom-pad: 0.75rem;
-            }
-          }
-          @media (max-width: 360px) {
-            .hero-section {
-              --icon-size: 46px;
-              --icon-gap: 1.25rem;
-            }
-          }
-          .hero-search-compact input {
-            height: 44px !important;
-            font-size: 0.9375rem !important;
-          }
-          @media (max-height: 680px) {
-            .hero-search-compact input {
-              height: 40px !important;
-              font-size: 0.875rem !important;
-            }
-          }
-        `}</style>
-        
         <img
           src={heroRvLandscape}
           alt="RV adventure in beautiful landscape"
@@ -108,80 +51,17 @@ const Index = () => {
         />
         
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/40" />
         
-        {/* Hero Content Overlay - anchored to bottom, vertically centered content area */}
-        <div className="absolute inset-0 flex flex-col justify-end">
-          {/* Content stack - search + tagline + icons */}
-          <div 
-            className="flex flex-col items-center px-4 w-full"
-            style={{ 
-              paddingBottom: 'calc(var(--bottom-pad) + env(safe-area-inset-bottom, 0px))',
-              gap: 'var(--content-gap)',
-            }}
-          >
-            {/* Search bar */}
-            <HomeSearchBar className="w-full max-w-md hero-search-compact" />
-            
-            {/* Tagline */}
-            <p 
-              className="text-white/90 text-center font-medium tracking-wide"
-              style={{ fontSize: 'var(--tagline-size)' }}
-            >
-              Camp. Drive. Explore.
-            </p>
-            
-            {/* 3 Shortcut Icons - guaranteed single row */}
-            <div 
-              className="flex justify-center items-start flex-nowrap"
-              style={{ gap: 'var(--icon-gap)' }}
-            >
-              <Link to="/map" className="group flex flex-col items-center flex-shrink-0">
-                <div 
-                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-active:scale-95 transition-transform duration-150"
-                  style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
-                >
-                  <Map className="text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
-                </div>
-                <span 
-                  className="mt-1 font-medium text-white drop-shadow-md whitespace-nowrap"
-                  style={{ fontSize: 'var(--label-size)' }}
-                >
-                  Map View
-                </span>
-              </Link>
-
-              <Link to="/places" className="group flex flex-col items-center flex-shrink-0">
-                <div 
-                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-active:scale-95 transition-transform duration-150"
-                  style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
-                >
-                  <Navigation className="text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
-                </div>
-                <span 
-                  className="mt-1 font-medium text-white drop-shadow-md whitespace-nowrap"
-                  style={{ fontSize: 'var(--label-size)' }}
-                >
-                  Places
-                </span>
-              </Link>
-
-              <Link to="/route" className="group flex flex-col items-center flex-shrink-0">
-                <div 
-                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-active:scale-95 transition-transform duration-150"
-                  style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
-                >
-                  <Route className="text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
-                </div>
-                <span 
-                  className="mt-1 font-medium text-white drop-shadow-md whitespace-nowrap"
-                  style={{ fontSize: 'var(--label-size)' }}
-                >
-                  Routes
-                </span>
-              </Link>
-            </div>
-          </div>
+        {/* Hero Content - Centered vertically */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
+          {/* Search bar */}
+          <HomeSearchBar className="w-full max-w-md" />
+          
+          {/* Tagline */}
+          <p className="text-white/90 text-base sm:text-lg text-center mt-4 font-medium tracking-wide">
+            Camp. Drive. Explore.
+          </p>
         </div>
       </section>
 
@@ -283,6 +163,9 @@ const Index = () => {
           </p>
         </footer>
       </main>
+
+      {/* Fixed Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 };
