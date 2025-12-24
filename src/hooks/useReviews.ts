@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import type { ReviewerMedal } from '@/components/ReviewerMedalBadge';
 
 export type ReviewDimension = 
   | 'quality' 
@@ -33,6 +34,7 @@ export interface Review {
   signals: ReviewSignal[];
   user_display_name?: string;
   trusted_contributor?: boolean;
+  reviewer_medal?: ReviewerMedal;
 }
 
 export interface DimensionSummary {
@@ -99,6 +101,8 @@ export function useReviews(placeId: string) {
         updated_at: review.updated_at,
         user_display_name: review.user_display_name,
         trusted_contributor: review.trusted_contributor,
+        // Use current medal from profile, fallback to medal at time of review
+        reviewer_medal: (review.current_reviewer_medal || review.reviewer_medal || 'none') as ReviewerMedal,
         signals: (signals || [])
           .filter((s: any) => s.review_id === review.id)
           .map((s: any) => ({
