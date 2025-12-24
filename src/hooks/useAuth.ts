@@ -14,6 +14,9 @@ export interface Profile {
   display_name: string | null;
   contribution_score: number;
   is_pro: boolean;
+  total_reviews_count: number;
+  trust_score: number;
+  reviewer_medal: 'none' | 'bronze' | 'silver' | 'gold';
 }
 
 export function useAuth() {
