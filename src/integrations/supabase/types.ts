@@ -412,8 +412,50 @@ export type Database = {
           },
         ]
       }
+      place_drafts: {
+        Row: {
+          created_at: string
+          current_step: number | null
+          draft_data: Json
+          id: string
+          is_edit: boolean | null
+          place_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_step?: number | null
+          draft_data: Json
+          id?: string
+          is_edit?: boolean | null
+          place_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_step?: number | null
+          draft_data?: Json
+          id?: string
+          is_edit?: boolean | null
+          place_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_drafts_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       place_photos: {
         Row: {
+          caption: string | null
           category: Database["public"]["Enums"]["photo_category"]
           created_at: string
           flag_reason: string | null
@@ -423,10 +465,12 @@ export type Database = {
           id: string
           is_approved: boolean
           place_id: string
+          tags: Database["public"]["Enums"]["photo_tag"][] | null
           url: string
           user_id: string
         }
         Insert: {
+          caption?: string | null
           category: Database["public"]["Enums"]["photo_category"]
           created_at?: string
           flag_reason?: string | null
@@ -436,10 +480,12 @@ export type Database = {
           id?: string
           is_approved?: boolean
           place_id: string
+          tags?: Database["public"]["Enums"]["photo_tag"][] | null
           url: string
           user_id: string
         }
         Update: {
+          caption?: string | null
           category?: Database["public"]["Enums"]["photo_category"]
           created_at?: string
           flag_reason?: string | null
@@ -449,6 +495,7 @@ export type Database = {
           id?: string
           is_approved?: boolean
           place_id?: string
+          tags?: Database["public"]["Enums"]["photo_tag"][] | null
           url?: string
           user_id?: string
         }
@@ -700,116 +747,354 @@ export type Database = {
       places: {
         Row: {
           address: string | null
+          address_line1: string | null
+          address_line2: string | null
+          big_rig_friendly: Database["public"]["Enums"]["yes_no_some"] | null
+          campfires_allowed:
+            | Database["public"]["Enums"]["yes_no_seasonal"]
+            | null
           category_id: string | null
+          cell_signal_notes: string | null
           city: string | null
           claimed_by: string | null
           country: string | null
+          county: string | null
           cover_image_url: string | null
           created_at: string
+          created_by_user_id: string | null
           current_status: Database["public"]["Enums"]["place_status"] | null
           data_quality_score: number | null
+          delivery_notes: string | null
           description: string | null
+          dog_park: Database["public"]["Enums"]["yes_no_unknown"] | null
+          dump_fee_amount: number | null
+          dump_fee_required:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
+          dump_station: Database["public"]["Enums"]["yes_no_unknown"] | null
+          electric: Database["public"]["Enums"]["electric_type"] | null
+          elevation_ft: number | null
+          email: string | null
+          entrance_latitude: number | null
+          entrance_longitude: number | null
+          external_refs_json: Json | null
+          facebook_url: string | null
           features: Database["public"]["Enums"]["place_feature"][] | null
+          fees_json: Json | null
+          fire_pits: Database["public"]["Enums"]["yes_no_unknown"] | null
+          fresh_water_fill: Database["public"]["Enums"]["yes_no_unknown"] | null
+          full_hookups: Database["public"]["Enums"]["yes_no_unknown"] | null
+          generator_hours: string | null
+          generators_allowed:
+            | Database["public"]["Enums"]["yes_no_restricted"]
+            | null
+          grade: Database["public"]["Enums"]["grade_type"] | null
           has_conflict: boolean
+          hot_tub: Database["public"]["Enums"]["yes_no_unknown"] | null
+          hours_json: Json | null
           hours_of_operation: Json | null
           id: string
           import_source: Database["public"]["Enums"]["external_source"] | null
+          instagram_url: string | null
+          is_24_7: boolean | null
           is_claimed: boolean
           is_verified: boolean
+          is_verified_place: boolean | null
           last_updated: string
           last_verified_at: string | null
           latitude: number
+          laundry: Database["public"]["Enums"]["yes_no_unknown"] | null
           longitude: number
+          max_height_ft: number | null
+          max_rv_length_ft: number | null
           name: string
           needs_review: boolean
+          nightly_rate_max: number | null
+          nightly_rate_min: number | null
+          no_formal_address: boolean | null
+          noise_level: Database["public"]["Enums"]["noise_level"] | null
           open_year_round: boolean
           package_fee_amount: string | null
           package_fee_required: boolean
           packages_accepted: Database["public"]["Enums"]["package_acceptance"]
+          payment_types: string[] | null
+          pets_allowed: Database["public"]["Enums"]["yes_no_restricted"] | null
           phone: string | null
+          picnic_tables: Database["public"]["Enums"]["yes_no_unknown"] | null
+          pin_accuracy: Database["public"]["Enums"]["pin_accuracy"] | null
+          playground: Database["public"]["Enums"]["yes_no_unknown"] | null
+          pool_heating: Database["public"]["Enums"]["pool_heating"] | null
+          pool_open_year_round:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
+          postal_code: string | null
           price_level: Database["public"]["Enums"]["price_level"]
           primary_category: Database["public"]["Enums"]["place_category"]
+          recycling: Database["public"]["Enums"]["yes_no_unknown"] | null
+          restrooms: Database["public"]["Enums"]["yes_no_unknown"] | null
           review_count: number
+          road_condition: Database["public"]["Enums"]["road_condition"] | null
+          road_type: Database["public"]["Enums"]["road_type"] | null
+          rules_notes: string | null
+          safety_level: Database["public"]["Enums"]["safety_level"] | null
+          seasonal_notes: string | null
+          seasonal_open_months: string[] | null
+          sewer_hookup: Database["public"]["Enums"]["yes_no_some"] | null
+          short_summary: string | null
+          showers: Database["public"]["Enums"]["yes_no_unknown"] | null
           state: string | null
           status_updated_at: string | null
+          store_on_site: Database["public"]["Enums"]["yes_no_unknown"] | null
+          swimming_pool: Database["public"]["Enums"]["yes_no_unknown"] | null
+          taxes_included: Database["public"]["Enums"]["yes_no_unknown"] | null
+          timezone: string | null
+          towing_friendly: Database["public"]["Enums"]["yes_no_unknown"] | null
+          trash: Database["public"]["Enums"]["yes_no_unknown"] | null
+          turnaround_available:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
           verified_by: string | null
+          water_hookup: Database["public"]["Enums"]["yes_no_some"] | null
+          water_notes: string | null
+          water_type: Database["public"]["Enums"]["water_type_enum"] | null
           website: string | null
+          wifi: Database["public"]["Enums"]["yes_no_unknown"] | null
           zip_code: string | null
         }
         Insert: {
           address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          big_rig_friendly?: Database["public"]["Enums"]["yes_no_some"] | null
+          campfires_allowed?:
+            | Database["public"]["Enums"]["yes_no_seasonal"]
+            | null
           category_id?: string | null
+          cell_signal_notes?: string | null
           city?: string | null
           claimed_by?: string | null
           country?: string | null
+          county?: string | null
           cover_image_url?: string | null
           created_at?: string
+          created_by_user_id?: string | null
           current_status?: Database["public"]["Enums"]["place_status"] | null
           data_quality_score?: number | null
+          delivery_notes?: string | null
           description?: string | null
+          dog_park?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          dump_fee_amount?: number | null
+          dump_fee_required?:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
+          dump_station?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          electric?: Database["public"]["Enums"]["electric_type"] | null
+          elevation_ft?: number | null
+          email?: string | null
+          entrance_latitude?: number | null
+          entrance_longitude?: number | null
+          external_refs_json?: Json | null
+          facebook_url?: string | null
           features?: Database["public"]["Enums"]["place_feature"][] | null
+          fees_json?: Json | null
+          fire_pits?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          fresh_water_fill?:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
+          full_hookups?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          generator_hours?: string | null
+          generators_allowed?:
+            | Database["public"]["Enums"]["yes_no_restricted"]
+            | null
+          grade?: Database["public"]["Enums"]["grade_type"] | null
           has_conflict?: boolean
+          hot_tub?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          hours_json?: Json | null
           hours_of_operation?: Json | null
           id?: string
           import_source?: Database["public"]["Enums"]["external_source"] | null
+          instagram_url?: string | null
+          is_24_7?: boolean | null
           is_claimed?: boolean
           is_verified?: boolean
+          is_verified_place?: boolean | null
           last_updated?: string
           last_verified_at?: string | null
           latitude: number
+          laundry?: Database["public"]["Enums"]["yes_no_unknown"] | null
           longitude: number
+          max_height_ft?: number | null
+          max_rv_length_ft?: number | null
           name: string
           needs_review?: boolean
+          nightly_rate_max?: number | null
+          nightly_rate_min?: number | null
+          no_formal_address?: boolean | null
+          noise_level?: Database["public"]["Enums"]["noise_level"] | null
           open_year_round?: boolean
           package_fee_amount?: string | null
           package_fee_required?: boolean
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
+          payment_types?: string[] | null
+          pets_allowed?: Database["public"]["Enums"]["yes_no_restricted"] | null
           phone?: string | null
+          picnic_tables?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          pin_accuracy?: Database["public"]["Enums"]["pin_accuracy"] | null
+          playground?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          pool_heating?: Database["public"]["Enums"]["pool_heating"] | null
+          pool_open_year_round?:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
+          postal_code?: string | null
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
+          recycling?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          restrooms?: Database["public"]["Enums"]["yes_no_unknown"] | null
           review_count?: number
+          road_condition?: Database["public"]["Enums"]["road_condition"] | null
+          road_type?: Database["public"]["Enums"]["road_type"] | null
+          rules_notes?: string | null
+          safety_level?: Database["public"]["Enums"]["safety_level"] | null
+          seasonal_notes?: string | null
+          seasonal_open_months?: string[] | null
+          sewer_hookup?: Database["public"]["Enums"]["yes_no_some"] | null
+          short_summary?: string | null
+          showers?: Database["public"]["Enums"]["yes_no_unknown"] | null
           state?: string | null
           status_updated_at?: string | null
+          store_on_site?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          swimming_pool?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          taxes_included?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          timezone?: string | null
+          towing_friendly?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          trash?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          turnaround_available?:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
           verified_by?: string | null
+          water_hookup?: Database["public"]["Enums"]["yes_no_some"] | null
+          water_notes?: string | null
+          water_type?: Database["public"]["Enums"]["water_type_enum"] | null
           website?: string | null
+          wifi?: Database["public"]["Enums"]["yes_no_unknown"] | null
           zip_code?: string | null
         }
         Update: {
           address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          big_rig_friendly?: Database["public"]["Enums"]["yes_no_some"] | null
+          campfires_allowed?:
+            | Database["public"]["Enums"]["yes_no_seasonal"]
+            | null
           category_id?: string | null
+          cell_signal_notes?: string | null
           city?: string | null
           claimed_by?: string | null
           country?: string | null
+          county?: string | null
           cover_image_url?: string | null
           created_at?: string
+          created_by_user_id?: string | null
           current_status?: Database["public"]["Enums"]["place_status"] | null
           data_quality_score?: number | null
+          delivery_notes?: string | null
           description?: string | null
+          dog_park?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          dump_fee_amount?: number | null
+          dump_fee_required?:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
+          dump_station?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          electric?: Database["public"]["Enums"]["electric_type"] | null
+          elevation_ft?: number | null
+          email?: string | null
+          entrance_latitude?: number | null
+          entrance_longitude?: number | null
+          external_refs_json?: Json | null
+          facebook_url?: string | null
           features?: Database["public"]["Enums"]["place_feature"][] | null
+          fees_json?: Json | null
+          fire_pits?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          fresh_water_fill?:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
+          full_hookups?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          generator_hours?: string | null
+          generators_allowed?:
+            | Database["public"]["Enums"]["yes_no_restricted"]
+            | null
+          grade?: Database["public"]["Enums"]["grade_type"] | null
           has_conflict?: boolean
+          hot_tub?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          hours_json?: Json | null
           hours_of_operation?: Json | null
           id?: string
           import_source?: Database["public"]["Enums"]["external_source"] | null
+          instagram_url?: string | null
+          is_24_7?: boolean | null
           is_claimed?: boolean
           is_verified?: boolean
+          is_verified_place?: boolean | null
           last_updated?: string
           last_verified_at?: string | null
           latitude?: number
+          laundry?: Database["public"]["Enums"]["yes_no_unknown"] | null
           longitude?: number
+          max_height_ft?: number | null
+          max_rv_length_ft?: number | null
           name?: string
           needs_review?: boolean
+          nightly_rate_max?: number | null
+          nightly_rate_min?: number | null
+          no_formal_address?: boolean | null
+          noise_level?: Database["public"]["Enums"]["noise_level"] | null
           open_year_round?: boolean
           package_fee_amount?: string | null
           package_fee_required?: boolean
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
+          payment_types?: string[] | null
+          pets_allowed?: Database["public"]["Enums"]["yes_no_restricted"] | null
           phone?: string | null
+          picnic_tables?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          pin_accuracy?: Database["public"]["Enums"]["pin_accuracy"] | null
+          playground?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          pool_heating?: Database["public"]["Enums"]["pool_heating"] | null
+          pool_open_year_round?:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
+          postal_code?: string | null
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
+          recycling?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          restrooms?: Database["public"]["Enums"]["yes_no_unknown"] | null
           review_count?: number
+          road_condition?: Database["public"]["Enums"]["road_condition"] | null
+          road_type?: Database["public"]["Enums"]["road_type"] | null
+          rules_notes?: string | null
+          safety_level?: Database["public"]["Enums"]["safety_level"] | null
+          seasonal_notes?: string | null
+          seasonal_open_months?: string[] | null
+          sewer_hookup?: Database["public"]["Enums"]["yes_no_some"] | null
+          short_summary?: string | null
+          showers?: Database["public"]["Enums"]["yes_no_unknown"] | null
           state?: string | null
           status_updated_at?: string | null
+          store_on_site?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          swimming_pool?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          taxes_included?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          timezone?: string | null
+          towing_friendly?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          trash?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          turnaround_available?:
+            | Database["public"]["Enums"]["yes_no_unknown"]
+            | null
           verified_by?: string | null
+          water_hookup?: Database["public"]["Enums"]["yes_no_some"] | null
+          water_notes?: string | null
+          water_type?: Database["public"]["Enums"]["water_type_enum"] | null
           website?: string | null
+          wifi?: Database["public"]["Enums"]["yes_no_unknown"] | null
           zip_code?: string | null
         }
         Relationships: [
@@ -1199,6 +1484,7 @@ export type Database = {
         | "retail"
         | "community_other"
       checkin_type: "stayed_here" | "used_dump_water" | "passed_by"
+      electric_type: "none" | "15a" | "30a" | "50a" | "mix" | "unknown"
       external_source:
         | "google_maps"
         | "ioverlander"
@@ -1210,12 +1496,14 @@ export type Database = {
         | "user_submission"
         | "admin_entry"
         | "other"
+      grade_type: "flat" | "moderate" | "steep" | "unknown"
       import_review_status:
         | "pending"
         | "approved"
         | "rejected"
         | "merged"
         | "needs_review"
+      noise_level: "quiet" | "moderate" | "loud" | "unknown"
       notification_type:
         | "place_status_changed"
         | "place_photo_added"
@@ -1229,6 +1517,18 @@ export type Database = {
         | "bathrooms_showers"
         | "surroundings"
         | "rules_signs"
+      photo_tag:
+        | "entrance"
+        | "site"
+        | "hookups"
+        | "dump"
+        | "water"
+        | "bathrooms"
+        | "sign"
+        | "view"
+        | "amenities"
+        | "other"
+      pin_accuracy: "exact" | "approximate" | "unknown"
       place_category:
         | "National Park"
         | "State Park"
@@ -1259,6 +1559,12 @@ export type Database = {
         | "access_questionable"
         | "temporarily_closed"
         | "restrictions_reported"
+      pool_heating:
+        | "both_heated"
+        | "pool_only"
+        | "hot_tub_only"
+        | "not_heated"
+        | "unknown"
       price_level: "$" | "$$" | "$$$"
       review_dimension:
         | "quality"
@@ -1270,6 +1576,9 @@ export type Database = {
         | "reliability"
         | "speed"
         | "restrictions"
+      road_condition: "good" | "ok" | "rough" | "muddy" | "unknown"
+      road_type: "paved" | "gravel" | "dirt" | "sand" | "mixed" | "unknown"
+      safety_level: "safe" | "use_caution" | "avoid_at_night" | "unknown"
       signal_polarity: "positive" | "improvement"
       suggestion_status: "pending" | "approved" | "rejected"
       tag_group:
@@ -1278,6 +1587,11 @@ export type Database = {
         | "environment"
         | "rules_policies"
         | "cost"
+      water_type_enum: "potable" | "non_potable" | "unknown"
+      yes_no_restricted: "yes" | "no" | "restricted" | "unknown"
+      yes_no_seasonal: "yes" | "no" | "seasonal" | "unknown"
+      yes_no_some: "yes" | "no" | "some" | "unknown"
+      yes_no_unknown: "yes" | "no" | "unknown"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1419,6 +1733,7 @@ export const Constants = {
         "community_other",
       ],
       checkin_type: ["stayed_here", "used_dump_water", "passed_by"],
+      electric_type: ["none", "15a", "30a", "50a", "mix", "unknown"],
       external_source: [
         "google_maps",
         "ioverlander",
@@ -1431,6 +1746,7 @@ export const Constants = {
         "admin_entry",
         "other",
       ],
+      grade_type: ["flat", "moderate", "steep", "unknown"],
       import_review_status: [
         "pending",
         "approved",
@@ -1438,6 +1754,7 @@ export const Constants = {
         "merged",
         "needs_review",
       ],
+      noise_level: ["quiet", "moderate", "loud", "unknown"],
       notification_type: [
         "place_status_changed",
         "place_photo_added",
@@ -1453,6 +1770,19 @@ export const Constants = {
         "surroundings",
         "rules_signs",
       ],
+      photo_tag: [
+        "entrance",
+        "site",
+        "hookups",
+        "dump",
+        "water",
+        "bathrooms",
+        "sign",
+        "view",
+        "amenities",
+        "other",
+      ],
+      pin_accuracy: ["exact", "approximate", "unknown"],
       place_category: [
         "National Park",
         "State Park",
@@ -1486,6 +1816,13 @@ export const Constants = {
         "temporarily_closed",
         "restrictions_reported",
       ],
+      pool_heating: [
+        "both_heated",
+        "pool_only",
+        "hot_tub_only",
+        "not_heated",
+        "unknown",
+      ],
       price_level: ["$", "$$", "$$$"],
       review_dimension: [
         "quality",
@@ -1498,6 +1835,9 @@ export const Constants = {
         "speed",
         "restrictions",
       ],
+      road_condition: ["good", "ok", "rough", "muddy", "unknown"],
+      road_type: ["paved", "gravel", "dirt", "sand", "mixed", "unknown"],
+      safety_level: ["safe", "use_caution", "avoid_at_night", "unknown"],
       signal_polarity: ["positive", "improvement"],
       suggestion_status: ["pending", "approved", "rejected"],
       tag_group: [
@@ -1507,6 +1847,11 @@ export const Constants = {
         "rules_policies",
         "cost",
       ],
+      water_type_enum: ["potable", "non_potable", "unknown"],
+      yes_no_restricted: ["yes", "no", "restricted", "unknown"],
+      yes_no_seasonal: ["yes", "no", "seasonal", "unknown"],
+      yes_no_some: ["yes", "no", "some", "unknown"],
+      yes_no_unknown: ["yes", "no", "unknown"],
     },
   },
 } as const
