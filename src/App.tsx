@@ -15,6 +15,7 @@ import AdminPhotos from "./pages/AdminPhotos";
 import AdminUsers from "./pages/AdminUsers";
 import AdminPlaceSubmissions from "./pages/AdminPlaceSubmissions";
 import ImportPlaces from "./pages/ImportPlaces";
+import AdminDataEnrichment from "./pages/AdminDataEnrichment";
 import Auth from "./pages/Auth";
 import MapView from "./pages/MapView";
 import RoutePlanning from "./pages/RoutePlanning";
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/place-submissions" element={<AdminPlaceSubmissions />} />
           <Route path="/admin/import" element={<ImportPlaces />} />
+          <Route path="/admin/data-enrichment" element={<AdminDataEnrichment />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

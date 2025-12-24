@@ -234,6 +234,13 @@ export const useApproveSubmission = () => {
 
       if (updateError) throw updateError;
 
+      // Trigger county enrichment in background (non-blocking)
+      if (newPlace?.id && sub.latitude && sub.longitude) {
+        supabase.functions.invoke('enrich-county', {
+          body: { action: 'enrich_single', placeId: newPlace.id },
+        }).catch(err => console.error('County enrichment failed:', err));
+      }
+
       return newPlace;
     },
     onSuccess: () => {
