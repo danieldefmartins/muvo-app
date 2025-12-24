@@ -1,11 +1,10 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Place, PlaceFeature } from '@/hooks/usePlaces';
-import { PlaceStampBadges } from './PlaceStampBadges';
-import { Badge } from './ui/badge';
+import { useNavigate } from 'react-router-dom';
+import { Place } from '@/hooks/usePlaces';
 import { cn } from '@/lib/utils';
-import { MapPin, Droplets, Zap, Wifi, Dog, Truck, ChevronRight, MapPinOff } from 'lucide-react';
+import { MapPinOff, ShieldCheck } from 'lucide-react';
 import { hapticLight } from '@/lib/haptics';
+import { PlaceStampBadges } from './PlaceStampBadges';
 
 interface MapPlaceCarouselProps {
   places: Place[];
@@ -13,32 +12,6 @@ interface MapPlaceCarouselProps {
   onPlaceSelect: (place: Place) => void;
   mapCenter?: { lng: number; lat: number };
   className?: string;
-}
-
-// Feature icons for compact display
-const FEATURE_ICONS: Partial<Record<PlaceFeature, React.ElementType>> = {
-  'Wi-Fi': Wifi,
-  'Pet Friendly': Dog,
-  'Big Rig Friendly': Truck,
-  'Electric Hookups': Zap,
-  'Dump Station': Droplets,
-  'Fresh Water': Droplets,
-};
-
-function getFeatureIcons(features: PlaceFeature[], max = 3) {
-  const icons: { feature: PlaceFeature; Icon: React.ElementType }[] = [];
-  const usedIcons = new Set<React.ElementType>();
-  
-  for (const feature of features) {
-    if (icons.length >= max) break;
-    const Icon = FEATURE_ICONS[feature];
-    if (Icon && !usedIcons.has(Icon)) {
-      icons.push({ feature, Icon });
-      usedIcons.add(Icon);
-    }
-  }
-  
-  return icons;
 }
 
 // Calculate distance from center
@@ -57,107 +30,78 @@ function distanceFromCenter(place: Place, center?: { lng: number; lat: number })
   return R * c;
 }
 
-interface CarouselCardProps {
+interface FloatingCardProps {
   place: Place;
   isSelected: boolean;
   onSelect: () => void;
-  distanceFromCenter?: number;
+  onTap: () => void;
+  distance: number;
 }
 
-function CarouselCard({ place, isSelected, onSelect, distanceFromCenter: centerDist }: CarouselCardProps) {
-  const featureIcons = getFeatureIcons(place.features);
-  
+function FloatingCard({ place, isSelected, onSelect, onTap, distance }: FloatingCardProps) {
   return (
     <div
       onClick={() => {
         hapticLight();
         onSelect();
+        // Navigate on tap
+        onTap();
       }}
       className={cn(
-        'flex-shrink-0 w-64 bg-card border rounded-xl shadow-md overflow-hidden cursor-pointer transition-all duration-200',
+        'flex-shrink-0 w-[calc(100vw-3rem)] max-w-md bg-card/95 backdrop-blur-md rounded-2xl shadow-xl cursor-pointer transition-all duration-200',
         isSelected 
-          ? 'border-primary ring-2 ring-primary shadow-lg scale-[1.02]' 
-          : 'border-border hover:border-primary/50 hover:shadow-lg'
+          ? 'ring-2 ring-accent shadow-2xl scale-[1.02]' 
+          : 'hover:shadow-2xl'
       )}
     >
-      {/* Image */}
-      <div className="relative h-24">
-        {place.coverImageUrl ? (
-          <img
-            src={place.coverImageUrl}
-            alt={place.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-            <MapPin className="w-5 h-5 text-muted-foreground/50" />
-          </div>
-        )}
-        
-        {/* Category badge */}
-        <div className="absolute top-2 left-2">
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-background/95 text-foreground backdrop-blur-sm">
-            {place.primaryCategory}
-          </span>
-        </div>
-
-        {/* Verified badge */}
-        {place.isVerified && (
-          <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/90 text-primary-foreground">
-              Verified
-            </Badge>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-2.5">
-        <h3 className="font-semibold text-foreground text-sm leading-tight mb-1 line-clamp-1">
-          {place.name}
-        </h3>
-
-        <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-1.5">
-          <MapPin className="w-3 h-3 flex-shrink-0" />
-          <span>{centerDist !== undefined ? `${centerDist.toFixed(1)} mi` : `${place.distance} mi`}</span>
-          <span className="mx-0.5">•</span>
-          <span className="font-medium text-foreground">{place.priceLevel}</span>
-        </div>
-
-        {/* Review stamps - compact */}
-        <PlaceStampBadges 
-          placeId={place.id} 
-          variant="compact" 
-          maxGood={2} 
-          maxBad={0}
-          showReviewCount={false}
-          className="mb-1.5"
-        />
-
-        {/* Feature icons + CTA */}
-        <div className="flex items-center justify-between">
-          {featureIcons.length > 0 && (
-            <div className="flex items-center gap-1">
-              {featureIcons.map(({ feature, Icon }) => (
-                <div
-                  key={feature}
-                  className="flex items-center justify-center w-5 h-5 rounded-full bg-muted"
-                  title={feature}
-                >
-                  <Icon className="w-2.5 h-2.5 text-muted-foreground" />
-                </div>
-              ))}
+      <div className="flex items-center gap-3 p-3">
+        {/* Thumbnail */}
+        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
+          {place.coverImageUrl ? (
+            <img
+              src={place.coverImageUrl}
+              alt={place.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
+              <span className="text-xl">📍</span>
             </div>
           )}
-          
-          <Link
-            to={`/place/${place.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-0.5 text-xs font-medium text-primary hover:underline ml-auto"
-          >
-            Details
-            <ChevronRight className="w-3 h-3" />
-          </Link>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          {/* Name + verified */}
+          <div className="flex items-start gap-1.5 mb-1">
+            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-1 flex-1">
+              {place.name}
+            </h3>
+            {place.isVerified && (
+              <ShieldCheck className="w-4 h-4 text-accent flex-shrink-0" />
+            )}
+          </div>
+
+          {/* Distance + Price */}
+          <p className="text-xs text-muted-foreground mb-2">
+            {distance.toFixed(1)} mi away · {place.priceLevel}
+          </p>
+
+          {/* Experience stamps - icons with counts */}
+          <PlaceStampBadges 
+            placeId={place.id} 
+            variant="compact" 
+            maxGood={3} 
+            maxBad={0}
+            showReviewCount={false}
+          />
+        </div>
+
+        {/* Tap hint */}
+        <div className="flex-shrink-0 text-muted-foreground/50">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </div>
       </div>
     </div>
@@ -171,6 +115,7 @@ export function MapPlaceCarousel({
   mapCenter,
   className 
 }: MapPlaceCarouselProps) {
+  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -179,7 +124,7 @@ export function MapPlaceCarousel({
     const distA = distanceFromCenter(a, mapCenter);
     const distB = distanceFromCenter(b, mapCenter);
     return distA - distB;
-  }).slice(0, 15); // Limit to 15 for performance
+  }).slice(0, 15);
 
   // Scroll to selected place card
   useEffect(() => {
@@ -203,50 +148,52 @@ export function MapPlaceCarousel({
     }
   }, []);
 
-  // Empty state
+  const handleTap = (placeId: string) => {
+    navigate(`/place/${placeId}`);
+  };
+
+  // Empty state - floating pill
   if (sortedPlaces.length === 0) {
     return (
-      <div className={cn('bg-background/95 backdrop-blur-sm border-t border-border', className)}>
-        <div className="flex items-center justify-center gap-2 py-4 px-4 text-muted-foreground">
-          <MapPinOff className="w-5 h-5" />
-          <span className="text-sm">No places in this area. Zoom out or move the map.</span>
+      <div className={cn('px-4 pb-6', className)}>
+        <div className="flex items-center justify-center gap-2 py-3 px-4 bg-card/90 backdrop-blur-md rounded-full shadow-lg text-muted-foreground">
+          <MapPinOff className="w-4 h-4" />
+          <span className="text-sm">No places here. Zoom out or move the map.</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={cn('bg-background/95 backdrop-blur-sm border-t border-border', className)}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-2 pb-1">
-        <span className="text-xs font-medium text-muted-foreground">
-          {sortedPlaces.length} place{sortedPlaces.length !== 1 ? 's' : ''} in view
-        </span>
-      </div>
-      
-      {/* Horizontal scroll carousel */}
+    <div className={cn('pb-6', className)}>
+      {/* Floating horizontal scroll carousel - no background */}
       <div 
         ref={containerRef}
-        className="flex gap-3 overflow-x-auto pb-3 px-4 snap-x snap-mandatory scrollbar-hide"
+        className="flex gap-3 overflow-x-auto px-4 snap-x snap-mandatory"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
       >
-        {sortedPlaces.map((place) => (
-          <div
-            key={place.id}
-            ref={(el) => setCardRef(place.id, el)}
-            className="snap-center"
-          >
-            <CarouselCard
-              place={place}
-              isSelected={selectedPlaceId === place.id}
-              onSelect={() => onPlaceSelect(place)}
-              distanceFromCenter={mapCenter ? distanceFromCenter(place, mapCenter) : undefined}
-            />
-          </div>
-        ))}
+        <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+        {sortedPlaces.map((place) => {
+          const dist = mapCenter ? distanceFromCenter(place, mapCenter) : place.distance;
+          return (
+            <div
+              key={place.id}
+              ref={(el) => setCardRef(place.id, el)}
+              className="snap-center"
+            >
+              <FloatingCard
+                place={place}
+                isSelected={selectedPlaceId === place.id}
+                onSelect={() => onPlaceSelect(place)}
+                onTap={() => handleTap(place.id)}
+                distance={dist}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
