@@ -35,8 +35,8 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative h-[55vh] min-h-[380px] max-h-[500px] w-full overflow-hidden">
+      {/* Hero Section - Full Screen */}
+      <section className="relative h-screen w-full overflow-hidden">
         <img
           src={heroRvLandscape}
           alt="RV adventure in beautiful landscape"
@@ -44,13 +44,10 @@ const Index = () => {
         />
         
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60" />
         
         {/* Hero Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-safe">
-          <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-bold text-white text-center mb-2 tracking-tight">
-            MUVO
-          </h1>
           <p className="text-white/90 text-lg sm:text-xl text-center mb-2">
             Find the right stop for your trip
           </p>
@@ -61,45 +58,41 @@ const Index = () => {
           {/* Search Bar */}
           <HomeSearchBar className="w-full max-w-lg px-4" />
         </div>
-      </section>
 
-      <main className="container px-4 pb-12 max-w-2xl mx-auto">
-        
-        {/* Primary Action Buttons */}
-        <section className="grid grid-cols-3 gap-3 -mt-8 relative z-10 mb-12">
-          <Link to="/map" className="group">
-            <div className="flex flex-col items-center p-5 rounded-2xl bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Map className="w-6 h-6 text-accent-foreground" />
+        {/* Floating Action Icons - Bottom of Hero */}
+        <div className="absolute bottom-8 left-0 right-0 px-4">
+          <div className="flex justify-center gap-8 max-w-md mx-auto">
+            <Link to="/map" className="group flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
+                <Map className="w-6 h-6 text-primary" />
               </div>
-              <span className="font-semibold text-sm text-foreground text-center">
+              <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
                 Map View
               </span>
-            </div>
-          </Link>
+            </Link>
 
-          <Link to="/places" className="group">
-            <div className="flex flex-col items-center p-5 rounded-2xl bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Navigation className="w-6 h-6 text-accent-foreground" />
+            <Link to="/places" className="group flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
+                <Navigation className="w-6 h-6 text-primary" />
               </div>
-              <span className="font-semibold text-sm text-foreground text-center">
-                Places Near Me
+              <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
+                Places
               </span>
-            </div>
-          </Link>
+            </Link>
 
-          <Link to="/route" className="group">
-            <div className="flex flex-col items-center p-5 rounded-2xl bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Route className="w-6 h-6 text-accent-foreground" />
+            <Link to="/route" className="group flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
+                <Route className="w-6 h-6 text-primary" />
               </div>
-              <span className="font-semibold text-sm text-foreground text-center">
+              <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
                 Routes
               </span>
-            </div>
-          </Link>
-        </section>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <main className="container px-4 pb-12 max-w-2xl mx-auto pt-8">
 
         {/* Why Travelers Use MUVO */}
         <section className="mb-12">
