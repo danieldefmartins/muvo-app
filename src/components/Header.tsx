@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useAdmin';
 import { NotificationBell } from '@/components/NotificationBell';
+import muvoLogo from '@/assets/muvo-logo.png';
 
 interface HeaderProps {
   title?: string;
@@ -47,11 +48,8 @@ export function Header({ title, showBack = false, showMap = false, className }: 
           )}
           
           {isHome ? (
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full gradient-hero flex items-center justify-center">
-                <span className="text-primary-foreground font-display font-bold text-sm">RV</span>
-              </div>
-              <span className="font-display font-semibold text-foreground text-lg">RoadWise</span>
+            <Link to="/" className="flex items-center">
+              <img src={muvoLogo} alt="MUVO" className="h-7" />
             </Link>
           ) : (
             <h1 className="font-display font-semibold text-foreground text-lg leading-tight">
