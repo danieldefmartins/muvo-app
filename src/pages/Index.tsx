@@ -35,45 +35,68 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section - 100dvh with content pinned to bottom */}
+      {/* Hero Section - Exactly one full screen */}
       <section 
         className="relative w-full overflow-hidden hero-section"
         style={{ 
           height: '100dvh',
-          minHeight: '-webkit-fill-available',
+          minHeight: '100vh',
         }}
       >
-        {/* Responsive height styles */}
+        {/* Responsive height styles for guaranteed visibility */}
         <style>{`
           .hero-section {
-            --icon-size: 56px;
-            --icon-gap: 2.5rem;
-            --label-size: 0.875rem;
-            --tagline-size: 1rem;
-            --content-gap: 1.25rem;
+            --icon-size: 54px;
+            --icon-gap: 2rem;
+            --label-size: 0.8125rem;
+            --tagline-size: 0.9375rem;
+            --content-gap: 0.875rem;
+            --bottom-pad: 1.5rem;
           }
-          @media (max-height: 740px) {
+          @media (max-height: 750px) {
             .hero-section {
-              --icon-size: 52px;
-              --icon-gap: 2rem;
-              --label-size: 0.8125rem;
-              --tagline-size: 0.9375rem;
-              --content-gap: 1rem;
+              --icon-size: 50px;
+              --icon-gap: 1.75rem;
+              --label-size: 0.75rem;
+              --tagline-size: 0.875rem;
+              --content-gap: 0.75rem;
+              --bottom-pad: 1.25rem;
             }
           }
           @media (max-height: 680px) {
             .hero-section {
-              --icon-size: 48px;
+              --icon-size: 46px;
               --icon-gap: 1.5rem;
-              --label-size: 0.75rem;
-              --tagline-size: 0.875rem;
-              --content-gap: 0.75rem;
+              --label-size: 0.6875rem;
+              --tagline-size: 0.8125rem;
+              --content-gap: 0.625rem;
+              --bottom-pad: 1rem;
             }
           }
-          @media (max-width: 380px) {
+          @media (max-height: 600px) {
             .hero-section {
-              --icon-size: 50px;
-              --icon-gap: 1.75rem;
+              --icon-size: 42px;
+              --icon-gap: 1.25rem;
+              --label-size: 0.625rem;
+              --tagline-size: 0.75rem;
+              --content-gap: 0.5rem;
+              --bottom-pad: 0.75rem;
+            }
+          }
+          @media (max-width: 360px) {
+            .hero-section {
+              --icon-size: 46px;
+              --icon-gap: 1.25rem;
+            }
+          }
+          .hero-search-compact input {
+            height: 44px !important;
+            font-size: 0.9375rem !important;
+          }
+          @media (max-height: 680px) {
+            .hero-search-compact input {
+              height: 40px !important;
+              font-size: 0.875rem !important;
             }
           }
         `}</style>
@@ -85,23 +108,20 @@ const Index = () => {
         />
         
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/50" />
         
-        {/* Hero Content - Flex column with content at bottom */}
-        <div className="absolute inset-0 flex flex-col">
-          {/* Flexible spacer that pushes content down */}
-          <div className="flex-1 min-h-[100px]" />
-          
-          {/* Bottom content stack - search + tagline + icons */}
+        {/* Hero Content Overlay - anchored to bottom, vertically centered content area */}
+        <div className="absolute inset-0 flex flex-col justify-end">
+          {/* Content stack - search + tagline + icons */}
           <div 
-            className="flex flex-col items-center px-4"
+            className="flex flex-col items-center px-4 w-full"
             style={{ 
-              paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+              paddingBottom: 'calc(var(--bottom-pad) + env(safe-area-inset-bottom, 0px))',
               gap: 'var(--content-gap)',
             }}
           >
             {/* Search bar */}
-            <HomeSearchBar className="w-full max-w-lg hero-search" />
+            <HomeSearchBar className="w-full max-w-md hero-search-compact" />
             
             {/* Tagline */}
             <p 
@@ -111,50 +131,50 @@ const Index = () => {
               Camp. Drive. Explore.
             </p>
             
-            {/* 3 Shortcut Icons */}
+            {/* 3 Shortcut Icons - guaranteed single row */}
             <div 
-              className="flex justify-center max-w-md mx-auto"
+              className="flex justify-center items-start flex-nowrap"
               style={{ gap: 'var(--icon-gap)' }}
             >
-              <Link to="/map" className="group flex flex-col items-center">
+              <Link to="/map" className="group flex flex-col items-center flex-shrink-0">
                 <div 
-                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200"
+                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-active:scale-95 transition-transform duration-150"
                   style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
                 >
-                  <Map className="w-6 h-6 text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
+                  <Map className="text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
                 </div>
                 <span 
-                  className="mt-1.5 font-medium text-white drop-shadow-md"
+                  className="mt-1 font-medium text-white drop-shadow-md whitespace-nowrap"
                   style={{ fontSize: 'var(--label-size)' }}
                 >
                   Map View
                 </span>
               </Link>
 
-              <Link to="/places" className="group flex flex-col items-center">
+              <Link to="/places" className="group flex flex-col items-center flex-shrink-0">
                 <div 
-                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200"
+                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-active:scale-95 transition-transform duration-150"
                   style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
                 >
-                  <Navigation className="w-6 h-6 text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
+                  <Navigation className="text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
                 </div>
                 <span 
-                  className="mt-1.5 font-medium text-white drop-shadow-md"
+                  className="mt-1 font-medium text-white drop-shadow-md whitespace-nowrap"
                   style={{ fontSize: 'var(--label-size)' }}
                 >
                   Places
                 </span>
               </Link>
 
-              <Link to="/route" className="group flex flex-col items-center">
+              <Link to="/route" className="group flex flex-col items-center flex-shrink-0">
                 <div 
-                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200"
+                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-active:scale-95 transition-transform duration-150"
                   style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
                 >
-                  <Route className="w-6 h-6 text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
+                  <Route className="text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
                 </div>
                 <span 
-                  className="mt-1.5 font-medium text-white drop-shadow-md"
+                  className="mt-1 font-medium text-white drop-shadow-md whitespace-nowrap"
                   style={{ fontSize: 'var(--label-size)' }}
                 >
                   Routes
