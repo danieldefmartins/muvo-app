@@ -35,14 +35,49 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section - 100vh / 100dvh for mobile */}
+      {/* Hero Section - 100dvh with content pinned to bottom */}
       <section 
-        className="relative w-full overflow-hidden"
+        className="relative w-full overflow-hidden hero-section"
         style={{ 
           height: '100dvh',
           minHeight: '-webkit-fill-available',
         }}
       >
+        {/* Responsive height styles */}
+        <style>{`
+          .hero-section {
+            --icon-size: 56px;
+            --icon-gap: 2.5rem;
+            --label-size: 0.875rem;
+            --tagline-size: 1rem;
+            --content-gap: 1.25rem;
+          }
+          @media (max-height: 740px) {
+            .hero-section {
+              --icon-size: 52px;
+              --icon-gap: 2rem;
+              --label-size: 0.8125rem;
+              --tagline-size: 0.9375rem;
+              --content-gap: 1rem;
+            }
+          }
+          @media (max-height: 680px) {
+            .hero-section {
+              --icon-size: 48px;
+              --icon-gap: 1.5rem;
+              --label-size: 0.75rem;
+              --tagline-size: 0.875rem;
+              --content-gap: 0.75rem;
+            }
+          }
+          @media (max-width: 380px) {
+            .hero-section {
+              --icon-size: 50px;
+              --icon-gap: 1.75rem;
+            }
+          }
+        `}</style>
+        
         <img
           src={heroRvLandscape}
           alt="RV adventure in beautiful landscape"
@@ -52,45 +87,76 @@ const Index = () => {
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
         
-        {/* Hero Content - Positioned for optimal visibility */}
-        <div className="absolute inset-0 flex flex-col pt-safe">
-          {/* Spacer for header */}
-          <div className="h-16" />
+        {/* Hero Content - Flex column with content at bottom */}
+        <div className="absolute inset-0 flex flex-col">
+          {/* Flexible spacer that pushes content down */}
+          <div className="flex-1 min-h-[100px]" />
           
-          {/* Search area - centered in upper portion */}
-          <div className="flex-1 flex flex-col items-center justify-center px-4 pb-32">
-            <HomeSearchBar className="w-full max-w-lg" />
-            <p className="text-white/90 text-base sm:text-lg text-center mt-4 font-medium tracking-wide">
+          {/* Bottom content stack - search + tagline + icons */}
+          <div 
+            className="flex flex-col items-center px-4"
+            style={{ 
+              paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+              gap: 'var(--content-gap)',
+            }}
+          >
+            {/* Search bar */}
+            <HomeSearchBar className="w-full max-w-lg hero-search" />
+            
+            {/* Tagline */}
+            <p 
+              className="text-white/90 text-center font-medium tracking-wide"
+              style={{ fontSize: 'var(--tagline-size)' }}
+            >
               Camp. Drive. Explore.
             </p>
-          </div>
-          
-          {/* Floating Action Icons - Bottom with safe area */}
-          <div className="pb-8 px-4" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
-            <div className="flex justify-center gap-10 max-w-md mx-auto">
+            
+            {/* 3 Shortcut Icons */}
+            <div 
+              className="flex justify-center max-w-md mx-auto"
+              style={{ gap: 'var(--icon-gap)' }}
+            >
               <Link to="/map" className="group flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
-                  <Map className="w-6 h-6 text-primary" />
+                <div 
+                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200"
+                  style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
+                >
+                  <Map className="w-6 h-6 text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
                 </div>
-                <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
+                <span 
+                  className="mt-1.5 font-medium text-white drop-shadow-md"
+                  style={{ fontSize: 'var(--label-size)' }}
+                >
                   Map View
                 </span>
               </Link>
 
               <Link to="/places" className="group flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
-                  <Navigation className="w-6 h-6 text-primary" />
+                <div 
+                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200"
+                  style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
+                >
+                  <Navigation className="w-6 h-6 text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
                 </div>
-                <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
+                <span 
+                  className="mt-1.5 font-medium text-white drop-shadow-md"
+                  style={{ fontSize: 'var(--label-size)' }}
+                >
                   Places
                 </span>
               </Link>
 
               <Link to="/route" className="group flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200">
-                  <Route className="w-6 h-6 text-primary" />
+                <div 
+                  className="rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-200"
+                  style={{ width: 'var(--icon-size)', height: 'var(--icon-size)' }}
+                >
+                  <Route className="w-6 h-6 text-primary" style={{ width: 'calc(var(--icon-size) * 0.43)', height: 'calc(var(--icon-size) * 0.43)' }} />
                 </div>
-                <span className="mt-2 text-sm font-medium text-white drop-shadow-md">
+                <span 
+                  className="mt-1.5 font-medium text-white drop-shadow-md"
+                  style={{ fontSize: 'var(--label-size)' }}
+                >
                   Routes
                 </span>
               </Link>
