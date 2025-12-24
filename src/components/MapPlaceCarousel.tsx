@@ -39,18 +39,24 @@ interface FloatingCardProps {
 }
 
 function FloatingCard({ place, isSelected, onSelect, onTap, distance }: FloatingCardProps) {
+  const handleClick = () => {
+    hapticLight();
+    if (isSelected) {
+      // Second tap on selected card opens detail
+      onTap();
+    } else {
+      // First tap selects the card
+      onSelect();
+    }
+  };
+
   return (
     <div
-      onClick={() => {
-        hapticLight();
-        onSelect();
-        // Navigate on tap
-        onTap();
-      }}
+      onClick={handleClick}
       className={cn(
         'flex-shrink-0 w-[calc(100vw-3rem)] max-w-md bg-card/95 backdrop-blur-md rounded-2xl shadow-xl cursor-pointer transition-all duration-200',
         isSelected 
-          ? 'ring-2 ring-accent shadow-2xl scale-[1.02]' 
+          ? 'ring-2 ring-primary shadow-2xl scale-[1.02]' 
           : 'hover:shadow-2xl'
       )}
     >

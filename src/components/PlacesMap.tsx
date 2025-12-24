@@ -303,7 +303,8 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
 
         el.addEventListener('click', () => {
           hapticLight();
-          openPopupForPlace(place);
+          // Just select the place - carousel shows the card
+          onPlaceSelect?.(place);
         });
 
         const marker = new mapboxgl.Marker({ element: el })
