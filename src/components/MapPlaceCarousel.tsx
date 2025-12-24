@@ -54,20 +54,20 @@ function FloatingCard({ place, isSelected, onSelect, onTap, distance }: Floating
     <div
       onClick={handleClick}
       className={cn(
-        'flex-shrink-0 w-[85vw] max-w-[360px] bg-card/98 backdrop-blur-md rounded-xl cursor-pointer transition-all duration-200',
+        'flex-shrink-0 w-[90vw] max-w-[380px] bg-card/98 backdrop-blur-md rounded-2xl cursor-pointer transition-all duration-200',
         isSelected 
-          ? 'ring-2 ring-primary shadow-2xl scale-[1.02]' 
-          : 'shadow-lg hover:shadow-xl'
+          ? 'ring-2 ring-primary' 
+          : ''
       )}
       style={{
         boxShadow: isSelected 
-          ? '0 12px 32px -8px rgba(0, 0, 0, 0.35)' 
-          : '0 8px 24px -6px rgba(0, 0, 0, 0.25)',
+          ? '0 8px 32px -4px rgba(0, 0, 0, 0.4), 0 4px 12px -2px rgba(0, 0, 0, 0.2)' 
+          : '0 6px 24px -4px rgba(0, 0, 0, 0.3), 0 2px 8px -2px rgba(0, 0, 0, 0.15)',
       }}
     >
-      <div className="flex items-center gap-3 p-2.5">
-        {/* Thumbnail - smaller */}
-        <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+      <div className="flex items-center gap-3 p-3">
+        {/* Thumbnail */}
+        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
           {place.coverImageUrl ? (
             <img
               src={place.coverImageUrl}
@@ -76,15 +76,15 @@ function FloatingCard({ place, isSelected, onSelect, onTap, distance }: Floating
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
-              <span className="text-lg">📍</span>
+              <span className="text-base">📍</span>
             </div>
           )}
         </div>
 
-        {/* Content - compact */}
+        {/* Content - compact single line */}
         <div className="flex-1 min-w-0">
           {/* Name + verified */}
-          <div className="flex items-center gap-1.5 mb-0.5">
+          <div className="flex items-center gap-1.5">
             <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-1 flex-1">
               {place.name}
             </h3>
@@ -93,27 +93,27 @@ function FloatingCard({ place, isSelected, onSelect, onTap, distance }: Floating
             )}
           </div>
 
-          {/* Distance + Price */}
-          <p className="text-xs text-muted-foreground mb-1.5">
-            {distance.toFixed(1)} mi · {place.priceLevel}
-          </p>
-
-          {/* Experience stamps - icons only */}
-          <PlaceStampBadges 
-            placeId={place.id} 
-            variant="compact" 
-            maxGood={3} 
-            maxBad={0}
-            showReviewCount={false}
-          />
+          {/* Distance + Price + Stamps inline */}
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {distance.toFixed(1)} mi · {place.priceLevel}
+            </span>
+            <PlaceStampBadges 
+              placeId={place.id} 
+              variant="compact" 
+              maxGood={2} 
+              maxBad={0}
+              showReviewCount={false}
+            />
+          </div>
         </div>
 
         {/* Tap hint chevron */}
         <div className={cn(
           "flex-shrink-0 transition-colors",
-          isSelected ? "text-primary" : "text-muted-foreground/40"
+          isSelected ? "text-primary" : "text-muted-foreground/30"
         )}>
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </div>
@@ -169,8 +169,11 @@ export function MapPlaceCarousel({
   // Empty state - floating pill
   if (sortedPlaces.length === 0) {
     return (
-      <div className={cn('px-4 pb-4', className)}>
-        <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-card/95 backdrop-blur-md rounded-full shadow-lg text-muted-foreground">
+      <div className={cn('px-4 pb-2', className)}>
+        <div 
+          className="flex items-center justify-center gap-2 py-2 px-4 bg-card/95 backdrop-blur-md rounded-full text-muted-foreground mx-auto w-fit"
+          style={{ boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.25)' }}
+        >
           <MapPinOff className="w-4 h-4" />
           <span className="text-sm">No places here. Zoom out or move the map.</span>
         </div>
@@ -179,11 +182,11 @@ export function MapPlaceCarousel({
   }
 
   return (
-    <div className={cn('pb-4', className)}>
-      {/* Floating horizontal scroll carousel */}
+    <div className={cn('pb-2', className)}>
+      {/* Floating horizontal scroll carousel - no background */}
       <div 
         ref={containerRef}
-        className="flex gap-2.5 overflow-x-auto px-3 snap-x snap-mandatory pb-1"
+        className="flex gap-3 overflow-x-auto px-4 snap-x snap-mandatory"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -196,7 +199,7 @@ export function MapPlaceCarousel({
             <div
               key={place.id}
               ref={(el) => setCardRef(place.id, el)}
-              className="snap-center first:pl-1 last:pr-1"
+              className="snap-center"
             >
               <FloatingCard
                 place={place}

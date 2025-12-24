@@ -148,9 +148,10 @@ const MapView = () => {
 
   return (
     <div 
-      className="h-screen bg-background flex flex-col overflow-hidden"
+      className="bg-background flex flex-col overflow-hidden"
       style={{ 
-        // iOS safe area support
+        height: '100dvh',
+        minHeight: '-webkit-fill-available',
         paddingTop: 'env(safe-area-inset-top, 0px)',
       }}
     >
@@ -276,15 +277,20 @@ const MapView = () => {
         )}
       </div>
 
-      {/* Always-on bottom carousel */}
+      {/* Always-on bottom carousel - floating with safe area */}
       {mapboxToken && !isLoading && !hasError && (
-        <div className="fixed bottom-0 left-0 right-0 z-[40]" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          <MapPlaceCarousel
-            places={visiblePlaces.length > 0 ? visiblePlaces : filteredPlaces}
-            selectedPlaceId={selectedPlaceId}
-            onPlaceSelect={handleCarouselPlaceSelect}
-            mapCenter={mapCenter}
-          />
+        <div 
+          className="absolute bottom-0 left-0 right-0 z-[40] pointer-events-none"
+          style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+        >
+          <div className="pointer-events-auto">
+            <MapPlaceCarousel
+              places={visiblePlaces.length > 0 ? visiblePlaces : filteredPlaces}
+              selectedPlaceId={selectedPlaceId}
+              onPlaceSelect={handleCarouselPlaceSelect}
+              mapCenter={mapCenter}
+            />
+          </div>
         </div>
       )}
     </div>

@@ -137,7 +137,13 @@ const RoutePlanning = () => {
   const isLoading = isLoadingToken;
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
+    <div 
+      className="bg-background flex flex-col overflow-hidden"
+      style={{ 
+        height: '100dvh',
+        minHeight: '-webkit-fill-available',
+      }}
+    >
       <Header title="Route Planning" showBack />
 
       {/* Full-screen map */}
@@ -172,15 +178,15 @@ const RoutePlanning = () => {
             places={placesAlongRoute}
             allPlaces={places || []}
             mapboxToken={mapboxToken}
-            className="h-full"
+            className="h-full w-full"
             route={route}
             onMapLoad={handleMapLoad}
           />
         )}
 
-        {/* Route panel */}
+        {/* Route panel - properly positioned */}
         {mapboxToken && !isLoading && (
-          <div className="absolute top-3 left-3 right-3 z-10 max-w-sm">
+          <div className="absolute top-3 left-3 z-20 w-[calc(100%-1.5rem)] max-w-sm">
             <RoutePanel
               mapboxToken={mapboxToken}
               start={start}
@@ -196,9 +202,12 @@ const RoutePlanning = () => {
           </div>
         )}
 
-        {/* Route info */}
+        {/* Route info - positioned above safe area */}
         {route && (
-          <div className="absolute bottom-20 left-3 z-10">
+          <div 
+            className="absolute left-3 z-10"
+            style={{ bottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+          >
             <div className="bg-background/95 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md border border-border">
               <p className="text-sm font-medium">
                 {(route.distance / 1609.34).toFixed(0)} miles • {formatDuration(route.duration)}
