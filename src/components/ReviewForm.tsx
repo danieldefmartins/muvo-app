@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ReviewPopup } from './ReviewPopup';
+import { PhoneVerificationModal } from './PhoneVerificationModal';
 import {
   ReviewSignal,
   useCreateReview,
@@ -10,10 +11,14 @@ import {
 } from '@/hooks/useReviews';
 import { useStamps, FALLBACK_STAMPS } from '@/hooks/useStamps';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, MessageSquarePlus, Edit2 } from 'lucide-react';
+import { useIsAdmin } from '@/hooks/useAdmin';
+import { Loader2, MessageSquarePlus, Edit2, Shield } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type PlaceCategory = Database['public']['Enums']['place_category'];
+
+// Maximum reviews allowed before phone verification is required
+const MAX_REVIEWS_BEFORE_PHONE_VERIFICATION = 5;
 
 interface ReviewFormProps {
   placeId: string;
@@ -24,7 +29,8 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCancel }: ReviewFormProps) {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const { toast } = useToast();
   const { data: existingReview, isLoading: loadingExisting } = useMyReview(placeId);
   const { data: stamps, isLoading: loadingStamps } = useStamps(placeCategory);
@@ -32,6 +38,37 @@ export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCan
   const updateReview = useUpdateReview();
 
   const [showPopup, setShowPopup] = useState(false);
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+
+  // Check if user needs phone verification to submit a new review
+  const needsPhoneVerification = () => {
+    // Admins bypass this requirement
+    if (isAdmin) return false;
+    
+    // If already phone verified, no need
+    if (profile?.phone_verified) return false;
+    
+    // If editing an existing review, no need (doesn't count as new review)
+    if (existingReview) return false;
+    
+    // Check review count - if 5 or more, require phone verification
+    const reviewCount = profile?.total_reviews_count ?? 0;
+    return reviewCount >= MAX_REVIEWS_BEFORE_PHONE_VERIFICATION;
+  };
+
+  const handleWriteReviewClick = () => {
+    if (needsPhoneVerification()) {
+      setShowPhoneVerification(true);
+    } else {
+      setShowPopup(true);
+    }
+  };
+
+  const handlePhoneVerified = () => {
+    refreshProfile();
+    // After verification, open the review popup
+    setShowPopup(true);
+  };
 
   // Get stamps to display (fallback if none loaded)
   const positiveStamps = stamps?.positive || FALLBACK_STAMPS.positive.map(f => ({
@@ -189,10 +226,16 @@ export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCan
               <p className="text-sm text-muted-foreground mb-3">
                 Share what stood out to help other travelers.
               </p>
-              <Button onClick={() => setShowPopup(true)}>
+              <Button onClick={handleWriteReviewClick}>
                 <MessageSquarePlus className="w-4 h-4 mr-2" />
                 Write a Review
               </Button>
+              {needsPhoneVerification() && (
+                <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  Phone verification required
+                </p>
+              )}
             </>
           )}
         </div>
@@ -203,6 +246,12 @@ export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCan
           </Button>
         )}
       </div>
+
+      <PhoneVerificationModal
+        open={showPhoneVerification}
+        onOpenChange={setShowPhoneVerification}
+        onVerified={handlePhoneVerified}
+      />
 
       <ReviewPopup
         open={showPopup}
