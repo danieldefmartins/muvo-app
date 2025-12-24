@@ -65,15 +65,16 @@ export const REVIEW_DIMENSIONS: { id: ReviewDimension; label: string; icon: stri
 ];
 
 export function useReviews(placeId: string) {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['reviews', placeId],
     queryFn: async () => {
+      // Use the public_reviews view which excludes note_private for security
+      // This prevents exposing private notes to unauthorized users
       const { data: reviews, error: reviewsError } = await supabase
-        .from('reviews')
-        .select(`
-          *,
-          profiles:user_id (display_name, trusted_contributor)
-        `)
+        .from('public_reviews')
+        .select('*')
         .eq('place_id', placeId)
         .order('created_at', { ascending: false });
 
@@ -91,11 +92,13 @@ export function useReviews(placeId: string) {
         place_id: review.place_id,
         user_id: review.user_id,
         note_public: review.note_public,
-        note_private: review.note_private,
+        // note_private is not included in the public_reviews view for security
+        // Users can see their own private notes via useMyReview hook
+        note_private: null,
         created_at: review.created_at,
         updated_at: review.updated_at,
-        user_display_name: review.profiles?.display_name,
-        trusted_contributor: review.profiles?.trusted_contributor,
+        user_display_name: review.user_display_name,
+        trusted_contributor: review.trusted_contributor,
         signals: (signals || [])
           .filter((s: any) => s.review_id === review.id)
           .map((s: any) => ({
