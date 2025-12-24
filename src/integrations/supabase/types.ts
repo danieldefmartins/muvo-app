@@ -775,6 +775,42 @@ export type Database = {
           electric: Database["public"]["Enums"]["electric_type"] | null
           elevation_ft: number | null
           email: string | null
+          entrance_1_is_primary: boolean | null
+          entrance_1_latitude: number | null
+          entrance_1_longitude: number | null
+          entrance_1_name: string | null
+          entrance_1_notes: string | null
+          entrance_1_road: string | null
+          entrance_2_is_primary: boolean | null
+          entrance_2_latitude: number | null
+          entrance_2_longitude: number | null
+          entrance_2_name: string | null
+          entrance_2_notes: string | null
+          entrance_2_road: string | null
+          entrance_3_is_primary: boolean | null
+          entrance_3_latitude: number | null
+          entrance_3_longitude: number | null
+          entrance_3_name: string | null
+          entrance_3_notes: string | null
+          entrance_3_road: string | null
+          entrance_4_is_primary: boolean | null
+          entrance_4_latitude: number | null
+          entrance_4_longitude: number | null
+          entrance_4_name: string | null
+          entrance_4_notes: string | null
+          entrance_4_road: string | null
+          entrance_5_is_primary: boolean | null
+          entrance_5_latitude: number | null
+          entrance_5_longitude: number | null
+          entrance_5_name: string | null
+          entrance_5_notes: string | null
+          entrance_5_road: string | null
+          entrance_6_is_primary: boolean | null
+          entrance_6_latitude: number | null
+          entrance_6_longitude: number | null
+          entrance_6_name: string | null
+          entrance_6_notes: string | null
+          entrance_6_road: string | null
           entrance_latitude: number | null
           entrance_longitude: number | null
           external_refs_json: Json | null
@@ -891,6 +927,42 @@ export type Database = {
           electric?: Database["public"]["Enums"]["electric_type"] | null
           elevation_ft?: number | null
           email?: string | null
+          entrance_1_is_primary?: boolean | null
+          entrance_1_latitude?: number | null
+          entrance_1_longitude?: number | null
+          entrance_1_name?: string | null
+          entrance_1_notes?: string | null
+          entrance_1_road?: string | null
+          entrance_2_is_primary?: boolean | null
+          entrance_2_latitude?: number | null
+          entrance_2_longitude?: number | null
+          entrance_2_name?: string | null
+          entrance_2_notes?: string | null
+          entrance_2_road?: string | null
+          entrance_3_is_primary?: boolean | null
+          entrance_3_latitude?: number | null
+          entrance_3_longitude?: number | null
+          entrance_3_name?: string | null
+          entrance_3_notes?: string | null
+          entrance_3_road?: string | null
+          entrance_4_is_primary?: boolean | null
+          entrance_4_latitude?: number | null
+          entrance_4_longitude?: number | null
+          entrance_4_name?: string | null
+          entrance_4_notes?: string | null
+          entrance_4_road?: string | null
+          entrance_5_is_primary?: boolean | null
+          entrance_5_latitude?: number | null
+          entrance_5_longitude?: number | null
+          entrance_5_name?: string | null
+          entrance_5_notes?: string | null
+          entrance_5_road?: string | null
+          entrance_6_is_primary?: boolean | null
+          entrance_6_latitude?: number | null
+          entrance_6_longitude?: number | null
+          entrance_6_name?: string | null
+          entrance_6_notes?: string | null
+          entrance_6_road?: string | null
           entrance_latitude?: number | null
           entrance_longitude?: number | null
           external_refs_json?: Json | null
@@ -1009,6 +1081,42 @@ export type Database = {
           electric?: Database["public"]["Enums"]["electric_type"] | null
           elevation_ft?: number | null
           email?: string | null
+          entrance_1_is_primary?: boolean | null
+          entrance_1_latitude?: number | null
+          entrance_1_longitude?: number | null
+          entrance_1_name?: string | null
+          entrance_1_notes?: string | null
+          entrance_1_road?: string | null
+          entrance_2_is_primary?: boolean | null
+          entrance_2_latitude?: number | null
+          entrance_2_longitude?: number | null
+          entrance_2_name?: string | null
+          entrance_2_notes?: string | null
+          entrance_2_road?: string | null
+          entrance_3_is_primary?: boolean | null
+          entrance_3_latitude?: number | null
+          entrance_3_longitude?: number | null
+          entrance_3_name?: string | null
+          entrance_3_notes?: string | null
+          entrance_3_road?: string | null
+          entrance_4_is_primary?: boolean | null
+          entrance_4_latitude?: number | null
+          entrance_4_longitude?: number | null
+          entrance_4_name?: string | null
+          entrance_4_notes?: string | null
+          entrance_4_road?: string | null
+          entrance_5_is_primary?: boolean | null
+          entrance_5_latitude?: number | null
+          entrance_5_longitude?: number | null
+          entrance_5_name?: string | null
+          entrance_5_notes?: string | null
+          entrance_5_road?: string | null
+          entrance_6_is_primary?: boolean | null
+          entrance_6_latitude?: number | null
+          entrance_6_longitude?: number | null
+          entrance_6_name?: string | null
+          entrance_6_notes?: string | null
+          entrance_6_road?: string | null
           entrance_latitude?: number | null
           entrance_longitude?: number | null
           external_refs_json?: Json | null
