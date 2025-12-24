@@ -137,11 +137,11 @@ const RoutePlanning = () => {
   const isLoading = isLoadingToken;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <Header title="Route Planning" showBack />
 
       {/* Full-screen map */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative min-h-0">
         {/* Loading state */}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
@@ -488,8 +488,8 @@ const PlacesMapWithRoute = forwardRef<PlacesMapRef, PlacesMapWithRouteProps>(
     }, [route]);
 
     return (
-      <div className={cn('relative w-full', className)} style={{ minHeight: '400px', height: '100%' }}>
-        <div ref={mapContainer} className="absolute inset-0 rounded-lg" style={{ minHeight: '400px' }} />
+      <div className={cn('relative w-full h-full', className)}>
+        <div ref={mapContainer} className="absolute inset-0" />
         <Button
           variant="secondary"
           size="icon"

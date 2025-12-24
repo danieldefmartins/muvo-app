@@ -148,7 +148,7 @@ const MapView = () => {
 
   return (
     <div 
-      className="min-h-screen bg-background flex flex-col"
+      className="h-screen bg-background flex flex-col overflow-hidden"
       style={{ 
         // iOS safe area support
         paddingTop: 'env(safe-area-inset-top, 0px)',
@@ -197,15 +197,8 @@ const MapView = () => {
 
       {/* Quick filter chips - scrollable row */}
       <QuickFilterChips filters={filters} onFiltersChange={setFilters} />
-      {/* Map container - fills remaining viewport, leaving room for carousel */}
-      <div 
-        className="flex-1 relative"
-        style={{ 
-          minHeight: '200px',
-          // Reserve space for carousel at bottom
-          paddingBottom: '160px',
-        }}
-      >
+      {/* Map container - fills remaining viewport */}
+      <div className="flex-1 relative min-h-0">
         {/* Loading state */}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted z-[1]">
