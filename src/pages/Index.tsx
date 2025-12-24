@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { HomeSearchBar } from '@/components/HomeSearchBar';
-import { BottomNav } from '@/components/BottomNav';
 import { usePlaces } from '@/hooks/usePlaces';
 import { PlaceStampBadges } from '@/components/PlaceStampBadges';
 import {
@@ -163,9 +162,6 @@ const Index = () => {
           </p>
         </footer>
       </main>
-
-      {/* Fixed Bottom Navigation */}
-      <BottomNav />
     </div>
   );
 };
