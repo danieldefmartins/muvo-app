@@ -27,9 +27,9 @@
     --muted: 35 20% 90%;
     --muted-foreground: 30 10% 45%;
 
-    /* Amber accent for CTAs */
-    --accent: 32 95% 52%;
-    --accent-foreground: 30 10% 10%;
+    /* Blue accent for CTAs */
+    --accent: 210 100% 50%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 40 33% 98%;
@@ -85,8 +85,8 @@
     --muted: 30 12% 20%;
     --muted-foreground: 35 15% 60%;
 
-    --accent: 32 90% 55%;
-    --accent-foreground: 30 15% 8%;
+    --accent: 210 100% 55%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 65% 45%;
     --destructive-foreground: 40 20% 95%;
