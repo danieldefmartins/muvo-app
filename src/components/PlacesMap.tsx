@@ -256,16 +256,28 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
         // Cluster marker
         const count = props.point_count || 0;
         const el = document.createElement('div');
-        el.className = 'cluster-marker cursor-pointer';
+        el.className = 'map-cluster-marker';
         
         // Size based on count
-        const size = count < 10 ? 36 : count < 50 ? 44 : 52;
+        const size = count < 10 ? 40 : count < 50 ? 48 : 56;
         
-        el.innerHTML = `
-          <div class="flex items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold shadow-lg border-2 border-white" style="width: ${size}px; height: ${size}px;">
-            ${props.point_count_abbreviated || count}
-          </div>
+        el.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: hsl(var(--primary));
+          color: hsl(var(--primary-foreground));
+          font-weight: 600;
+          font-size: 14px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          border: 3px solid white;
+          cursor: pointer;
+          z-index: 100;
         `;
+        el.textContent = String(props.point_count_abbreviated || count);
 
         el.addEventListener('click', () => {
           hapticLight();
@@ -289,17 +301,39 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
         const place = props.place!;
         const isSelected = selectedPlaceId === place.id;
         const el = document.createElement('div');
-        el.className = 'place-marker cursor-pointer';
-        el.setAttribute('data-place-id', place.id);
+        el.className = 'map-place-marker';
+        
+        const pinSize = isSelected ? 44 : 36;
+        const pinColor = isSelected ? 'hsl(var(--accent))' : 'hsl(var(--primary))';
+        
+        el.style.cssText = `
+          width: ${pinSize}px;
+          height: ${pinSize}px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: ${pinColor};
+          box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+          border: 3px solid white;
+          cursor: pointer;
+          z-index: ${isSelected ? 110 : 100};
+          transition: transform 0.15s ease;
+        `;
         
         el.innerHTML = `
-          <div class="w-8 h-8 ${isSelected ? 'bg-accent scale-125' : 'bg-primary'} rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:scale-110 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-primary-foreground">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: ${isSelected ? 22 : 18}px; height: ${isSelected ? 22 : 18}px;">
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
         `;
+        
+        el.addEventListener('mouseenter', () => {
+          if (!isSelected) el.style.transform = 'scale(1.15)';
+        });
+        el.addEventListener('mouseleave', () => {
+          if (!isSelected) el.style.transform = 'scale(1)';
+        });
 
         el.addEventListener('click', () => {
           hapticLight();
@@ -499,20 +533,27 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
           display: none;
         }
         .mapboxgl-popup {
-          z-index: 30 !important;
+          z-index: 200 !important;
+        }
+        .mapboxgl-marker {
+          z-index: 100 !important;
+        }
+        .map-cluster-marker,
+        .map-place-marker {
+          position: relative;
+          z-index: 100;
         }
         .user-location-marker {
-          z-index: 5;
-        }
-        .cluster-marker {
-          z-index: 6;
-        }
-        .place-marker {
-          z-index: 5;
+          z-index: 90;
         }
         .mapboxgl-ctrl-top-right {
           top: 10px !important;
           right: 10px !important;
+          z-index: 50 !important;
+        }
+        .mapboxgl-ctrl-group {
+          background: white !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
         }
       `}</style>
     </div>
