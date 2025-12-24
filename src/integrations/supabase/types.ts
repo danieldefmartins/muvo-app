@@ -759,6 +759,11 @@ export type Database = {
           claimed_by: string | null
           country: string | null
           county: string | null
+          county_confidence: string | null
+          county_last_enriched_at: string | null
+          county_normalized: string | null
+          county_notes: string | null
+          county_source: string | null
           cover_image_url: string | null
           created_at: string
           created_by_user_id: string | null
@@ -911,6 +916,11 @@ export type Database = {
           claimed_by?: string | null
           country?: string | null
           county?: string | null
+          county_confidence?: string | null
+          county_last_enriched_at?: string | null
+          county_normalized?: string | null
+          county_notes?: string | null
+          county_source?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by_user_id?: string | null
@@ -1065,6 +1075,11 @@ export type Database = {
           claimed_by?: string | null
           country?: string | null
           county?: string | null
+          county_confidence?: string | null
+          county_last_enriched_at?: string | null
+          county_normalized?: string | null
+          county_notes?: string | null
+          county_source?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by_user_id?: string | null
