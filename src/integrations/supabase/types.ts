@@ -14,6 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      category_mappings: {
+        Row: {
+          confidence: number
+          created_at: string
+          external_category: string
+          id: string
+          muvo_primary_category: string
+          muvo_secondary_tags: string[] | null
+          source: Database["public"]["Enums"]["external_source"]
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          external_category: string
+          id?: string
+          muvo_primary_category: string
+          muvo_secondary_tags?: string[] | null
+          source: Database["public"]["Enums"]["external_source"]
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          external_category?: string
+          id?: string
+          muvo_primary_category?: string
+          muvo_secondary_tags?: string[] | null
+          source?: Database["public"]["Enums"]["external_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_mappings_muvo_primary_category_fkey"
+            columns: ["muvo_primary_category"]
+            isOneToOne: false
+            referencedRelation: "primary_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_place_references: {
+        Row: {
+          created_at: string
+          external_id: string
+          external_url: string | null
+          id: string
+          imported_at: string
+          last_synced_at: string | null
+          place_id: string
+          raw_data: Json | null
+          source: Database["public"]["Enums"]["external_source"]
+        }
+        Insert: {
+          created_at?: string
+          external_id: string
+          external_url?: string | null
+          id?: string
+          imported_at?: string
+          last_synced_at?: string | null
+          place_id: string
+          raw_data?: Json | null
+          source: Database["public"]["Enums"]["external_source"]
+        }
+        Update: {
+          created_at?: string
+          external_id?: string
+          external_url?: string | null
+          id?: string
+          imported_at?: string
+          last_synced_at?: string | null
+          place_id?: string
+          raw_data?: Json | null
+          source?: Database["public"]["Enums"]["external_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_place_references_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -46,6 +128,84 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_queue: {
+        Row: {
+          created_at: string
+          duplicate_confidence: number | null
+          external_id: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          potential_duplicate_id: string | null
+          raw_data: Json
+          resulting_place_id: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source: Database["public"]["Enums"]["external_source"]
+          status: Database["public"]["Enums"]["import_review_status"]
+          suggested_primary_category: string | null
+          suggested_tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duplicate_confidence?: number | null
+          external_id?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          potential_duplicate_id?: string | null
+          raw_data: Json
+          resulting_place_id?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source: Database["public"]["Enums"]["external_source"]
+          status?: Database["public"]["Enums"]["import_review_status"]
+          suggested_primary_category?: string | null
+          suggested_tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duplicate_confidence?: number | null
+          external_id?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          potential_duplicate_id?: string | null
+          raw_data?: Json
+          resulting_place_id?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: Database["public"]["Enums"]["external_source"]
+          status?: Database["public"]["Enums"]["import_review_status"]
+          suggested_primary_category?: string | null
+          suggested_tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_queue_potential_duplicate_id_fkey"
+            columns: ["potential_duplicate_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_queue_resulting_place_id_fkey"
+            columns: ["resulting_place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
             referencedColumns: ["id"]
           },
         ]
@@ -136,6 +296,118 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      place_claims: {
+        Row: {
+          business_email: string | null
+          business_name: string | null
+          business_phone: string | null
+          business_website: string | null
+          claim_type: string
+          created_at: string
+          id: string
+          place_id: string
+          status: string
+          updated_at: string
+          user_id: string
+          verification_method: string | null
+          verification_notes: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          business_email?: string | null
+          business_name?: string | null
+          business_phone?: string | null
+          business_website?: string | null
+          claim_type?: string
+          created_at?: string
+          id?: string
+          place_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          verification_method?: string | null
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          business_email?: string | null
+          business_name?: string | null
+          business_phone?: string | null
+          business_website?: string | null
+          claim_type?: string
+          created_at?: string
+          id?: string
+          place_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verification_method?: string | null
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_claims_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      place_data_provenance: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          field_name: string
+          id: string
+          imported_at: string
+          last_verified_at: string | null
+          place_id: string
+          source: Database["public"]["Enums"]["external_source"]
+          updated_at: string
+          value_at_import: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          field_name: string
+          id?: string
+          imported_at?: string
+          last_verified_at?: string | null
+          place_id: string
+          source: Database["public"]["Enums"]["external_source"]
+          updated_at?: string
+          value_at_import?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          field_name?: string
+          id?: string
+          imported_at?: string
+          last_verified_at?: string | null
+          place_id?: string
+          source?: Database["public"]["Enums"]["external_source"]
+          updated_at?: string
+          value_at_import?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_data_provenance_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
             referencedColumns: ["id"]
           },
         ]
@@ -386,69 +658,194 @@ export type Database = {
           },
         ]
       }
+      place_tags: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          id: string
+          place_id: string
+          tag_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          id?: string
+          place_id: string
+          tag_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          id?: string
+          place_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_tags_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "secondary_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       places: {
         Row: {
+          address: string | null
+          category_id: string | null
+          city: string | null
+          claimed_by: string | null
+          country: string | null
           cover_image_url: string | null
           created_at: string
           current_status: Database["public"]["Enums"]["place_status"] | null
+          data_quality_score: number | null
+          description: string | null
           features: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict: boolean
+          hours_of_operation: Json | null
           id: string
+          import_source: Database["public"]["Enums"]["external_source"] | null
+          is_claimed: boolean
           is_verified: boolean
           last_updated: string
+          last_verified_at: string | null
           latitude: number
           longitude: number
           name: string
+          needs_review: boolean
           open_year_round: boolean
           package_fee_amount: string | null
           package_fee_required: boolean
           packages_accepted: Database["public"]["Enums"]["package_acceptance"]
+          phone: string | null
           price_level: Database["public"]["Enums"]["price_level"]
           primary_category: Database["public"]["Enums"]["place_category"]
           review_count: number
+          state: string | null
           status_updated_at: string | null
+          verified_by: string | null
+          website: string | null
+          zip_code: string | null
         }
         Insert: {
+          address?: string | null
+          category_id?: string | null
+          city?: string | null
+          claimed_by?: string | null
+          country?: string | null
           cover_image_url?: string | null
           created_at?: string
           current_status?: Database["public"]["Enums"]["place_status"] | null
+          data_quality_score?: number | null
+          description?: string | null
           features?: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict?: boolean
+          hours_of_operation?: Json | null
           id?: string
+          import_source?: Database["public"]["Enums"]["external_source"] | null
+          is_claimed?: boolean
           is_verified?: boolean
           last_updated?: string
+          last_verified_at?: string | null
           latitude: number
           longitude: number
           name: string
+          needs_review?: boolean
           open_year_round?: boolean
           package_fee_amount?: string | null
           package_fee_required?: boolean
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
+          phone?: string | null
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
           review_count?: number
+          state?: string | null
           status_updated_at?: string | null
+          verified_by?: string | null
+          website?: string | null
+          zip_code?: string | null
         }
         Update: {
+          address?: string | null
+          category_id?: string | null
+          city?: string | null
+          claimed_by?: string | null
+          country?: string | null
           cover_image_url?: string | null
           created_at?: string
           current_status?: Database["public"]["Enums"]["place_status"] | null
+          data_quality_score?: number | null
+          description?: string | null
           features?: Database["public"]["Enums"]["place_feature"][] | null
           has_conflict?: boolean
+          hours_of_operation?: Json | null
           id?: string
+          import_source?: Database["public"]["Enums"]["external_source"] | null
+          is_claimed?: boolean
           is_verified?: boolean
           last_updated?: string
+          last_verified_at?: string | null
           latitude?: number
           longitude?: number
           name?: string
+          needs_review?: boolean
           open_year_round?: boolean
           package_fee_amount?: string | null
           package_fee_required?: boolean
           packages_accepted?: Database["public"]["Enums"]["package_acceptance"]
+          phone?: string | null
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
           review_count?: number
+          state?: string | null
           status_updated_at?: string | null
+          verified_by?: string | null
+          website?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "places_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "primary_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      primary_categories: {
+        Row: {
+          category_group: Database["public"]["Enums"]["category_group"]
+          created_at: string
+          icon: string | null
+          id: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          category_group: Database["public"]["Enums"]["category_group"]
+          created_at?: string
+          icon?: string | null
+          id: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          category_group?: Database["public"]["Enums"]["category_group"]
+          created_at?: string
+          icon?: string | null
+          id?: string
+          label?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -619,6 +1016,33 @@ export type Database = {
           },
         ]
       }
+      secondary_categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          label: string
+          sort_order: number
+          tag_group: Database["public"]["Enums"]["tag_group"]
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id: string
+          label: string
+          sort_order?: number
+          tag_group: Database["public"]["Enums"]["tag_group"]
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          label?: string
+          sort_order?: number
+          tag_group?: Database["public"]["Enums"]["tag_group"]
+        }
+        Relationships: []
+      }
       stamp_definitions: {
         Row: {
           category: string
@@ -675,6 +1099,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_place_tag: {
+        Args: { _place_id: string; _tag_id: string; _user_id?: string }
+        Returns: boolean
+      }
       check_nearby_places: {
         Args: { _lat: number; _lng: number; _name: string }
         Returns: {
@@ -683,6 +1111,30 @@ export type Database = {
           name: string
         }[]
       }
+      find_duplicate_places: {
+        Args: {
+          _lat: number
+          _lng: number
+          _name: string
+          _radius_meters?: number
+        }
+        Returns: {
+          confidence_score: number
+          distance_meters: number
+          name_similarity: number
+          place_id: string
+          place_name: string
+        }[]
+      }
+      find_place_by_external_id: {
+        Args: {
+          _external_id: string
+          _source: Database["public"]["Enums"]["external_source"]
+        }
+        Returns: string
+      }
+      get_category_label: { Args: { _category_id: string }; Returns: string }
+      get_place_tags: { Args: { _place_id: string }; Returns: string[] }
       get_review_category: {
         Args: { place_category: Database["public"]["Enums"]["place_category"] }
         Returns: string
@@ -709,10 +1161,61 @@ export type Database = {
         }
         Returns: undefined
       }
+      process_import_item: {
+        Args: {
+          _action: string
+          _admin_id?: string
+          _import_id: string
+          _merge_with_place_id?: string
+          _notes?: string
+        }
+        Returns: string
+      }
+      queue_import: {
+        Args: {
+          _external_id: string
+          _lat: number
+          _lng: number
+          _name: string
+          _raw_data: Json
+          _source: Database["public"]["Enums"]["external_source"]
+          _suggested_category?: string
+          _suggested_tags?: string[]
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      category_group:
+        | "stay_sleep"
+        | "rv_services"
+        | "essential_stops"
+        | "non_rv_lodging"
+        | "food_drink"
+        | "general_services"
+        | "attractions"
+        | "health_safety"
+        | "retail"
+        | "community_other"
       checkin_type: "stayed_here" | "used_dump_water" | "passed_by"
+      external_source:
+        | "google_maps"
+        | "ioverlander"
+        | "yelp"
+        | "foursquare"
+        | "campendium"
+        | "freecampsites"
+        | "csv_import"
+        | "user_submission"
+        | "admin_entry"
+        | "other"
+      import_review_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "merged"
+        | "needs_review"
       notification_type:
         | "place_status_changed"
         | "place_photo_added"
@@ -769,6 +1272,12 @@ export type Database = {
         | "restrictions"
       signal_polarity: "positive" | "improvement"
       suggestion_status: "pending" | "approved" | "rejected"
+      tag_group:
+        | "rv_specific"
+        | "utilities"
+        | "environment"
+        | "rules_policies"
+        | "cost"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -897,7 +1406,38 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      category_group: [
+        "stay_sleep",
+        "rv_services",
+        "essential_stops",
+        "non_rv_lodging",
+        "food_drink",
+        "general_services",
+        "attractions",
+        "health_safety",
+        "retail",
+        "community_other",
+      ],
       checkin_type: ["stayed_here", "used_dump_water", "passed_by"],
+      external_source: [
+        "google_maps",
+        "ioverlander",
+        "yelp",
+        "foursquare",
+        "campendium",
+        "freecampsites",
+        "csv_import",
+        "user_submission",
+        "admin_entry",
+        "other",
+      ],
+      import_review_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "merged",
+        "needs_review",
+      ],
       notification_type: [
         "place_status_changed",
         "place_photo_added",
@@ -960,6 +1500,13 @@ export const Constants = {
       ],
       signal_polarity: ["positive", "improvement"],
       suggestion_status: ["pending", "approved", "rejected"],
+      tag_group: [
+        "rv_specific",
+        "utilities",
+        "environment",
+        "rules_policies",
+        "cost",
+      ],
     },
   },
 } as const
