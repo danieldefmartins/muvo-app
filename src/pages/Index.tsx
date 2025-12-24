@@ -46,17 +46,14 @@ const Index = () => {
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60" />
         
-        {/* Hero Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-safe">
-          <p className="text-white/90 text-lg sm:text-xl text-center mb-2">
-            Find the right stop for your trip
-          </p>
-          <p className="text-white/60 text-sm text-center mb-8">
-            Real experiences. No star ratings.
-          </p>
-          
+        {/* Hero Content - Positioned higher with space for icons */}
+        <div className="absolute inset-x-0 top-1/3 -translate-y-1/2 flex flex-col items-center px-4">
           {/* Search Bar */}
           <HomeSearchBar className="w-full max-w-lg px-4" />
+          
+          <p className="text-white/80 text-base sm:text-lg text-center mt-4 font-medium tracking-wide">
+            Camp. Drive. Explore.
+          </p>
         </div>
 
         {/* Floating Action Icons - Bottom of Hero */}
