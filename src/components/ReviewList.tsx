@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useReviews, useDeleteReview, REVIEW_DIMENSIONS, Review } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useAdmin';
 import { ReviewSignalIcon } from './ReviewSignalIcon';
 import { TrustedContributorBadge } from './TrustedContributorBadge';
+import { ReviewerMedalBadge } from './ReviewerMedalBadge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import { Trash2, Loader2, MessageSquare } from 'lucide-react';
+import { Trash2, Loader2, Filter } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ReviewListProps {
   placeId: string;
@@ -28,9 +30,10 @@ interface ReviewListProps {
 export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
   const { data: reviews, isLoading } = useReviews(placeId);
   const { user } = useAuth();
-  const isAdmin = useIsAdmin();
+  const { data: isAdmin } = useIsAdmin();
   const deleteReview = useDeleteReview();
   const { toast } = useToast();
+  const [filter, setFilter] = useState<'all' | 'trusted'>('all');
 
   if (isLoading) {
     return (
@@ -44,6 +47,15 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
   if (!reviews || reviews.length === 0) {
     return null;
   }
+
+  // Filter reviews based on selected tab
+  const filteredReviews = filter === 'trusted'
+    ? reviews.filter((r) => r.reviewer_medal === 'silver' || r.reviewer_medal === 'gold')
+    : reviews;
+
+  const trustedCount = reviews.filter(
+    (r) => r.reviewer_medal === 'silver' || r.reviewer_medal === 'gold'
+  ).length;
 
   const handleDelete = async (reviewId: string) => {
     try {
@@ -67,7 +79,26 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
 
   return (
     <div className="space-y-4">
-      {reviews.map((review: Review) => {
+      {/* Filter tabs - only show if there are trusted reviews */}
+      {trustedCount > 0 && (
+        <Tabs value={filter} onValueChange={(v) => setFilter(v as 'all' | 'trusted')}>
+          <TabsList className="grid w-full grid-cols-2 max-w-xs">
+            <TabsTrigger value="all">All ({reviews.length})</TabsTrigger>
+            <TabsTrigger value="trusted">
+              <Filter className="h-3 w-3 mr-1" />
+              Trusted ({trustedCount})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
+
+      {filteredReviews.length === 0 && filter === 'trusted' && (
+        <p className="text-sm text-muted-foreground text-center py-4">
+          No trusted reviews yet. Showing all reviews.
+        </p>
+      )}
+
+      {filteredReviews.map((review: Review) => {
         const isOwner = user?.id === review.user_id;
         const canDelete = isOwner || isAdmin;
         const positiveSignals = review.signals.filter((s) => s.polarity === 'positive');
@@ -81,6 +112,9 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
                 <span className="font-medium">
                   {review.user_display_name || 'Anonymous'}
                 </span>
+                {review.reviewer_medal && review.reviewer_medal !== 'none' && (
+                  <ReviewerMedalBadge medal={review.reviewer_medal} size="sm" />
+                )}
                 {review.trusted_contributor && <TrustedContributorBadge />}
               </div>
               <div className="flex items-center gap-2">

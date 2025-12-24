@@ -1272,6 +1272,10 @@ export type Database = {
           phone_number: string | null
           phone_verified: boolean
           phone_verified_at: string | null
+          reviewer_medal: Database["public"]["Enums"]["reviewer_medal"]
+          reviewer_medal_awarded_at: string | null
+          total_reviews_count: number
+          trust_score: number
           trusted_contributor: boolean
           trusted_since: string | null
           updated_at: string
@@ -1290,6 +1294,10 @@ export type Database = {
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
+          reviewer_medal?: Database["public"]["Enums"]["reviewer_medal"]
+          reviewer_medal_awarded_at?: string | null
+          total_reviews_count?: number
+          trust_score?: number
           trusted_contributor?: boolean
           trusted_since?: string | null
           updated_at?: string
@@ -1308,6 +1316,10 @@ export type Database = {
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
+          reviewer_medal?: Database["public"]["Enums"]["reviewer_medal"]
+          reviewer_medal_awarded_at?: string | null
+          total_reviews_count?: number
+          trust_score?: number
           trusted_contributor?: boolean
           trusted_since?: string | null
           updated_at?: string
@@ -1393,6 +1405,7 @@ export type Database = {
           note_private: string | null
           note_public: string | null
           place_id: string
+          reviewer_medal: Database["public"]["Enums"]["reviewer_medal"] | null
           updated_at: string
           user_id: string
         }
@@ -1402,6 +1415,7 @@ export type Database = {
           note_private?: string | null
           note_public?: string | null
           place_id: string
+          reviewer_medal?: Database["public"]["Enums"]["reviewer_medal"] | null
           updated_at?: string
           user_id: string
         }
@@ -1411,6 +1425,7 @@ export type Database = {
           note_private?: string | null
           note_public?: string | null
           place_id?: string
+          reviewer_medal?: Database["public"]["Enums"]["reviewer_medal"] | null
           updated_at?: string
           user_id?: string
         }
@@ -1514,9 +1529,13 @@ export type Database = {
       public_reviews: {
         Row: {
           created_at: string | null
+          current_reviewer_medal:
+            | Database["public"]["Enums"]["reviewer_medal"]
+            | null
           id: string | null
           note_public: string | null
           place_id: string | null
+          reviewer_medal: Database["public"]["Enums"]["reviewer_medal"] | null
           trusted_contributor: boolean | null
           updated_at: string | null
           user_display_name: string | null
@@ -1544,6 +1563,17 @@ export type Database = {
       add_place_tag: {
         Args: { _place_id: string; _tag_id: string; _user_id?: string }
         Returns: boolean
+      }
+      admin_set_reviewer_medal: {
+        Args: {
+          new_medal: Database["public"]["Enums"]["reviewer_medal"]
+          target_user_id: string
+        }
+        Returns: undefined
+      }
+      calculate_reviewer_medal: {
+        Args: { user_id_param: string }
+        Returns: Database["public"]["Enums"]["reviewer_medal"]
       }
       check_nearby_places: {
         Args: { _lat: number; _lng: number; _name: string }
@@ -1625,6 +1655,14 @@ export type Database = {
           _suggested_tags?: string[]
         }
         Returns: string
+      }
+      reduce_trust_score: {
+        Args: { reduction?: number; user_id_param: string }
+        Returns: undefined
+      }
+      update_reviewer_medal: {
+        Args: { user_id_param: string }
+        Returns: undefined
       }
     }
     Enums: {
@@ -1733,6 +1771,7 @@ export type Database = {
         | "reliability"
         | "speed"
         | "restrictions"
+      reviewer_medal: "none" | "bronze" | "silver" | "gold"
       road_condition: "good" | "ok" | "rough" | "muddy" | "unknown"
       road_type: "paved" | "gravel" | "dirt" | "sand" | "mixed" | "unknown"
       safety_level: "safe" | "use_caution" | "avoid_at_night" | "unknown"
@@ -1992,6 +2031,7 @@ export const Constants = {
         "speed",
         "restrictions",
       ],
+      reviewer_medal: ["none", "bronze", "silver", "gold"],
       road_condition: ["good", "ok", "rough", "muddy", "unknown"],
       road_type: ["paved", "gravel", "dirt", "sand", "mixed", "unknown"],
       safety_level: ["safe", "use_caution", "avoid_at_night", "unknown"],
