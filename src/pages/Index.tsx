@@ -1,6 +1,6 @@
 import { Map, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { HomeSearchBar } from '@/components/HomeSearchBar';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -12,15 +12,42 @@ import {
   type CarouselApi,
 } from '@/components/ui/carousel';
 
-// Import hero image
-import heroRvLandscape from '@/assets/hero-rv-landscape.jpg';
+// Import hero images
+import heroBeach from '@/assets/hero-beach.jpg';
+import heroCanyon from '@/assets/hero-canyon.jpg';
+import heroGlacier from '@/assets/hero-glacier.jpg';
+import heroMountains from '@/assets/hero-mountains.jpg';
+import heroNorthernLights from '@/assets/hero-northern-lights.jpg';
+import heroRedwoods from '@/assets/hero-redwoods.jpg';
+import heroRushmore from '@/assets/hero-rushmore.jpg';
+import heroWaterfall from '@/assets/hero-waterfall.jpg';
+
+const heroImages = [
+  { src: heroWaterfall, alt: 'Majestic waterfall in nature' },
+  { src: heroRushmore, alt: 'Mount Rushmore National Memorial' },
+  { src: heroNorthernLights, alt: 'Northern Lights aurora borealis' },
+  { src: heroMountains, alt: 'Scenic mountain landscape' },
+  { src: heroGlacier, alt: 'Glacier national park' },
+  { src: heroCanyon, alt: 'Grand canyon views' },
+  { src: heroRedwoods, alt: 'Redwood forest trees' },
+  { src: heroBeach, alt: 'Beautiful beach sunset' },
+];
 
 const Index = () => {
   const { data: places } = usePlaces();
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
   
   // Get trending places for carousel
   const trendingPlaces = places?.slice(0, 8) || [];
+
+  // Auto-advance hero images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Auto-advance trending carousel
   useEffect(() => {
@@ -35,7 +62,7 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-20">
       <Header />
 
-      {/* Hero Section - Full viewport height */}
+      {/* Hero Section - Full viewport height with rotating images */}
       <section 
         className="relative w-full overflow-hidden"
         style={{ 
@@ -43,11 +70,17 @@ const Index = () => {
           minHeight: 'calc(100vh - 56px)',
         }}
       >
-        <img
-          src={heroRvLandscape}
-          alt="RV adventure in beautiful landscape"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        {/* Rotating Hero Images */}
+        {heroImages.map((image, index) => (
+          <img
+            key={index}
+            src={image.src}
+            alt={image.alt}
+            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+              index === currentHeroIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        ))}
         
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/40" />
@@ -61,6 +94,22 @@ const Index = () => {
           <p className="text-white/90 text-base sm:text-lg text-center mt-4 font-medium tracking-wide">
             Camp. Drive. Explore.
           </p>
+        </div>
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+          {heroImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentHeroIndex(index)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentHeroIndex 
+                  ? 'bg-white w-6' 
+                  : 'bg-white/50 hover:bg-white/70'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
       </section>
 
