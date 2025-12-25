@@ -24,6 +24,8 @@ interface PlacesMapProps {
   onPlaceSelect?: (place: Place) => void;
   onBoundsChange?: (visiblePlaceIds: string[]) => void;
   onCenterChange?: (center: { lng: number; lat: number }) => void;
+  onInteractionStart?: () => void;
+  onInteractionEnd?: () => void;
 }
 
 export interface PlacesMapRef {
@@ -48,7 +50,7 @@ interface PointProperties {
 type ClusterFeature = Supercluster.PointFeature<PointProperties> | Supercluster.ClusterFeature<PointProperties>;
 
 export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function PlacesMap(
-  { places, mapboxToken, className, initialCenter, initialZoom, showSearch = false, selectedPlaceId, onPlaceSelect, onBoundsChange, onCenterChange },
+  { places, mapboxToken, className, initialCenter, initialZoom, showSearch = false, selectedPlaceId, onPlaceSelect, onBoundsChange, onCenterChange, onInteractionStart, onInteractionEnd },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -381,6 +383,23 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
 
       map.current.on('moveend', updateMarkers);
       map.current.on('zoomend', updateMarkers);
+      
+      // Interaction callbacks for footer hide/show
+      map.current.on('dragstart', () => {
+        onInteractionStart?.();
+      });
+      map.current.on('zoomstart', () => {
+        onInteractionStart?.();
+      });
+      map.current.on('dragend', () => {
+        onInteractionEnd?.();
+      });
+      map.current.on('zoomend', () => {
+        onInteractionEnd?.();
+      });
+      map.current.on('click', () => {
+        onInteractionEnd?.();
+      });
 
       map.current.on('error', (e) => {
         console.error('Mapbox error:', e);
