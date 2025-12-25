@@ -1,28 +1,29 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Header } from '@/components/Header';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
-import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
-import { QuickFilterChips } from '@/components/QuickFilterChips';
-import { MapSearchBox } from '@/components/MapSearchBox';
+import { MapSearchBar } from '@/components/MapSearchBar';
+import { MapFilterChips } from '@/components/MapFilterChips';
 import { MapPlaceCarousel } from '@/components/MapPlaceCarousel';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
+import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, MapPinOff, FilterX } from 'lucide-react';
+import { AlertCircle, MapPinOff, FilterX, ArrowLeft, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
 
 const MapView = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { data: places, isLoading: isLoadingPlaces, error: placesError } = usePlaces();
   const mapRef = useRef<PlacesMapRef>(null);
+  const { user, signOut } = useAuth();
   
   // Carousel state
   const [visiblePlaceIds, setVisiblePlaceIds] = useState<string[]>([]);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lng: number; lat: number } | undefined>(undefined);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Parse URL params for initial map position
   const initialCenter = useMemo(() => {
@@ -38,6 +39,7 @@ const MapView = () => {
     const zoom = searchParams.get('zoom');
     return zoom ? parseFloat(zoom) : undefined;
   }, [searchParams]);
+  
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
 
   const [filters, setFilters] = useState<PlaceFiltersState>({
@@ -50,7 +52,7 @@ const MapView = () => {
 
   const [sort, setSort] = useState<SortOption>('recently-updated');
 
-  // Filter places (same logic as PlacesToStay)
+  // Filter places
   const filteredPlaces = useMemo(() => {
     if (!places) return [];
 
@@ -110,17 +112,19 @@ const MapView = () => {
   // Handle search selections
   const handleSearchLocation = useCallback((lng: number, lat: number, zoom?: number) => {
     mapRef.current?.flyTo(lng, lat, zoom || 12);
+    setIsSearchFocused(false);
   }, []);
 
   const handleSearchPlaceSelect = useCallback((place: Place) => {
     mapRef.current?.flyTo(place.longitude, place.latitude, 14);
     setSelectedPlaceId(place.id);
+    setIsSearchFocused(false);
     setTimeout(() => {
       mapRef.current?.openPopup(place.id);
     }, 1100);
   }, []);
 
-  // Handle bounds/center changes from map (debounced via map component)
+  // Handle bounds/center changes from map
   const handleBoundsChange = useCallback((placeIds: string[]) => {
     setVisiblePlaceIds(placeIds);
   }, []);
@@ -134,7 +138,7 @@ const MapView = () => {
     setSelectedPlaceId(place.id);
   }, []);
 
-  // Handle carousel place selection - sync with map
+  // Handle carousel place selection
   const handleCarouselPlaceSelect = useCallback((place: Place) => {
     setSelectedPlaceId(place.id);
     mapRef.current?.selectPlace(place.id, true);
@@ -146,60 +150,21 @@ const MapView = () => {
     return filteredPlaces.filter((p) => visiblePlaceIds.includes(p.id));
   }, [places, filteredPlaces, visiblePlaceIds]);
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   return (
     <div 
-      className="bg-background flex flex-col overflow-hidden"
+      className="relative bg-background overflow-hidden"
       style={{ 
         height: '100dvh',
         minHeight: '-webkit-fill-available',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
       }}
     >
-      <Header title="Map View" showBack />
-
-      {/* Sticky toolbar - search + filters */}
-      <div 
-        className="sticky top-0 z-[50] bg-background border-b border-border"
-        style={{ 
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-        }}
-      >
-        <div className="px-4 py-3 space-y-3 max-w-lg mx-auto w-full">
-          {/* Row 1: Search input (full width) */}
-          {mapboxToken && (
-            <MapSearchBox
-              mapboxToken={mapboxToken}
-              places={places || []}
-              onSelectLocation={handleSearchLocation}
-              onSelectPlace={handleSearchPlaceSelect}
-            />
-          )}
-
-          {/* Row 2: Sort + Filters + Place count */}
-          <div className="flex items-center gap-2">
-            <PlaceFilters
-              filters={filters}
-              onFiltersChange={setFilters}
-              sort={sort}
-              onSortChange={setSort}
-              totalCount={places?.length || 0}
-              filteredCount={filteredPlaces.length}
-            />
-            
-            {/* Place count badge - inline with filters */}
-            {!isLoading && !hasError && (
-              <Badge variant="secondary" className="ml-auto shrink-0">
-                {filteredPlaces.length} {filteredPlaces.length === 1 ? 'place' : 'places'}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Quick filter chips - scrollable row */}
-      <QuickFilterChips filters={filters} onFiltersChange={setFilters} />
-      {/* Map container - fills remaining viewport */}
-      <div className="flex-1 relative min-h-0">
+      {/* Full-screen map container */}
+      <div className="absolute inset-0">
         {/* Loading state */}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted z-[1]">
@@ -242,13 +207,13 @@ const MapView = () => {
           </div>
         )}
 
-        {/* Map - no search inside (moved to toolbar) */}
+        {/* Map */}
         {mapboxToken && !isLoading && !hasError && (
           <PlacesMap
             ref={mapRef}
             places={filteredPlaces}
             mapboxToken={mapboxToken}
-            className="h-full"
+            className="h-full w-full"
             initialCenter={initialCenter}
             initialZoom={initialZoom}
             showSearch={false}
@@ -258,30 +223,112 @@ const MapView = () => {
             onCenterChange={handleCenterChange}
           />
         )}
-
-        {/* No results state - overlay on map when filters return 0 places */}
-        {!isLoading && !hasError && filteredPlaces.length === 0 && hasActiveFilters && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-[20]">
-            <div className="text-center p-6 max-w-sm">
-              <FilterX className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No Places Match</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                No places match your current filters. Try adjusting or clearing your filters.
-              </p>
-              <Button onClick={clearFilters} variant="outline" className="gap-2">
-                <FilterX className="w-4 h-4" />
-                Reset Filters
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Always-on bottom carousel - floating with safe area */}
+      {/* Search dimmer overlay */}
+      {isSearchFocused && (
+        <div 
+          className="absolute inset-0 bg-black/30 z-[45] transition-opacity duration-200"
+          onClick={() => setIsSearchFocused(false)}
+        />
+      )}
+
+      {/* Floating header - minimal, semi-transparent */}
+      <div 
+        className="absolute top-0 left-0 right-0 z-[50]"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Back button */}
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="w-10 h-10 rounded-full bg-card/95 backdrop-blur-md shadow-lg border-0"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+
+          {/* User/Profile button */}
+          {user ? (
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={handleSignOut}
+              className="w-10 h-10 rounded-full bg-card/95 backdrop-blur-md shadow-lg border-0"
+              aria-label="Sign out"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
+          ) : (
+            <Button
+              asChild
+              variant="secondary"
+              size="icon"
+              className="w-10 h-10 rounded-full bg-card/95 backdrop-blur-md shadow-lg border-0"
+            >
+              <Link to="/auth" aria-label="Sign in">
+                <User className="w-5 h-5" />
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Floating search bar - always visible */}
+      <div 
+        className="absolute left-0 right-0 z-[50] px-4"
+        style={{ 
+          top: 'calc(env(safe-area-inset-top, 0px) + 60px)',
+        }}
+      >
+        <MapSearchBar
+          mapboxToken={mapboxToken || ''}
+          places={places || []}
+          onSelectLocation={handleSearchLocation}
+          onSelectPlace={handleSearchPlaceSelect}
+          onFocusChange={setIsSearchFocused}
+          isFocused={isSearchFocused}
+        />
+      </div>
+
+      {/* Floating filter chips */}
+      <div 
+        className="absolute left-0 right-0 z-[45]"
+        style={{ 
+          top: 'calc(env(safe-area-inset-top, 0px) + 120px)',
+        }}
+      >
+        <MapFilterChips 
+          filters={filters} 
+          onFiltersChange={setFilters}
+          filteredCount={filteredPlaces.length}
+        />
+      </div>
+
+      {/* No results state - floating pill */}
+      {!isLoading && !hasError && filteredPlaces.length === 0 && hasActiveFilters && (
+        <div className="absolute inset-0 flex items-center justify-center z-[30] pointer-events-none">
+          <div className="text-center p-6 max-w-sm bg-card/95 backdrop-blur-md rounded-2xl shadow-xl pointer-events-auto">
+            <FilterX className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <h3 className="text-base font-semibold text-foreground mb-1">No Places Match</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Try adjusting your filters
+            </p>
+            <Button onClick={clearFilters} variant="outline" size="sm" className="gap-2">
+              <FilterX className="w-4 h-4" />
+              Reset Filters
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating place carousel - bottom */}
       {mapboxToken && !isLoading && !hasError && (
         <div 
           className="absolute bottom-0 left-0 right-0 z-[40] pointer-events-none"
-          style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
         >
           <div className="pointer-events-auto">
             <MapPlaceCarousel
