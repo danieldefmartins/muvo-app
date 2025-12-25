@@ -7,6 +7,7 @@ import { MapPlaceCarousel } from '@/components/MapPlaceCarousel';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { useAuth } from '@/hooks/useAuth';
+import { useFooter } from '@/contexts/FooterContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, MapPinOff, FilterX, ArrowLeft, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ const MapView = () => {
   const { data: places, isLoading: isLoadingPlaces, error: placesError } = usePlaces();
   const mapRef = useRef<PlacesMapRef>(null);
   const { user, signOut } = useAuth();
+  const { setMapInteracting } = useFooter();
   
   // Carousel state
   const [visiblePlaceIds, setVisiblePlaceIds] = useState<string[]>([]);
@@ -144,6 +146,15 @@ const MapView = () => {
     mapRef.current?.selectPlace(place.id, true);
   }, []);
 
+  // Handle map interaction for footer auto-hide
+  const handleMapInteractionStart = useCallback(() => {
+    setMapInteracting(true);
+  }, [setMapInteracting]);
+
+  const handleMapInteractionEnd = useCallback(() => {
+    setMapInteracting(false);
+  }, [setMapInteracting]);
+
   // Get visible places for carousel
   const visiblePlaces = useMemo(() => {
     if (!places) return [];
@@ -221,6 +232,8 @@ const MapView = () => {
             onPlaceSelect={handleMapPlaceSelect}
             onBoundsChange={handleBoundsChange}
             onCenterChange={handleCenterChange}
+            onInteractionStart={handleMapInteractionStart}
+            onInteractionEnd={handleMapInteractionEnd}
           />
         )}
       </div>

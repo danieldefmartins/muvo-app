@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { hapticLight } from '@/lib/haptics';
+import { useFooter } from '@/contexts/FooterContext';
 
 interface NavItem {
   icon: React.FC<{ className?: string; strokeWidth?: number }>;
@@ -97,14 +98,53 @@ const navItems: NavItem[] = [
   { icon: ProfileIcon, label: 'Profile', path: '/auth' },
 ];
 
+// Paths where footer should always be hidden (forms, auth, creation flows)
+const HIDDEN_PATHS = [
+  '/auth',
+  '/admin/import',
+  '/admin/data-enrichment',
+  '/admin/suggestions',
+  '/admin/photos',
+  '/admin/users',
+  '/admin/place-submissions',
+];
+
+// Paths where footer is visible
+const VISIBLE_PATHS = [
+  '/',
+  '/map',
+  '/places',
+  '/route',
+  '/saved',
+  '/search',
+  '/notifications',
+];
+
 export function BottomNav() {
   const location = useLocation();
+  const { isMapInteracting } = useFooter();
   
-  // Hide on map and route pages where custom controls exist
-  const hiddenPaths = ['/map', '/route'];
-  if (hiddenPaths.includes(location.pathname)) {
+  const pathname = location.pathname;
+  
+  // Check if current path should hide footer
+  const shouldHideForPath = HIDDEN_PATHS.some(path => pathname.startsWith(path));
+  
+  // Check if current path is a visible path or a place detail page
+  const isVisiblePath = VISIBLE_PATHS.includes(pathname) || pathname.startsWith('/place/');
+  
+  // Hide footer on hidden paths
+  if (shouldHideForPath) {
     return null;
   }
+  
+  // Only show on explicitly visible paths
+  if (!isVisiblePath) {
+    return null;
+  }
+
+  // Map View: hide when user is interacting (dragging/zooming)
+  const isMapPage = pathname === '/map';
+  const shouldHideForMapInteraction = isMapPage && isMapInteracting;
 
   const handleNavClick = () => {
     hapticLight();
@@ -112,7 +152,11 @@ export function BottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border/50"
+      className={cn(
+        'fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border/50',
+        'transition-transform duration-300 ease-out',
+        shouldHideForMapInteraction && 'translate-y-full'
+      )}
       style={{ 
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
