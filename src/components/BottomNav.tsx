@@ -122,7 +122,7 @@ const VISIBLE_PATHS = [
 
 export function BottomNav() {
   const location = useLocation();
-  const { isMapInteracting } = useFooter();
+  const { isMapInteracting, isScrollingDown } = useFooter();
   
   const pathname = location.pathname;
   
@@ -150,18 +150,27 @@ export function BottomNav() {
     hapticLight();
   };
 
+  // Compact mode when scrolling down
+  const isCompact = isScrollingDown && !isMapPage;
+
   return (
     <nav 
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border/50',
-        'transition-transform duration-300 ease-out',
-        shouldHideForMapInteraction && 'translate-y-full'
+        'fixed bottom-0 left-0 right-0 z-50 border-t border-border/50',
+        'transition-all duration-200 ease-out',
+        shouldHideForMapInteraction && 'translate-y-full',
+        isCompact 
+          ? 'bg-background/80 backdrop-blur-sm' 
+          : 'bg-background/95 backdrop-blur-md'
       )}
       style={{ 
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
+      <div className={cn(
+        'flex items-center justify-around max-w-lg mx-auto px-2 transition-all duration-200',
+        isCompact ? 'h-12' : 'h-16'
+      )}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
@@ -172,26 +181,34 @@ export function BottomNav() {
               to={item.path}
               onClick={handleNavClick}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 min-w-[56px] py-2 px-3 rounded-xl transition-colors',
+                'flex flex-col items-center justify-center min-w-[56px] px-3 rounded-xl transition-all duration-200',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
                 isActive 
                   ? 'text-primary' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
+                isCompact ? 'gap-0 py-1' : 'gap-0.5 py-2'
               )}
               style={{ minHeight: '44px' }}
             >
               <div className={cn(
-                'relative flex items-center justify-center rounded-full transition-colors',
-                isActive && 'bg-primary/10 px-3 py-1'
+                'relative flex items-center justify-center rounded-full transition-all duration-200',
+                isActive && !isCompact && 'bg-primary/10 px-3 py-1',
+                isActive && isCompact && 'bg-primary/10 px-2 py-0.5'
               )}>
                 <Icon 
-                  className="w-6 h-6" 
+                  className={cn(
+                    'transition-all duration-200',
+                    isCompact ? 'w-5 h-5' : 'w-6 h-6'
+                  )}
                   strokeWidth={isActive ? 2.25 : 2}
                 />
               </div>
               <span className={cn(
-                'text-[10px] font-medium tracking-tight',
-                isActive && 'text-primary'
+                'font-medium tracking-tight transition-all duration-200',
+                isActive && 'text-primary',
+                isCompact 
+                  ? 'text-[8px] opacity-60' 
+                  : 'text-[10px] opacity-100'
               )}>
                 {item.label}
               </span>
