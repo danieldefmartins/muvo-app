@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { MapSearchBar } from '@/components/MapSearchBar';
 import { MapFilterChips } from '@/components/MapFilterChips';
-import { MapPlaceCarousel } from '@/components/MapPlaceCarousel';
+import { MapBottomSheet } from '@/components/MapBottomSheet';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,11 +21,12 @@ const MapView = () => {
   const { user, signOut } = useAuth();
   const { setMapInteracting } = useFooter();
   
-  // Carousel state
-  const [visiblePlaceIds, setVisiblePlaceIds] = useState<string[]>([]);
+  // Bottom sheet state
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lng: number; lat: number } | undefined>(undefined);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
 
   // Parse URL params for initial map position
   const initialCenter = useMemo(() => {
@@ -128,7 +129,7 @@ const MapView = () => {
 
   // Handle bounds/center changes from map
   const handleBoundsChange = useCallback((placeIds: string[]) => {
-    setVisiblePlaceIds(placeIds);
+    // No longer using carousel - we use bottom sheet now
   }, []);
 
   const handleCenterChange = useCallback((center: { lng: number; lat: number }) => {
@@ -138,12 +139,18 @@ const MapView = () => {
   // Handle place selection from map pin click
   const handleMapPlaceSelect = useCallback((place: Place) => {
     setSelectedPlaceId(place.id);
+    setSelectedPlace(place);
   }, []);
 
-  // Handle carousel place selection
-  const handleCarouselPlaceSelect = useCallback((place: Place) => {
-    setSelectedPlaceId(place.id);
-    mapRef.current?.selectPlace(place.id, true);
+  // Handle bottom sheet close
+  const handleSheetClose = useCallback(() => {
+    setSelectedPlace(null);
+    setSelectedPlaceId(null);
+  }, []);
+
+  // Handle sheet state change
+  const handleSheetStateChange = useCallback((state: 'hidden' | 'peek' | 'expanded') => {
+    setIsSheetExpanded(state === 'expanded');
   }, []);
 
   // Handle map interaction for footer auto-hide
@@ -154,12 +161,6 @@ const MapView = () => {
   const handleMapInteractionEnd = useCallback(() => {
     setMapInteracting(false);
   }, [setMapInteracting]);
-
-  // Get visible places for carousel
-  const visiblePlaces = useMemo(() => {
-    if (!places) return [];
-    return filteredPlaces.filter((p) => visiblePlaceIds.includes(p.id));
-  }, [places, filteredPlaces, visiblePlaceIds]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -246,18 +247,20 @@ const MapView = () => {
         />
       )}
 
-      {/* Floating header - minimal, semi-transparent */}
+      {/* Floating top controls container - unified frosted glass */}
       <div 
-        className="absolute top-0 left-0 right-0 z-[50]"
+        className="absolute top-0 left-0 right-0 z-[50] pointer-events-none"
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
-        <div className="flex items-center justify-between px-4 py-3">
+        {/* Header buttons row */}
+        <div className="flex items-center justify-between px-4 py-3 pointer-events-auto">
           {/* Back button */}
           <Button
             variant="secondary"
             size="icon"
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-card/95 backdrop-blur-md shadow-lg border-0"
+            className="w-10 h-10 rounded-full bg-card/[0.88] backdrop-blur-xl shadow-lg border-0 hover:bg-card/95"
+            style={{ boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.2)' }}
             aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -269,7 +272,8 @@ const MapView = () => {
               variant="secondary"
               size="icon"
               onClick={handleSignOut}
-              className="w-10 h-10 rounded-full bg-card/95 backdrop-blur-md shadow-lg border-0"
+              className="w-10 h-10 rounded-full bg-card/[0.88] backdrop-blur-xl shadow-lg border-0 hover:bg-card/95"
+              style={{ boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.2)' }}
               aria-label="Sign out"
             >
               <LogOut className="w-5 h-5" />
@@ -279,7 +283,8 @@ const MapView = () => {
               asChild
               variant="secondary"
               size="icon"
-              className="w-10 h-10 rounded-full bg-card/95 backdrop-blur-md shadow-lg border-0"
+              className="w-10 h-10 rounded-full bg-card/[0.88] backdrop-blur-xl shadow-lg border-0 hover:bg-card/95"
+              style={{ boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.2)' }}
             >
               <Link to="/auth" aria-label="Sign in">
                 <User className="w-5 h-5" />
@@ -287,37 +292,24 @@ const MapView = () => {
             </Button>
           )}
         </div>
-      </div>
 
-      {/* Floating search bar - always visible */}
-      <div 
-        className="absolute left-0 right-0 z-[50] px-4"
-        style={{ 
-          top: 'calc(env(safe-area-inset-top, 0px) + 60px)',
-        }}
-      >
-        <MapSearchBar
-          mapboxToken={mapboxToken || ''}
-          places={places || []}
-          onSelectLocation={handleSearchLocation}
-          onSelectPlace={handleSearchPlaceSelect}
-          onFocusChange={setIsSearchFocused}
-          isFocused={isSearchFocused}
-        />
-      </div>
-
-      {/* Floating filter chips */}
-      <div 
-        className="absolute left-0 right-0 z-[45]"
-        style={{ 
-          top: 'calc(env(safe-area-inset-top, 0px) + 120px)',
-        }}
-      >
-        <MapFilterChips 
-          filters={filters} 
-          onFiltersChange={setFilters}
-          filteredCount={filteredPlaces.length}
-        />
+        {/* Search + Filters container with frosted glass */}
+        <div className="px-4 pb-3 space-y-2 pointer-events-auto">
+          <MapSearchBar
+            mapboxToken={mapboxToken || ''}
+            places={places || []}
+            onSelectLocation={handleSearchLocation}
+            onSelectPlace={handleSearchPlaceSelect}
+            onFocusChange={setIsSearchFocused}
+            isFocused={isSearchFocused}
+          />
+          
+          <MapFilterChips 
+            filters={filters} 
+            onFiltersChange={setFilters}
+            filteredCount={filteredPlaces.length}
+          />
+        </div>
       </div>
 
       {/* No results state - floating pill */}
@@ -337,21 +329,15 @@ const MapView = () => {
         </div>
       )}
 
-      {/* Floating place carousel - bottom */}
+      {/* Bottom Sheet */}
       {mapboxToken && !isLoading && !hasError && (
-        <div 
-          className="absolute bottom-0 left-0 right-0 z-[40] pointer-events-none"
-          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
-        >
-          <div className="pointer-events-auto">
-            <MapPlaceCarousel
-              places={visiblePlaces.length > 0 ? visiblePlaces : filteredPlaces}
-              selectedPlaceId={selectedPlaceId}
-              onPlaceSelect={handleCarouselPlaceSelect}
-              mapCenter={mapCenter}
-            />
-          </div>
-        </div>
+        <MapBottomSheet
+          place={selectedPlace}
+          places={filteredPlaces}
+          mapCenter={mapCenter}
+          onClose={handleSheetClose}
+          onSheetStateChange={handleSheetStateChange}
+        />
       )}
     </div>
   );

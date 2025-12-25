@@ -136,12 +136,17 @@ export function MapSearchBar({
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
-      {/* Search input - pill style */}
+      {/* Search input - pill style with frosted glass */}
       <div 
         className={cn(
-          'flex items-center gap-3 px-4 py-3 bg-card/95 backdrop-blur-md rounded-full transition-all duration-200',
-          isFocused ? 'ring-2 ring-primary shadow-xl' : 'shadow-lg',
+          'flex items-center gap-3 px-4 py-3 bg-card/[0.88] backdrop-blur-xl rounded-2xl transition-all duration-200',
+          isFocused ? 'ring-2 ring-primary' : '',
         )}
+        style={{ 
+          boxShadow: isFocused 
+            ? '0 8px 32px -4px rgba(0, 0, 0, 0.25)' 
+            : '0 4px 16px -4px rgba(0, 0, 0, 0.15)' 
+        }}
       >
         <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
         <input

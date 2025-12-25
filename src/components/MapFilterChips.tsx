@@ -138,7 +138,7 @@ export function MapFilterChips({ filters, onFiltersChange, filteredCount }: MapF
   }
 
   return (
-    <div className="px-4">
+    <div>
       <div className="overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-2 min-w-max py-1">
           {/* More filters button */}
@@ -146,13 +146,14 @@ export function MapFilterChips({ filters, onFiltersChange, filteredCount }: MapF
             <SheetTrigger asChild>
               <button
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium',
-                  'bg-card/95 backdrop-blur-md shadow-md transition-all duration-200',
+                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium',
+                  'bg-card/[0.88] backdrop-blur-xl transition-all duration-200',
                   'active:scale-[0.95] touch-manipulation',
                   activeFilterCount > 0
                     ? 'ring-2 ring-primary text-primary'
                     : 'text-foreground'
                 )}
+                style={{ boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.12)' }}
               >
                 <Filter className="w-3.5 h-3.5" />
                 <span>Filters</span>
@@ -302,13 +303,14 @@ export function MapFilterChips({ filters, onFiltersChange, filteredCount }: MapF
                   onFiltersChange(chip.toggle(filters));
                 }}
                 className={cn(
-                  'flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium',
-                  'bg-card/95 backdrop-blur-md shadow-md transition-all duration-200',
+                  'flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium',
+                  'bg-card/[0.88] backdrop-blur-xl transition-all duration-200',
                   'active:scale-[0.95] touch-manipulation whitespace-nowrap',
                   isActive
                     ? 'ring-2 ring-primary text-primary'
                     : 'text-foreground'
                 )}
+                style={{ boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.12)' }}
               >
                 <span className="text-sm leading-none">{chip.icon}</span>
                 <span>{chip.label}</span>
@@ -323,7 +325,8 @@ export function MapFilterChips({ filters, onFiltersChange, filteredCount }: MapF
                 hapticLight();
                 clearFilters();
               }}
-              className="flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium bg-destructive/10 text-destructive shadow-md transition-all active:scale-[0.95] touch-manipulation whitespace-nowrap"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium bg-destructive/10 text-destructive transition-all active:scale-[0.95] touch-manipulation whitespace-nowrap"
+              style={{ boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.12)' }}
             >
               <X className="w-3.5 h-3.5" />
               <span>Clear</span>
