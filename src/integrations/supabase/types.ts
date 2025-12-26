@@ -1559,6 +1559,38 @@ export type Database = {
       }
     }
     Views: {
+      public_place_claims: {
+        Row: {
+          claim_type: string | null
+          id: string | null
+          place_id: string | null
+          status: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          claim_type?: string | null
+          id?: string | null
+          place_id?: string | null
+          status?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          claim_type?: string | null
+          id?: string | null
+          place_id?: string | null
+          status?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_claims_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_reviews: {
         Row: {
           created_at: string | null
