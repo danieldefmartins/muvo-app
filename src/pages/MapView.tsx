@@ -246,27 +246,25 @@ const MapView = () => {
         />
       )}
 
-      {/* MUVO logo removed - now in search bar as icon */}
-
       {/* Top controls - compact single row: Back + Search */}
       <div 
         className="absolute top-0 left-0 right-0 z-[50] pointer-events-none"
         style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 8px)' }}
       >
-        {/* Search row with back button inline */}
-        <div className="flex items-center gap-2 px-3 py-2 pointer-events-auto" style={{ paddingLeft: '80px' }}>
-          {/* Back button */}
+        {/* Search row with back button inline - flush left */}
+        <div className="flex items-center gap-2 px-3 py-2 pointer-events-auto">
+          {/* Back button - flush left */}
           <Button
             variant="secondary"
             size="icon"
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-card/[0.92] backdrop-blur-xl shadow-md border-0 hover:bg-card/95 flex-shrink-0"
+            className="w-11 h-11 rounded-full bg-card/[0.92] backdrop-blur-xl shadow-md border-0 hover:bg-card/95 flex-shrink-0"
             aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
 
-          {/* Search bar - takes remaining space */}
+          {/* Search bar - wider and taller */}
           <div className="flex-1">
             <MapSearchBar
               mapboxToken={mapboxToken || ''}
