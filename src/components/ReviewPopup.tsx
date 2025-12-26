@@ -281,10 +281,19 @@ export function ReviewPopup({
     switch (step) {
       case 'intro': return 'A Better Way to Review';
       case 'good': return 'What Stood Out?';
-      case 'improvement': return 'What Needs Work?';
+      case 'improvement': return "What Didn't Go Well?";
       case 'neutral': return 'How This Place Feels';
       case 'notes': return 'Add a Note';
       case 'confirm': return 'Ready to Submit';
+    }
+  };
+
+  const getStepSubtitle = () => {
+    switch (step) {
+      case 'good': return 'Tap stamps that stood out';
+      case 'improvement': return 'Tap issues you experienced';
+      case 'neutral': return 'Help others understand the feeling of this place';
+      default: return null;
     }
   };
 
@@ -470,7 +479,12 @@ export function ReviewPopup({
             <h2 className="text-lg font-semibold">
               {getStepTitle()}
             </h2>
-            {placeName && step !== 'intro' && (
+            {getStepSubtitle() && (
+              <p className="text-sm text-muted-foreground">
+                {getStepSubtitle()}
+              </p>
+            )}
+            {placeName && step !== 'intro' && !getStepSubtitle() && (
               <p className="text-sm text-muted-foreground truncate max-w-[200px] mx-auto" title={placeName}>
                 {placeName}
               </p>
