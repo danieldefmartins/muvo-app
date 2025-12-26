@@ -481,6 +481,39 @@ export default function Auth() {
     );
   }
 
+  // Resend verification email
+  const [resendingEmail, setResendingEmail] = useState(false);
+  
+  async function handleResendVerification() {
+    if (!signupEmail) return;
+    
+    setResendingEmail(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: signupEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+        },
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Email sent!',
+        description: 'Check your inbox for a new verification link.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Failed to resend',
+        description: error.message || 'Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setResendingEmail(false);
+    }
+  }
+
   // Check email screen after signup
   if (mode === 'check-email') {
     return (
@@ -497,9 +530,19 @@ export default function Auth() {
             <p className="text-sm text-muted-foreground mb-6">
               Click the link in the email to verify your account and start contributing.
             </p>
-            <Button variant="outline" onClick={() => setMode('signin')}>
-              Back to Sign In
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleResendVerification}
+                disabled={resendingEmail}
+              >
+                {resendingEmail ? 'Sending...' : "Didn't receive it? Resend email"}
+              </Button>
+              <Button variant="outline" onClick={() => setMode('signin')}>
+                Back to Sign In
+              </Button>
+            </div>
           </div>
         </main>
       </div>
