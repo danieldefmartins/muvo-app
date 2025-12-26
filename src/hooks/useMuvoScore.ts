@@ -71,11 +71,76 @@ export function useMuvoScore(placeId: string | undefined) {
 }
 
 /**
+ * Category-based tap thresholds for showing the confidence score
+ * Higher thresholds for categories with more expected activity
+ */
+export const CATEGORY_TAP_THRESHOLDS: Record<string, number> = {
+  // High-traffic categories - need more taps for confidence
+  'Restaurant': 150,
+  'Food & Drink': 150,
+  
+  // Medium-traffic categories
+  'RV Campground': 100,
+  'Campground': 100,
+  'Luxury RV Resort': 100,
+  'State Park': 100,
+  'County / Regional Park': 100,
+  
+  // Lower-traffic categories
+  'National Park': 75,
+  'National Monument': 75,
+  'Boondocking': 75,
+  'Overnight Parking': 75,
+  'Rest Area / Travel Plaza': 75,
+  
+  // Niche categories - lowest threshold
+  'Business Allowing Overnight': 50,
+  'Fairgrounds / Event Grounds': 50,
+  'Dog Park': 50,
+  'RV Parking': 50,
+  'RV Storage': 50,
+};
+
+/**
+ * Get the minimum tap threshold for a place category
+ */
+export function getCategoryThreshold(category: string | undefined): number {
+  if (!category) return 100; // Default threshold
+  return CATEGORY_TAP_THRESHOLDS[category] ?? 100;
+}
+
+/**
+ * Check if a place has enough taps to show the confidence score
+ */
+export function hasEnoughTapsForScore(
+  qualTaps: number,
+  category: string | undefined
+): boolean {
+  const threshold = getCategoryThreshold(category);
+  return qualTaps >= threshold;
+}
+
+/**
+ * Get formatted display text for when score threshold is not yet met
+ * Shows "Building confidence…" as per spec
+ */
+export function getConfidenceBuildingText(
+  qualTaps: number,
+  category: string | undefined
+): string {
+  const threshold = getCategoryThreshold(category);
+  const remaining = threshold - qualTaps;
+  
+  if (remaining > 0) {
+    return 'Building confidence…';
+  }
+  return 'Building confidence…';
+}
+
+/**
+ * @deprecated Use getConfidenceBuildingText instead
  * Get formatted display text for when medal is not yet earned
  */
 export function getMedalUnlockText(qualTaps: number): string {
-  if (qualTaps < 100) {
-    return `MUVO Score unlocks after ${100 - qualTaps} more community taps.`;
-  }
-  return 'MUVO Score unlocks after more community activity over time.';
+  return 'Building confidence…';
 }
