@@ -26,6 +26,8 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          pressed: "hsl(var(--primary-pressed))",
+          tint: "hsl(var(--primary-tint))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -54,6 +56,27 @@ export default {
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",
         trust: "hsl(var(--trust))",
+        // Category colors for pins/chips/badges
+        category: {
+          campground: "hsl(var(--cat-rv-campground))",
+          resort: "hsl(var(--cat-rv-resort))",
+          boondocking: "hsl(var(--cat-boondocking))",
+          parking: "hsl(var(--cat-overnight-parking))",
+          dump: "hsl(var(--cat-dump-station))",
+          water: "hsl(var(--cat-fresh-water))",
+          hookups: "hsl(var(--cat-hookups))",
+          restarea: "hsl(var(--cat-rest-area))",
+          scenic: "hsl(var(--cat-scenic))",
+          trailhead: "hsl(var(--cat-trailhead))",
+          gas: "hsl(var(--cat-gas))",
+          service: "hsl(var(--cat-service))",
+          groceries: "hsl(var(--cat-groceries))",
+          laundry: "hsl(var(--cat-laundry))",
+          wifi: "hsl(var(--cat-wifi))",
+          pet: "hsl(var(--cat-pet-friendly))",
+          caution: "hsl(var(--cat-caution))",
+          default: "hsl(var(--cat-default))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
