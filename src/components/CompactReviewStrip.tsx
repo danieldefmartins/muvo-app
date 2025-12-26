@@ -57,6 +57,15 @@ export function CompactReviewStrip({
     sort_order: 0,
   }));
 
+  const neutralStamps = stamps?.neutral || FALLBACK_STAMPS.neutral.map(f => ({
+    id: f.id,
+    label: f.label,
+    icon: f.icon,
+    category: 'fallback',
+    polarity: 'neutral' as const,
+    sort_order: 0,
+  }));
+
   // Parse existing review into initial state
   const getInitialPositive = (): Map<string, number> => {
     if (!existingReview) return new Map();
@@ -109,10 +118,11 @@ export function CompactReviewStrip({
   const handleSubmit = async (data: {
     positiveSignals: Map<string, number>;
     improvementSignals: Map<string, number>;
+    neutralSignals: Map<string, number>;
     notePublic: string;
     notePrivate: string;
   }) => {
-    const { positiveSignals, improvementSignals, notePublic, notePrivate } = data;
+    const { positiveSignals, improvementSignals, neutralSignals, notePublic, notePrivate } = data;
 
     // Check auth only on submit
     if (!user) {
@@ -156,7 +166,7 @@ export function CompactReviewStrip({
       return;
     }
 
-    const totalStamps = positiveSignals.size + improvementSignals.size;
+    const totalStamps = positiveSignals.size + improvementSignals.size + neutralSignals.size;
     if (totalStamps === 0) {
       toast({
         title: "Something needs to stand out",
@@ -166,7 +176,7 @@ export function CompactReviewStrip({
       return;
     }
 
-    // Build signals array
+    // Build signals array (neutral signals use level 1)
     const signals: ReviewSignal[] = [
       ...Array.from(positiveSignals.entries()).map(([stampId, level]) => ({
         dimension: 'quality' as const,
@@ -177,6 +187,12 @@ export function CompactReviewStrip({
       ...Array.from(improvementSignals.entries()).map(([stampId, level]) => ({
         dimension: 'quality' as const,
         polarity: 'improvement' as const,
+        level,
+        stamp_id: stampId,
+      })),
+      ...Array.from(neutralSignals.entries()).map(([stampId, level]) => ({
+        dimension: 'quality' as const,
+        polarity: 'neutral' as const,
         level,
         stamp_id: stampId,
       })),
@@ -257,9 +273,11 @@ export function CompactReviewStrip({
         onOpenChange={setShowReviewPopup}
         positiveStamps={positiveStamps}
         improvementStamps={improvementStamps}
+        neutralStamps={neutralStamps}
         placeName={placeName}
         initialPositive={getInitialPositive()}
         initialImprovement={getInitialImprovement()}
+        initialNeutral={new Map()}
         initialNotePublic={existingReview?.note_public || ''}
         initialNotePrivate={existingReview?.note_private || ''}
         isEditing={isEditing}

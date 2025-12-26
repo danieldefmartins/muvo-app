@@ -12,16 +12,18 @@ import { haptic, hapticLight, hapticMedium } from '@/lib/haptics';
 import type { StampDefinition } from '@/hooks/useStamps';
 
 // Step definitions
-type ReviewStep = 'intro' | 'good' | 'improvement' | 'notes' | 'confirm';
+type ReviewStep = 'intro' | 'good' | 'improvement' | 'neutral' | 'notes' | 'confirm';
 
 interface ReviewPopupProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   positiveStamps: StampDefinition[];
   improvementStamps: StampDefinition[];
+  neutralStamps: StampDefinition[];
   placeName?: string;
   initialPositive?: Map<string, number>;
   initialImprovement?: Map<string, number>;
+  initialNeutral?: Map<string, number>;
   initialNotePublic?: string;
   initialNotePrivate?: string;
   isEditing?: boolean;
@@ -29,6 +31,7 @@ interface ReviewPopupProps {
   onSubmit: (data: {
     positiveSignals: Map<string, number>;
     improvementSignals: Map<string, number>;
+    neutralSignals: Map<string, number>;
     notePublic: string;
     notePrivate: string;
   }) => void;
@@ -36,6 +39,7 @@ interface ReviewPopupProps {
 
 const LEVEL_LABELS = ['', 'Good', 'Great', 'Excellent'];
 const IMPROVEMENT_LABELS = ['', 'Needs Work', 'Needs More', 'Major Issue'];
+const NEUTRAL_LABELS = ['', 'Selected']; // Single-tap only
 
 // Onboarding key for localStorage
 const ONBOARDING_KEY = 'review_onboarding_seen';
@@ -45,9 +49,11 @@ export function ReviewPopup({
   onOpenChange,
   positiveStamps,
   improvementStamps,
+  neutralStamps,
   placeName,
   initialPositive,
   initialImprovement,
+  initialNeutral,
   initialNotePublic = '',
   initialNotePrivate = '',
   isEditing = false,
@@ -57,6 +63,7 @@ export function ReviewPopup({
   const [step, setStep] = useState<ReviewStep>('intro');
   const [positiveSignals, setPositiveSignals] = useState<Map<string, number>>(new Map());
   const [improvementSignals, setImprovementSignals] = useState<Map<string, number>>(new Map());
+  const [neutralSignals, setNeutralSignals] = useState<Map<string, number>>(new Map());
   const [notePublic, setNotePublic] = useState('');
   const [notePrivate, setNotePrivate] = useState('');
   const [activeStamp, setActiveStamp] = useState<StampDefinition | null>(null);
@@ -90,7 +97,7 @@ export function ReviewPopup({
       container.addEventListener('scroll', updateScrollIndicators);
       return () => container.removeEventListener('scroll', updateScrollIndicators);
     }
-  }, [step, positiveStamps, improvementStamps]);
+  }, [step, positiveStamps, improvementStamps, neutralStamps]);
 
   // Check if onboarding was seen
   useEffect(() => {
@@ -107,6 +114,7 @@ export function ReviewPopup({
     if (open) {
       setPositiveSignals(initialPositive || new Map());
       setImprovementSignals(initialImprovement || new Map());
+      setNeutralSignals(initialNeutral || new Map());
       setNotePublic(initialNotePublic);
       setNotePrivate(initialNotePrivate);
       
@@ -123,7 +131,7 @@ export function ReviewPopup({
       setShowFlash(false);
       setPopText(null);
     }
-  }, [open, initialPositive, initialImprovement, initialNotePublic, initialNotePrivate, isEditing]);
+  }, [open, initialPositive, initialImprovement, initialNeutral, initialNotePublic, initialNotePrivate, isEditing]);
 
   // Set initial active stamp when step changes
   useEffect(() => {
@@ -135,6 +143,10 @@ export function ReviewPopup({
       const firstSelected = improvementStamps.find((s) => improvementSignals.has(s.id));
       const unselected = improvementStamps.find((s) => !improvementSignals.has(s.id));
       setActiveStamp(firstSelected || unselected || improvementStamps[0]);
+    } else if (step === 'neutral' && neutralStamps.length > 0) {
+      const firstSelected = neutralStamps.find((s) => neutralSignals.has(s.id));
+      const unselected = neutralStamps.find((s) => !neutralSignals.has(s.id));
+      setActiveStamp(firstSelected || unselected || neutralStamps[0]);
     } else {
       setActiveStamp(null);
     }
@@ -143,7 +155,7 @@ export function ReviewPopup({
       scrollContainerRef.current.scrollLeft = 0;
     }
     setTimeout(updateScrollIndicators, 100);
-  }, [step, positiveStamps, improvementStamps]);
+  }, [step, positiveStamps, improvementStamps, neutralStamps]);
 
   // *** CRITICAL FIX: Count DISTINCT stamps, NOT intensity ***
   const stampsSelectedPositive = positiveSignals.size;
@@ -154,6 +166,31 @@ export function ReviewPopup({
   // Handle tapping on a stamp in the carousel
   const handleCarouselStampTap = (stamp: StampDefinition) => {
     const isPositive = step === 'good';
+    const isNeutral = step === 'neutral';
+    
+    if (isNeutral) {
+      // Neutral stamps are SINGLE TAP ONLY - toggle on/off with level 1
+      const current = neutralSignals.get(stamp.id) || 0;
+      const newMap = new Map(neutralSignals);
+      
+      if (current === 0) {
+        newMap.set(stamp.id, 1);
+        hapticMedium();
+        setShowFlash(true);
+        setPopText('Selected');
+        window.setTimeout(() => {
+          setShowFlash(false);
+          setPopText(null);
+        }, 500);
+      } else {
+        newMap.delete(stamp.id);
+        hapticLight();
+      }
+      setNeutralSignals(newMap);
+      setActiveStamp(stamp);
+      return;
+    }
+    
     const signals = isPositive ? positiveSignals : improvementSignals;
     const setSignals = isPositive ? setPositiveSignals : setImprovementSignals;
     const remainingSlots = isPositive ? remainingPositiveSlots : remainingImprovementSlots;
@@ -245,6 +282,7 @@ export function ReviewPopup({
       case 'intro': return 'A Better Way to Review';
       case 'good': return 'What Stood Out?';
       case 'improvement': return 'What Needs Work?';
+      case 'neutral': return 'How This Place Feels';
       case 'notes': return 'Add a Note';
       case 'confirm': return 'Ready to Submit';
     }
@@ -255,8 +293,9 @@ export function ReviewPopup({
       case 'intro': return true;
       case 'good': return true;
       case 'improvement': return true;
+      case 'neutral': return true;
       case 'notes': return true;
-      case 'confirm': return positiveSignals.size + improvementSignals.size > 0;
+      case 'confirm': return positiveSignals.size + improvementSignals.size + neutralSignals.size > 0;
     }
   };
 
@@ -267,10 +306,11 @@ export function ReviewPopup({
         setStep('good');
         break;
       case 'good': setStep('improvement'); break;
-      case 'improvement': setStep('notes'); break;
+      case 'improvement': setStep('neutral'); break;
+      case 'neutral': setStep('notes'); break;
       case 'notes': setStep('confirm'); break;
       case 'confirm':
-        onSubmit({ positiveSignals, improvementSignals, notePublic, notePrivate });
+        onSubmit({ positiveSignals, improvementSignals, neutralSignals, notePublic, notePrivate });
         break;
     }
   };
@@ -279,7 +319,8 @@ export function ReviewPopup({
     switch (step) {
       case 'good': setStep('intro'); break;
       case 'improvement': setStep('good'); break;
-      case 'notes': setStep('improvement'); break;
+      case 'neutral': setStep('improvement'); break;
+      case 'notes': setStep('neutral'); break;
       case 'confirm': setStep('notes'); break;
     }
   };
@@ -302,19 +343,26 @@ export function ReviewPopup({
   const ActiveIcon = getActiveIcon();
 
   const isPositive = step === 'good';
-  const stamps = isPositive ? positiveStamps : improvementStamps;
-  const signals = isPositive ? positiveSignals : improvementSignals;
-  const remainingSlots = isPositive ? remainingPositiveSlots : remainingImprovementSlots;
-  const maxSlots = isPositive ? 5 : 2;
-  const labels = isPositive ? LEVEL_LABELS : IMPROVEMENT_LABELS;
+  const isNeutralStep = step === 'neutral';
+  const stamps = isNeutralStep ? neutralStamps : isPositive ? positiveStamps : improvementStamps;
+  const signals = isNeutralStep ? neutralSignals : isPositive ? positiveSignals : improvementSignals;
+  const remainingSlots = isNeutralStep ? Infinity : isPositive ? remainingPositiveSlots : remainingImprovementSlots;
+  const maxSlots = isNeutralStep ? stamps.length : isPositive ? 5 : 2;
+  const labels = isNeutralStep ? NEUTRAL_LABELS : isPositive ? LEVEL_LABELS : IMPROVEMENT_LABELS;
   const currentLevel = activeStamp ? (signals.get(activeStamp.id) || 0) : 0;
   const stampCount = signals.size;
 
   const getActiveStyles = () => {
     if (currentLevel === 0) {
+      if (isNeutralStep) {
+        return 'bg-violet-500/10 text-violet-500 border-violet-500/30';
+      }
       return isPositive
         ? 'bg-primary/10 text-primary border-primary/30'
         : 'bg-amber-500/10 text-amber-500 border-amber-500/30';
+    }
+    if (isNeutralStep) {
+      return 'bg-violet-500/30 text-violet-600 border-violet-500 ring-2 ring-violet-500/30 shadow-lg shadow-violet-500/20';
     }
     if (isPositive) {
       switch (currentLevel) {
@@ -333,28 +381,38 @@ export function ReviewPopup({
     }
   };
 
-  const renderDots = (level: number, polarity: 'positive' | 'improvement') => (
-    <div className="flex gap-2 justify-center">
-      {[1, 2, 3].map((dot) => (
-        <div
-          key={dot}
-          className={cn(
-            'w-3 h-3 rounded-full transition-all duration-300',
-            dot <= level
-              ? polarity === 'positive'
-                ? 'bg-primary scale-110'
-                : level === 3 ? 'bg-destructive scale-110' : 'bg-amber-500 scale-110'
-              : 'bg-muted-foreground/25'
-          )}
-        />
-      ))}
-    </div>
-  );
+  const renderDots = (level: number, polarity: 'positive' | 'improvement' | 'neutral') => {
+    if (polarity === 'neutral') {
+      // Single dot for neutral stamps
+      return (
+        <div className="flex gap-2 justify-center">
+          <div className={cn('w-3 h-3 rounded-full transition-all duration-300', level > 0 ? 'bg-violet-500 scale-110' : 'bg-muted-foreground/25')} />
+        </div>
+      );
+    }
+    return (
+      <div className="flex gap-2 justify-center">
+        {[1, 2, 3].map((dot) => (
+          <div
+            key={dot}
+            className={cn(
+              'w-3 h-3 rounded-full transition-all duration-300',
+              dot <= level
+                ? polarity === 'positive'
+                  ? 'bg-primary scale-110'
+                  : level === 3 ? 'bg-destructive scale-110' : 'bg-amber-500 scale-110'
+                : 'bg-muted-foreground/25'
+            )}
+          />
+        ))}
+      </div>
+    );
+  };
 
   const renderSelectedStamps = (
     stampMap: Map<string, number>,
     stampList: StampDefinition[],
-    polarity: 'positive' | 'improvement'
+    polarity: 'positive' | 'improvement' | 'neutral'
   ) => {
     if (stampMap.size === 0) return null;
     return (

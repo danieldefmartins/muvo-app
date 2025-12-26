@@ -1851,7 +1851,7 @@ export type Database = {
       road_condition: "good" | "ok" | "rough" | "muddy" | "unknown"
       road_type: "paved" | "gravel" | "dirt" | "sand" | "mixed" | "unknown"
       safety_level: "safe" | "use_caution" | "avoid_at_night" | "unknown"
-      signal_polarity: "positive" | "improvement"
+      signal_polarity: "positive" | "improvement" | "neutral"
       suggestion_status: "pending" | "approved" | "rejected"
       tag_group:
         | "rv_specific"
@@ -2123,7 +2123,7 @@ export const Constants = {
       road_condition: ["good", "ok", "rough", "muddy", "unknown"],
       road_type: ["paved", "gravel", "dirt", "sand", "mixed", "unknown"],
       safety_level: ["safe", "use_caution", "avoid_at_night", "unknown"],
-      signal_polarity: ["positive", "improvement"],
+      signal_polarity: ["positive", "improvement", "neutral"],
       suggestion_status: ["pending", "approved", "rejected"],
       tag_group: [
         "rv_specific",
