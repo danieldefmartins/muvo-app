@@ -96,9 +96,15 @@ const MapView = () => {
       result = result.filter((p) => p.openYearRound);
     }
 
-    // Apply review-based RE-RANKING (not hiding)
+    // Apply review-based filtering and re-ranking
+    // - Positive/Neutral: boost ranking
+    // - Negative: EXCLUDE places with those signals
     const placeIds = result.map(p => p.id);
     const { rankedIds } = rankPlacesByReviews(placeIds, stampData, reviewFilters);
+    
+    // Filter to only include ranked places (excluded places are removed)
+    const rankedIdSet = new Set(rankedIds);
+    result = result.filter(p => rankedIdSet.has(p.id));
     
     // Create a map for quick lookup of rank position
     const rankMap = new Map(rankedIds.map((id, idx) => [id, idx]));
