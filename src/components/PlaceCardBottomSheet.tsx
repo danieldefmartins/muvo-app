@@ -2,11 +2,11 @@ import { useMemo } from 'react';
 import { Place, PlaceHours } from '@/hooks/usePlaces';
 import { cn } from '@/lib/utils';
 import { ShieldCheck, MapPin, ChevronRight, Clock } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
 import { getCategoryLabel } from '@/lib/categoryColors';
 import { usePlaceStampAggregates } from '@/hooks/useReviews';
-import { useAllStamps, getStampLabel, type StampDefinition } from '@/hooks/useStamps';
 import { hapticLight } from '@/lib/haptics';
+import { MuvoReviewLine } from '@/components/MuvoReviewLine';
+import { MuvoMedalBadge, calculateMedalLevel } from '@/components/MuvoMedalBadge';
 
 interface PlaceCardBottomSheetProps {
   place: Place;
@@ -14,15 +14,6 @@ interface PlaceCardBottomSheetProps {
   isSelected?: boolean;
   onClick: () => void;
   variant?: 'peek' | 'list';
-}
-
-function getStampIcon(stamps: StampDefinition[] | undefined, stampId: string): React.ComponentType<any> {
-  const stamp = stamps?.find(s => s.id === stampId);
-  if (stamp?.icon) {
-    const IconComponent = (LucideIcons as any)[stamp.icon];
-    if (IconComponent) return IconComponent;
-  }
-  return LucideIcons.Sparkles;
 }
 
 // Format hours status for display
@@ -84,40 +75,24 @@ export function PlaceCardBottomSheet({
   variant = 'list'
 }: PlaceCardBottomSheetProps) {
   const { data: aggregates } = usePlaceStampAggregates(place.id);
-  const { data: allStamps } = useAllStamps();
 
-  // Get tap-based review signals with labels
-  const reviewSignals = useMemo(() => {
-    if (!aggregates || aggregates.length === 0) {
-      return { positive: [], improvement: [] };
-    }
-
-    const positive = aggregates
+  // Calculate medal level from aggregates
+  const medalLevel = useMemo(() => {
+    if (!aggregates || aggregates.length === 0) return null;
+    
+    const totalPositive = aggregates
       .filter(a => a.polarity === 'positive')
-      .sort((a, b) => b.total_votes - a.total_votes)
-      .slice(0, 5)
-      .map(a => ({
-        id: a.stamp_id || a.dimension,
-        label: a.stamp_id ? getStampLabel(allStamps, a.stamp_id) : a.dimension,
-        icon: a.stamp_id ? getStampIcon(allStamps, a.stamp_id) : LucideIcons.Sparkles,
-        votes: a.total_votes,
-      }));
-
-    const improvement = aggregates
+      .reduce((sum, a) => sum + a.total_votes, 0);
+    
+    const totalNegative = aggregates
       .filter(a => a.polarity === 'improvement')
-      .sort((a, b) => b.total_votes - a.total_votes)
-      .slice(0, 2)
-      .map(a => ({
-        id: a.stamp_id || a.dimension,
-        label: a.stamp_id ? getStampLabel(allStamps, a.stamp_id) : a.dimension,
-        icon: a.stamp_id ? getStampIcon(allStamps, a.stamp_id) : LucideIcons.AlertTriangle,
-        votes: a.total_votes,
-      }));
+      .reduce((sum, a) => sum + a.total_votes, 0);
+    
+    const reviewCount = aggregates.reduce((sum, a) => sum + a.review_count, 0);
+    
+    return calculateMedalLevel(totalPositive, totalNegative, reviewCount);
+  }, [aggregates]);
 
-    return { positive, improvement };
-  }, [aggregates, allStamps]);
-
-  const hasSignals = reviewSignals.positive.length > 0 || reviewSignals.improvement.length > 0;
   const hoursStatus = getHoursStatus(place);
 
   const handleClick = () => {
@@ -150,63 +125,25 @@ export function PlaceCardBottomSheet({
       />
 
       <div className={cn('pl-4', isPeek ? 'p-4' : 'p-3.5')}>
-        {/* Line 1: Place Name - 18px bold */}
-        <div className="flex items-start gap-2 mb-2 pr-6">
+        {/* Line 1: Place Name - 18px bold + Medal Badge */}
+        <div className="flex items-start gap-2 mb-2 pr-8">
           <h3 
             className="font-bold text-foreground line-clamp-1 flex-1"
             style={{ fontSize: '18px', lineHeight: '22px' }}
           >
             {place.name}
           </h3>
-          {place.isVerified && (
+          {medalLevel && (
+            <MuvoMedalBadge level={medalLevel} size="sm" className="flex-shrink-0" />
+          )}
+          {place.isVerified && !medalLevel && (
             <ShieldCheck className="w-[18px] h-[18px] text-primary flex-shrink-0 mt-0.5" />
           )}
         </div>
 
-        {/* Line 2: MUVO Review Summary - 16px bold, primary color */}
+        {/* Line 2: MUVO Review Summary - [1 Positive] | [1 Neutral] | [1 Negative] */}
         <div className="mb-2.5">
-          {hasSignals ? (
-            <div className="space-y-1.5">
-              {/* What people like */}
-              {reviewSignals.positive.length > 0 && (
-                <div 
-                  className="font-bold text-foreground"
-                  style={{ fontSize: '16px', lineHeight: '20px' }}
-                >
-                  {reviewSignals.positive.slice(0, isPeek ? 5 : 3).map((signal, idx) => (
-                    <span key={signal.id}>
-                      {idx > 0 && <span className="text-muted-foreground/60"> · </span>}
-                      {signal.label}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* What's not great - only on peek/expanded */}
-              {isPeek && reviewSignals.improvement.length > 0 && (
-                <div 
-                  className="font-medium text-muted-foreground"
-                  style={{ fontSize: '14px', lineHeight: '18px' }}
-                >
-                  <span className="text-amber-600 dark:text-amber-400">
-                    {reviewSignals.improvement.map((signal, idx) => (
-                      <span key={signal.id}>
-                        {idx > 0 && ' · '}
-                        {signal.label}
-                      </span>
-                    ))}
-                  </span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <p 
-              className="font-bold text-primary"
-              style={{ fontSize: '16px', lineHeight: '20px' }}
-            >
-              Be the first to tap what this place is like →
-            </p>
-          )}
+          <MuvoReviewLine placeId={place.id} />
         </div>
 
         {/* Line 3: Category + Key Details - 14px medium */}
