@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Place } from '@/hooks/usePlaces';
 import { cn } from '@/lib/utils';
 import { hapticLight } from '@/lib/haptics';
-import { ChevronUp, ChevronRight, MapPin, ShieldCheck } from 'lucide-react';
-import { getCategoryColor, getCategoryLabel } from '@/lib/categoryColors';
+import { ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NavigateButton } from '@/components/NavigateButton';
+import { PlaceCardBottomSheet } from '@/components/PlaceCardBottomSheet';
 
 type SheetState = 'collapsed' | 'peek' | 'expanded';
 
@@ -136,7 +136,7 @@ export function MapPlaceBottomSheet({
   const getSheetHeight = () => {
     switch (sheetState) {
       case 'collapsed': return '52px';
-      case 'peek': return selectedPlace ? '180px' : '200px';
+      case 'peek': return selectedPlace ? '220px' : '200px';
       case 'expanded': return '60vh';
     }
   };
@@ -146,16 +146,16 @@ export function MapPlaceBottomSheet({
   return (
     <div
       ref={sheetRef}
-      className="fixed left-0 right-0 z-[200] bg-card/[0.96] backdrop-blur-xl rounded-t-2xl transition-all duration-300 ease-out"
+      className="fixed left-0 right-0 z-[200] bg-card/[0.97] backdrop-blur-xl rounded-t-3xl transition-all duration-300 ease-out"
       style={{
         bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
         height: getSheetHeight(),
-        boxShadow: '0 -4px 24px -4px rgba(0, 0, 0, 0.15)',
+        boxShadow: '0 -8px 32px -4px rgba(0, 0, 0, 0.12), 0 -2px 8px -2px rgba(0, 0, 0, 0.08)',
       }}
     >
       {/* Drag Handle */}
       <div
-        className="flex flex-col items-center py-2 cursor-grab active:cursor-grabbing touch-none"
+        className="flex flex-col items-center py-3 cursor-grab active:cursor-grabbing touch-none"
         onTouchStart={handleDragStart}
         onTouchMove={handleDragMove}
         onTouchEnd={handleDragEnd}
@@ -164,10 +164,10 @@ export function MapPlaceBottomSheet({
         onMouseUp={handleDragEnd}
         onMouseLeave={handleDragEnd}
       >
-        <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mb-1" />
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="w-12 h-1.5 bg-muted-foreground/20 rounded-full mb-1.5" />
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
           <ChevronUp className={cn(
-            "w-3 h-3 transition-transform",
+            "w-3.5 h-3.5 transition-transform",
             sheetState === 'expanded' && "rotate-180"
           )} />
           <span>{sortedPlaces.length} places nearby</span>
@@ -177,53 +177,25 @@ export function MapPlaceBottomSheet({
       {/* Content */}
       <div 
         ref={contentRef}
-        className="overflow-y-auto px-3 pb-3"
-        style={{ maxHeight: 'calc(100% - 44px)' }}
+        className="overflow-y-auto px-4 pb-4"
+        style={{ maxHeight: 'calc(100% - 52px)' }}
       >
         {/* Selected Place Card (when peek) */}
         {sheetState === 'peek' && selectedPlace && (
-          <div 
-            className="bg-muted/50 rounded-xl p-3 mb-3"
-            onClick={() => handleViewDetails(selectedPlace.id)}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-foreground truncate">
-                    {selectedPlace.name}
-                  </h3>
-                  {selectedPlace.isVerified && (
-                    <ShieldCheck className="w-4 h-4 text-primary flex-shrink-0" />
-                  )}
-                </div>
-                
-                {/* Category label - TEXT FIRST */}
-                <div 
-                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mb-2"
-                  style={{ 
-                    backgroundColor: `${getCategoryColor(selectedPlace.primaryCategory)}20`,
-                    color: getCategoryColor(selectedPlace.primaryCategory),
-                  }}
-                >
-                  {getCategoryLabel(selectedPlace.primaryCategory)}
-                </div>
-                
-                {/* Distance + Price */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{distanceFromCenter(selectedPlace, mapCenter).toFixed(1)} mi</span>
-                  <span>•</span>
-                  <span>{selectedPlace.priceLevel}</span>
-                </div>
-              </div>
-              
-              <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-            </div>
+          <div className="mb-3">
+            <PlaceCardBottomSheet
+              place={selectedPlace}
+              distance={distanceFromCenter(selectedPlace, mapCenter)}
+              isSelected
+              onClick={() => handleViewDetails(selectedPlace.id)}
+              variant="peek"
+            />
             
             {/* Quick actions */}
             <div className="flex gap-2 mt-3">
               <Button 
                 size="sm" 
-                className="flex-1"
+                className="flex-1 h-10"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleViewDetails(selectedPlace.id);
@@ -235,7 +207,7 @@ export function MapPlaceBottomSheet({
                 latitude={selectedPlace.latitude}
                 longitude={selectedPlace.longitude}
                 name={selectedPlace.name}
-                className="flex-1 h-8 text-sm"
+                className="flex-1 h-10"
               />
             </div>
           </div>
@@ -246,55 +218,17 @@ export function MapPlaceBottomSheet({
           <div className="space-y-2">
             {sortedPlaces.map((place) => {
               const isSelected = place.id === selectedPlaceId;
-              const categoryColor = getCategoryColor(place.primaryCategory);
               const distance = distanceFromCenter(place, mapCenter);
 
               return (
-                <div
+                <PlaceCardBottomSheet
                   key={place.id}
+                  place={place}
+                  distance={distance}
+                  isSelected={isSelected}
                   onClick={() => sheetState === 'expanded' ? handleViewDetails(place.id) : handlePlaceClick(place)}
-                  className={cn(
-                    'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors',
-                    isSelected 
-                      ? 'bg-primary/10 ring-1 ring-primary/30' 
-                      : 'bg-muted/30 hover:bg-muted/50'
-                  )}
-                >
-                  {/* Category color indicator */}
-                  <div 
-                    className="w-1.5 h-12 rounded-full flex-shrink-0" 
-                    style={{ backgroundColor: categoryColor }}
-                  />
-                  
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h4 className="font-medium text-sm text-foreground truncate">
-                        {place.name}
-                      </h4>
-                      {place.isVerified && (
-                        <ShieldCheck className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                      )}
-                    </div>
-                    
-                    {/* Category label - ALWAYS TEXT */}
-                    <p className="text-xs text-muted-foreground mb-0.5">
-                      {getCategoryLabel(place.primaryCategory)}
-                    </p>
-                    
-                    {/* Distance + Price */}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-0.5">
-                        <MapPin className="w-3 h-3" />
-                        <span>{distance.toFixed(1)} mi</span>
-                      </div>
-                      <span>•</span>
-                      <span>{place.priceLevel}</span>
-                    </div>
-                  </div>
-                  
-                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                </div>
+                  variant="list"
+                />
               );
             })}
           </div>
@@ -302,7 +236,7 @@ export function MapPlaceBottomSheet({
 
         {/* Collapsed state hint */}
         {sheetState === 'collapsed' && (
-          <div className="text-center text-xs text-muted-foreground py-1">
+          <div className="text-center text-sm text-muted-foreground py-1 font-medium">
             Drag up to see places
           </div>
         )}
