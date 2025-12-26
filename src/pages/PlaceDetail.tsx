@@ -32,10 +32,12 @@ import { CompactReviewStrip } from '@/components/CompactReviewStrip';
 import { ReviewsPreview } from '@/components/ReviewsPreview';
 import { MuvoReviewExpanded } from '@/components/MuvoReviewExpanded';
 import { MuvoReviewHowItWorks } from '@/components/MuvoReviewHowItWorks';
+import { MuvoMedalBadge } from '@/components/MuvoMedalBadge';
 import { PlaceEntrances, extractEntrances, Entrance } from '@/components/PlaceEntrances';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
+import { useMuvoScore, getMedalUnlockText } from '@/hooks/useMuvoScore';
 import { PlaceMiniMap, PlaceMiniMapPlaceholder } from '@/components/PlaceMiniMap';
 import { NavigateButton } from '@/components/NavigateButton';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -50,6 +52,7 @@ const PlaceDetail = () => {
   const { data: place, isLoading, error } = usePlace(id || '');
   const { user, isVerified } = useAuth();
   const { data: mapboxToken } = useMapboxToken();
+  const { data: muvoData } = useMuvoScore(id);
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showLogistics, setShowLogistics] = useState(false);
@@ -116,13 +119,25 @@ const PlaceDetail = () => {
 
       <main className="container px-4 py-6 max-w-lg mx-auto space-y-5">
         
-        {/* 1. Place Name + Price Level */}
+        {/* 1. Place Name + Price Level + Medal */}
         <section className="animate-fade-in">
           <div className="flex items-start justify-between gap-3 mb-2">
-            <h1 className="font-display text-2xl font-bold text-foreground">
-              {place.name}
-            </h1>
-            <PriceIndicator level={place.priceLevel} className="mt-1" />
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <h1 className="font-display text-2xl font-bold text-foreground truncate">
+                {place.name}
+              </h1>
+              {/* Show medal prominently if earned */}
+              {muvoData?.muvo_medal_level && muvoData.muvo_medal_level !== 'none' && (
+                <MuvoMedalBadge 
+                  level={muvoData.muvo_medal_level} 
+                  score={muvoData.muvo_score}
+                  size="lg"
+                  showScore
+                  className="flex-shrink-0"
+                />
+              )}
+            </div>
+            <PriceIndicator level={place.priceLevel} className="mt-1 flex-shrink-0" />
           </div>
 
           {/* Location + Distance */}
@@ -155,6 +170,34 @@ const PlaceDetail = () => {
             </h2>
             <MuvoReviewHowItWorks />
           </div>
+          
+          {/* MUVO Score display - show score if medal earned, otherwise show unlock message */}
+          {muvoData && (
+            <div className="mb-4">
+              {muvoData.muvo_medal_level !== 'none' && muvoData.muvo_score !== null ? (
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <MuvoMedalBadge 
+                    level={muvoData.muvo_medal_level} 
+                    score={muvoData.muvo_score}
+                    size="lg"
+                    showScore
+                  />
+                  <div>
+                    <p className="font-semibold text-foreground">
+                      MUVO Score: {Math.round(muvoData.muvo_score)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Based on {muvoData.qual_taps_total} community taps
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">
+                  {getMedalUnlockText(muvoData.qual_taps_total)}
+                </p>
+              )}
+            </div>
+          )}
           
           {/* MUVO Review Expanded - Top 5 Positive, Top 3 Neutral, Top 2 Negative */}
           <MuvoReviewExpanded placeId={id!} />
