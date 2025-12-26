@@ -75,7 +75,7 @@ const PlaceDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Loading..." showBack />
+        <Header showBack />
         <main className="container px-4 py-6 max-w-lg mx-auto">
           <Skeleton className="h-8 w-3/4 mb-4" />
           <Skeleton className="h-4 w-1/2 mb-6" />
@@ -90,7 +90,7 @@ const PlaceDetail = () => {
   if (error || !place) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Place Not Found" showBack />
+        <Header showBack />
         <main className="container px-4 py-8 max-w-lg mx-auto text-center">
           <p className="text-muted-foreground">This place could not be found.</p>
         </main>
@@ -110,7 +110,7 @@ const PlaceDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title={place.name} showBack />
+      <Header showBack />
 
       <main className="container px-4 py-6 max-w-lg mx-auto space-y-5">
         

@@ -15,7 +15,7 @@ const SavedPlaces = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Saved Places" showBack />
+        <Header showBack />
         <main className="container px-4 py-12 max-w-lg mx-auto text-center">
           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
             <Heart className="w-8 h-8 text-muted-foreground" />
@@ -38,7 +38,7 @@ const SavedPlaces = () => {
   if (!isVerified) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Saved Places" showBack />
+        <Header showBack />
         <main className="container px-4 py-12 max-w-lg mx-auto text-center">
           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
             <Heart className="w-8 h-8 text-muted-foreground" />
@@ -59,7 +59,7 @@ const SavedPlaces = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Saved Places" showBack />
+      <Header showBack />
 
       <main className="container px-4 py-4 max-w-lg mx-auto">
         {/* Results count */}

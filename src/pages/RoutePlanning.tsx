@@ -144,7 +144,7 @@ const RoutePlanning = () => {
         minHeight: '-webkit-fill-available',
       }}
     >
-      <Header title="Route Planning" showBack />
+      <Header showBack />
 
       {/* Full-screen map */}
       <div className="flex-1 relative min-h-0">

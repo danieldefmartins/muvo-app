@@ -104,7 +104,7 @@ const PlacesToStay = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header title="Places to Stay" showBack />
+      <Header showBack />
 
       <main className="flex-1 flex flex-col">
         {/* Filters, Sort, and View Toggle */}

@@ -239,7 +239,7 @@ export default function Auth() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Account" />
+        <Header />
         <main className="container px-4 py-8 max-w-md mx-auto">
           <div className="animate-pulse space-y-4">
             <div className="h-10 bg-muted rounded" />
@@ -255,7 +255,7 @@ export default function Auth() {
   if (mode === 'confirmed') {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Email Verified" />
+        <Header />
         <main className="container px-4 py-8 max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-6 text-center">
             <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
@@ -273,7 +273,7 @@ export default function Auth() {
   if (mode === 'complete-profile' && user) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Complete Your Profile" />
+        <Header />
         <main className="container px-4 py-6 max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-6">
             <h1 className="font-display text-xl font-semibold mb-2">Almost there!</h1>
@@ -404,7 +404,7 @@ export default function Auth() {
   if (mode === 'check-email') {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Check Your Email" showBack />
+        <Header showBack />
         <main className="container px-4 py-8 max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-6 text-center">
             <Mail className="w-16 h-16 text-primary mx-auto mb-4" />
@@ -429,7 +429,7 @@ export default function Auth() {
   if (user && profile && profile.profile_completed) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="My Profile" showBack />
+        <Header showBack />
         <main className="container px-4 py-8 max-w-md mx-auto">
           <UserProfileCard profile={profile} />
           
@@ -476,7 +476,7 @@ export default function Auth() {
   if (mode === 'signin') {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Sign In" showBack />
+        <Header showBack />
         <main className="container px-4 py-8 max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-6">
             <h1 className="font-display text-xl font-semibold mb-6">Welcome back</h1>
@@ -538,7 +538,7 @@ export default function Auth() {
   // Default: Sign up form
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Create Account" showBack />
+      <Header showBack />
       <main className="container px-4 py-8 max-w-md mx-auto">
         <div className="bg-card border border-border rounded-lg p-6">
           <h1 className="font-display text-xl font-semibold mb-2">Get started</h1>

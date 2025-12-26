@@ -144,7 +144,7 @@ export default function UserProfile() {
   if (profileLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Profile" showBack />
+        <Header showBack />
         <main className="container px-4 py-6 max-w-lg mx-auto">
           <div className="space-y-4">
             <Skeleton className="h-32 w-full rounded-lg" />
@@ -159,7 +159,7 @@ export default function UserProfile() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Profile" showBack />
+        <Header showBack />
         <main className="container px-4 py-8 max-w-lg mx-auto text-center">
           <h1 className="text-xl font-semibold mb-2">User not found</h1>
           <p className="text-muted-foreground mb-4">
@@ -175,7 +175,7 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Header title={profile.full_name || profile.username} showBack />
+      <Header showBack />
       
       <main className="container px-4 py-6 max-w-lg mx-auto">
         {/* Profile Header Card */}

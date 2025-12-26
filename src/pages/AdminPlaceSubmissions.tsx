@@ -53,7 +53,7 @@ export default function AdminPlaceSubmissions() {
   if (adminLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Place Submissions" showBack />
+        <Header showBack />
         <main className="container max-w-4xl mx-auto px-4 py-6">
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
@@ -71,7 +71,7 @@ export default function AdminPlaceSubmissions() {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Access Denied" showBack />
+        <Header showBack />
         <main className="container max-w-4xl mx-auto px-4 py-12 text-center">
           <h2 className="text-xl font-semibold mb-2">Admin Access Required</h2>
           <p className="text-muted-foreground">
@@ -216,7 +216,7 @@ export default function AdminPlaceSubmissions() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Place Submissions" showBack />
+      <Header showBack />
       <main className="container max-w-4xl mx-auto px-4 py-6">
         <Tabs defaultValue="pending">
           <TabsList className="mb-4">
