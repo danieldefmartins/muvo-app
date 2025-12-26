@@ -147,10 +147,10 @@ export function MapSearchBar({
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
-      {/* Search input - pill style with frosted glass and MUVO icon */}
+      {/* Search input - pill style with frosted glass and MUVO icon - taller for better touch */}
       <div 
         className={cn(
-          'flex items-center gap-2.5 px-3 py-2.5 bg-card/[0.92] backdrop-blur-xl rounded-2xl transition-all duration-200',
+          'flex items-center gap-3 px-4 h-11 bg-card/[0.92] backdrop-blur-xl rounded-full transition-all duration-200',
           isFocused ? 'ring-2 ring-primary' : '',
         )}
         style={{ 

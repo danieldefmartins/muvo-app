@@ -410,11 +410,8 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
         console.error('Mapbox error:', e);
       });
 
-      // Add navigation controls
-      map.current.addControl(
-        new mapboxgl.NavigationControl({ visualizePitch: false }),
-        'top-right'
-      );
+      // Note: Removed NavigationControl (zoom +/- buttons) to keep map clean
+      // Users can pinch-to-zoom instead
     } catch (error) {
       console.error('Mapbox initialization failed:', error);
     }
