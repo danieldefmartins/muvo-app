@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { Place } from '@/hooks/usePlaces';
+import { Place, PlaceHours } from '@/hooks/usePlaces';
 import { cn } from '@/lib/utils';
-import { ShieldCheck, MapPin, ChevronRight, ThumbsDown } from 'lucide-react';
+import { ShieldCheck, MapPin, ChevronRight, Clock } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { getCategoryLabel } from '@/lib/categoryColors';
 import { usePlaceStampAggregates } from '@/hooks/useReviews';
@@ -23,6 +23,57 @@ function getStampIcon(stamps: StampDefinition[] | undefined, stampId: string): R
     if (IconComponent) return IconComponent;
   }
   return LucideIcons.Sparkles;
+}
+
+// Format hours status for display
+function getHoursStatus(place: Place): { text: string; isOpen: boolean | null } {
+  if (place.is24_7) {
+    return { text: 'Open 24/7', isOpen: true };
+  }
+
+  if (!place.hoursJson) {
+    return { text: 'Hours not provided', isOpen: null };
+  }
+
+  const now = new Date();
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const today = days[now.getDay()];
+  const todayHours = place.hoursJson[today];
+
+  if (!todayHours || todayHours.closed) {
+    return { text: 'Closed today', isOpen: false };
+  }
+
+  const currentTime = now.getHours() * 100 + now.getMinutes();
+  const openTime = parseInt(todayHours.open.replace(':', ''));
+  const closeTime = parseInt(todayHours.close.replace(':', ''));
+
+  if (currentTime >= openTime && currentTime < closeTime) {
+    const closeFormatted = formatTime(todayHours.close);
+    return { text: `Open · Closes ${closeFormatted}`, isOpen: true };
+  } else if (currentTime < openTime) {
+    const openFormatted = formatTime(todayHours.open);
+    return { text: `Closed · Opens ${openFormatted}`, isOpen: false };
+  } else {
+    // Find next opening day
+    for (let i = 1; i <= 7; i++) {
+      const nextDayIndex = (now.getDay() + i) % 7;
+      const nextDay = days[nextDayIndex];
+      const nextHours = place.hoursJson[nextDay];
+      if (nextHours && !nextHours.closed) {
+        const dayName = i === 1 ? 'tomorrow' : nextDay.charAt(0).toUpperCase() + nextDay.slice(1);
+        return { text: `Closed · Opens ${dayName}`, isOpen: false };
+      }
+    }
+    return { text: 'Closed', isOpen: false };
+  }
+}
+
+function formatTime(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
 export function PlaceCardBottomSheet({ 
@@ -67,6 +118,7 @@ export function PlaceCardBottomSheet({
   }, [aggregates, allStamps]);
 
   const hasSignals = reviewSignals.positive.length > 0 || reviewSignals.improvement.length > 0;
+  const hoursStatus = getHoursStatus(place);
 
   const handleClick = () => {
     hapticLight();
@@ -80,130 +132,126 @@ export function PlaceCardBottomSheet({
       onClick={handleClick}
       className={cn(
         'relative overflow-hidden cursor-pointer transition-all duration-200 active:scale-[0.98]',
+        'bg-card rounded-2xl',
         isPeek 
-          ? 'bg-card rounded-2xl shadow-lg border border-border/50'
-          : cn(
-              'rounded-xl',
-              isSelected 
-                ? 'bg-primary/8 ring-1 ring-primary/30' 
-                : 'bg-muted/40 hover:bg-muted/60'
-            )
+          ? 'shadow-lg border border-border/30'
+          : 'shadow-md hover:shadow-lg'
       )}
+      style={{
+        boxShadow: isPeek 
+          ? '0 8px 24px -6px rgba(0, 0, 0, 0.12), 0 2px 8px -2px rgba(0, 0, 0, 0.06)'
+          : '0 4px 16px -4px rgba(0, 0, 0, 0.1), 0 2px 6px -2px rgba(0, 0, 0, 0.04)'
+      }}
     >
-      {/* Left accent bar - decorative only */}
+      {/* Left accent bar - refined */}
       <div 
-        className={cn(
-          'absolute left-0 top-2 bottom-2 w-1 rounded-full',
-          isPeek ? 'bg-gradient-to-b from-primary/60 to-primary/20' : 'bg-primary/30'
-        )}
+        className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-2xl"
+        style={{ borderRadius: '16px 0 0 16px' }}
       />
 
-      <div className={cn('pl-4', isPeek ? 'p-4' : 'p-3')}>
-        {/* Row 1: Place Name - PRIMARY */}
-        <div className="flex items-start gap-2 mb-1">
-          <h3 className={cn(
-            'font-semibold text-foreground line-clamp-1 flex-1',
-            isPeek ? 'text-lg' : 'text-base'
-          )}>
+      <div className={cn('pl-4', isPeek ? 'p-4' : 'p-3.5')}>
+        {/* Line 1: Place Name - 18px bold */}
+        <div className="flex items-start gap-2 mb-2 pr-6">
+          <h3 
+            className="font-bold text-foreground line-clamp-1 flex-1"
+            style={{ fontSize: '18px', lineHeight: '22px' }}
+          >
             {place.name}
           </h3>
           {place.isVerified && (
-            <ShieldCheck className={cn(
-              'text-primary flex-shrink-0',
-              isPeek ? 'w-5 h-5' : 'w-4 h-4'
-            )} />
+            <ShieldCheck className="w-[18px] h-[18px] text-primary flex-shrink-0 mt-0.5" />
           )}
         </div>
 
-        {/* Row 2: TAP-BASED REVIEW SUMMARY - SECOND MAIN LINE */}
-        {hasSignals && (
-          <div className="mb-2 space-y-1">
-            {/* Positive signals */}
-            {reviewSignals.positive.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {reviewSignals.positive.slice(0, isPeek ? 5 : 3).map((signal) => {
-                  const Icon = signal.icon;
-                  return (
-                    <span 
-                      key={signal.id}
-                      className={cn(
-                        'inline-flex items-center gap-1 px-2 py-0.5 rounded-full',
-                        'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-                        isPeek ? 'text-xs' : 'text-[11px]'
-                      )}
-                    >
-                      <Icon className="w-3 h-3" />
+        {/* Line 2: MUVO Review Summary - 16px bold, primary color */}
+        <div className="mb-2.5">
+          {hasSignals ? (
+            <div className="space-y-1.5">
+              {/* What people like */}
+              {reviewSignals.positive.length > 0 && (
+                <div 
+                  className="font-bold text-foreground"
+                  style={{ fontSize: '16px', lineHeight: '20px' }}
+                >
+                  {reviewSignals.positive.slice(0, isPeek ? 5 : 3).map((signal, idx) => (
+                    <span key={signal.id}>
+                      {idx > 0 && <span className="text-muted-foreground/60"> · </span>}
                       {signal.label}
                     </span>
-                  );
-                })}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {/* Improvement signals - only show on peek/expanded */}
-            {isPeek && reviewSignals.improvement.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {reviewSignals.improvement.map((signal) => {
-                  const Icon = signal.icon;
-                  return (
-                    <span 
-                      key={signal.id}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs"
-                    >
-                      <Icon className="w-3 h-3" />
-                      {signal.label}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+              {/* What's not great - only on peek/expanded */}
+              {isPeek && reviewSignals.improvement.length > 0 && (
+                <div 
+                  className="font-medium text-muted-foreground"
+                  style={{ fontSize: '14px', lineHeight: '18px' }}
+                >
+                  <span className="text-amber-600 dark:text-amber-400">
+                    {reviewSignals.improvement.map((signal, idx) => (
+                      <span key={signal.id}>
+                        {idx > 0 && ' · '}
+                        {signal.label}
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p 
+              className="font-bold text-primary"
+              style={{ fontSize: '16px', lineHeight: '20px' }}
+            >
+              Be the first to tap what this place is like →
+            </p>
+          )}
+        </div>
 
-        {/* No signals placeholder */}
-        {!hasSignals && (
-          <p className={cn(
-            'text-muted-foreground italic mb-2',
-            isPeek ? 'text-sm' : 'text-xs'
-          )}>
-            No reviews yet — be the first!
-          </p>
-        )}
-
-        {/* Row 3: Category Label */}
-        <p className={cn(
-          'text-muted-foreground mb-1.5',
-          isPeek ? 'text-sm' : 'text-xs'
-        )}>
+        {/* Line 3: Category + Key Details - 14px medium */}
+        <p 
+          className="text-muted-foreground mb-2"
+          style={{ fontSize: '14px', lineHeight: '18px', fontWeight: 500 }}
+        >
           {getCategoryLabel(place.primaryCategory)}
         </p>
 
-        {/* Row 4: Meta Row - Distance + Price + Verified */}
-        <div className={cn(
-          'flex items-center gap-2 text-muted-foreground',
-          isPeek ? 'text-sm' : 'text-xs'
-        )}>
+        {/* Line 4: Meta Row - 13px, icons + text */}
+        <div 
+          className="flex items-center flex-wrap gap-x-2 gap-y-1 text-muted-foreground"
+          style={{ fontSize: '13px', lineHeight: '16px', fontWeight: 500 }}
+        >
           <div className="flex items-center gap-1">
             <MapPin className="w-3 h-3" />
             <span>{distance.toFixed(1)} mi</span>
           </div>
-          <span className="text-muted-foreground/40">•</span>
-          <span className="font-medium">{place.priceLevel}</span>
+          <span className="text-muted-foreground/40">·</span>
+          <span className="font-semibold">{place.priceLevel}</span>
           {place.isVerified && (
             <>
-              <span className="text-muted-foreground/40">•</span>
-              <span className="text-primary font-medium">Verified</span>
+              <span className="text-muted-foreground/40">·</span>
+              <span className="text-primary font-semibold">Verified</span>
             </>
           )}
+          <span className="text-muted-foreground/40">·</span>
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            <span className={cn(
+              hoursStatus.isOpen === true && 'text-emerald-600 dark:text-emerald-400',
+              hoursStatus.isOpen === false && 'text-amber-600 dark:text-amber-400',
+              hoursStatus.isOpen === null && 'text-muted-foreground'
+            )}>
+              {hoursStatus.text}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Subtle chevron - appears on right */}
-      <ChevronRight className={cn(
-        'absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/30 transition-colors',
-        isSelected && 'text-primary/50',
-        isPeek ? 'w-5 h-5' : 'w-4 h-4'
-      )} />
+      {/* Chevron - right side, consistent */}
+      <ChevronRight 
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 w-[18px] h-[18px]" 
+      />
     </div>
   );
 }

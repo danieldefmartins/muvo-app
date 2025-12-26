@@ -146,11 +146,11 @@ export function MapPlaceBottomSheet({
   return (
     <div
       ref={sheetRef}
-      className="fixed left-0 right-0 z-[200] bg-card/[0.97] backdrop-blur-xl rounded-t-3xl transition-all duration-300 ease-out"
+      className="fixed left-0 right-0 z-[500] bg-card rounded-t-3xl transition-all duration-300 ease-out"
       style={{
         bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
         height: getSheetHeight(),
-        boxShadow: '0 -8px 32px -4px rgba(0, 0, 0, 0.12), 0 -2px 8px -2px rgba(0, 0, 0, 0.08)',
+        boxShadow: '0 -12px 40px -4px rgba(0, 0, 0, 0.18), 0 -4px 16px -4px rgba(0, 0, 0, 0.1)',
       }}
     >
       {/* Drag Handle */}
@@ -215,7 +215,7 @@ export function MapPlaceBottomSheet({
 
         {/* Places List */}
         {(sheetState === 'expanded' || (sheetState === 'peek' && !selectedPlace)) && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {sortedPlaces.map((place) => {
               const isSelected = place.id === selectedPlaceId;
               const distance = distanceFromCenter(place, mapCenter);
