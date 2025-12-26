@@ -22,6 +22,7 @@ import MapView from "./pages/MapView";
 import RoutePlanning from "./pages/RoutePlanning";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
+import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/admin/import" element={<ImportPlaces />} />
             <Route path="/admin/data-enrichment" element={<AdminDataEnrichment />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/profile/:username" element={<UserProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

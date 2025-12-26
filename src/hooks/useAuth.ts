@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+export type TravelerType = 'rv_full_timer' | 'weekend_rver' | 'van_life' | 'tent_camper' | 'just_exploring';
+export type ContributorLevel = 'new_contributor' | 'active_contributor' | 'verified_contributor' | 'trusted_explorer';
+
 export interface Profile {
   id: string;
   email: string | null;
@@ -17,6 +20,14 @@ export interface Profile {
   total_reviews_count: number;
   trust_score: number;
   reviewer_medal: 'none' | 'bronze' | 'silver' | 'gold';
+  // New identity fields
+  username: string | null;
+  full_name: string | null;
+  traveler_type: TravelerType | null;
+  home_base: string | null;
+  contributor_level: ContributorLevel;
+  profile_completed: boolean;
+  created_at: string;
 }
 
 export function useAuth() {
@@ -66,6 +77,45 @@ export function useAuth() {
     if (!error && data) {
       setProfile(data as Profile);
     }
+  }
+
+  // Check if username is available
+  async function checkUsernameAvailable(username: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username.toLowerCase())
+      .maybeSingle();
+    
+    return !error && !data;
+  }
+
+  // Complete profile after sign up
+  async function completeProfile(data: {
+    username: string;
+    full_name: string;
+    traveler_type?: TravelerType | null;
+    home_base?: string | null;
+  }) {
+    if (!user) return { error: new Error('Not authenticated') };
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        username: data.username.toLowerCase(),
+        full_name: data.full_name,
+        display_name: data.full_name, // Set display_name to full_name for backwards compatibility
+        traveler_type: data.traveler_type || null,
+        home_base: data.home_base || null,
+        profile_completed: true,
+      })
+      .eq('id', user.id);
+
+    if (!error) {
+      await fetchProfile(user.id);
+    }
+
+    return { error };
   }
 
   // Sign in / Sign up with phone (sends OTP)
@@ -191,13 +241,20 @@ export function useAuth() {
       profile?.is_verified
   );
 
+  // Check if profile needs to be completed
+  const needsProfileCompletion = Boolean(user && profile && !profile.profile_completed);
+
   return {
     user,
     session,
     profile,
     loading,
     isVerified,
-    // New phone-first methods
+    needsProfileCompletion,
+    // New methods
+    checkUsernameAvailable,
+    completeProfile,
+    // Phone-first methods
     signInWithPhone,
     verifyPhoneOtp,
     signInWithEmail,

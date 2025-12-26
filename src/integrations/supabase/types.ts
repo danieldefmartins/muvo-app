@@ -1261,68 +1261,92 @@ export type Database = {
         Row: {
           contribution_count: number
           contribution_score: number
+          contributor_level:
+            | Database["public"]["Enums"]["contributor_level"]
+            | null
           created_at: string
           display_name: string | null
           email: string | null
           email_verified: boolean
           email_verified_at: string | null
+          full_name: string | null
+          home_base: string | null
           id: string
           is_pro: boolean
           is_verified: boolean
           phone_number: string | null
           phone_verified: boolean
           phone_verified_at: string | null
+          profile_completed: boolean | null
           reviewer_medal: Database["public"]["Enums"]["reviewer_medal"]
           reviewer_medal_awarded_at: string | null
           total_reviews_count: number
+          traveler_type: Database["public"]["Enums"]["traveler_type"] | null
           trust_score: number
           trusted_contributor: boolean
           trusted_since: string | null
           updated_at: string
+          username: string | null
         }
         Insert: {
           contribution_count?: number
           contribution_score?: number
+          contributor_level?:
+            | Database["public"]["Enums"]["contributor_level"]
+            | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           email_verified?: boolean
           email_verified_at?: string | null
+          full_name?: string | null
+          home_base?: string | null
           id: string
           is_pro?: boolean
           is_verified?: boolean
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
+          profile_completed?: boolean | null
           reviewer_medal?: Database["public"]["Enums"]["reviewer_medal"]
           reviewer_medal_awarded_at?: string | null
           total_reviews_count?: number
+          traveler_type?: Database["public"]["Enums"]["traveler_type"] | null
           trust_score?: number
           trusted_contributor?: boolean
           trusted_since?: string | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
           contribution_count?: number
           contribution_score?: number
+          contributor_level?:
+            | Database["public"]["Enums"]["contributor_level"]
+            | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           email_verified?: boolean
           email_verified_at?: string | null
+          full_name?: string | null
+          home_base?: string | null
           id?: string
           is_pro?: boolean
           is_verified?: boolean
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
+          profile_completed?: boolean | null
           reviewer_medal?: Database["public"]["Enums"]["reviewer_medal"]
           reviewer_medal_awarded_at?: string | null
           total_reviews_count?: number
+          traveler_type?: Database["public"]["Enums"]["traveler_type"] | null
           trust_score?: number
           trusted_contributor?: boolean
           trusted_since?: string | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -1571,6 +1595,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      calculate_contributor_level: {
+        Args: { user_id_param: string }
+        Returns: Database["public"]["Enums"]["contributor_level"]
+      }
       calculate_reviewer_medal: {
         Args: { user_id_param: string }
         Returns: Database["public"]["Enums"]["reviewer_medal"]
@@ -1664,6 +1692,8 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: undefined
       }
+      validate_full_name: { Args: { name: string }; Returns: boolean }
+      validate_username: { Args: { username: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
@@ -1679,6 +1709,11 @@ export type Database = {
         | "retail"
         | "community_other"
       checkin_type: "stayed_here" | "used_dump_water" | "passed_by"
+      contributor_level:
+        | "new_contributor"
+        | "active_contributor"
+        | "verified_contributor"
+        | "trusted_explorer"
       electric_type: "none" | "15a" | "30a" | "50a" | "mix" | "unknown"
       external_source:
         | "google_maps"
@@ -1783,6 +1818,12 @@ export type Database = {
         | "environment"
         | "rules_policies"
         | "cost"
+      traveler_type:
+        | "rv_full_timer"
+        | "weekend_rver"
+        | "van_life"
+        | "tent_camper"
+        | "just_exploring"
       water_type_enum: "potable" | "non_potable" | "unknown"
       yes_no_restricted: "yes" | "no" | "restricted" | "unknown"
       yes_no_seasonal: "yes" | "no" | "seasonal" | "unknown"
@@ -1929,6 +1970,12 @@ export const Constants = {
         "community_other",
       ],
       checkin_type: ["stayed_here", "used_dump_water", "passed_by"],
+      contributor_level: [
+        "new_contributor",
+        "active_contributor",
+        "verified_contributor",
+        "trusted_explorer",
+      ],
       electric_type: ["none", "15a", "30a", "50a", "mix", "unknown"],
       external_source: [
         "google_maps",
@@ -2043,6 +2090,13 @@ export const Constants = {
         "environment",
         "rules_policies",
         "cost",
+      ],
+      traveler_type: [
+        "rv_full_timer",
+        "weekend_rver",
+        "van_life",
+        "tent_camper",
+        "just_exploring",
       ],
       water_type_enum: ["potable", "non_potable", "unknown"],
       yes_no_restricted: ["yes", "no", "restricted", "unknown"],
