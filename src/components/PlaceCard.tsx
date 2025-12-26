@@ -80,7 +80,7 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
 
           {/* Top-left: Category + Weather */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-background/95 text-foreground backdrop-blur-sm shadow-sm">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-chip bg-background/95 text-foreground backdrop-blur-sm shadow-sm">
               {place.primaryCategory}
             </span>
             <WeatherBadge 
@@ -99,7 +99,7 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
           {/* Bottom content overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-4">
             {/* Place name */}
-            <h3 className="font-display font-semibold text-white text-lg leading-tight mb-1 drop-shadow-md">
+            <h3 className="font-display font-semibold text-white text-[1.125rem] leading-tight mb-1.5 drop-shadow-md">
               {place.name}
             </h3>
 
@@ -115,8 +115,8 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
 
             {/* Distance and price */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-white/90 text-sm">
-                <MapPin className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1.5 text-white/90 text-secondary">
+                <MapPin className="w-4 h-4" />
                 <span>{place.distance} mi</span>
                 <span className="text-white/60 mx-1">•</span>
                 <span className="font-medium">{place.priceLevel}</span>

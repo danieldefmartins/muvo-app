@@ -86,28 +86,28 @@ export function MapPlaceCards({ places, selectedPlaceId, onPlaceSelect, mapCente
                 : '0 4px 16px -4px rgba(0, 0, 0, 0.15)',
             }}
           >
-            <div className="flex gap-3 p-3">
+            <div className="flex gap-3 p-4">
               {/* Category color stripe */}
               <div 
-                className="w-1 rounded-full flex-shrink-0" 
+                className="w-1.5 rounded-full flex-shrink-0" 
                 style={{ backgroundColor: categoryColor }}
               />
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 {/* Name row */}
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-semibold text-foreground text-sm line-clamp-1">
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <h3 className="text-place-name text-foreground line-clamp-1">
                     {place.name}
                   </h3>
                   {place.isVerified && (
-                    <ShieldCheck className="w-4 h-4 text-primary flex-shrink-0" />
+                    <ShieldCheck className="w-5 h-5 text-primary flex-shrink-0" />
                   )}
                 </div>
 
                 {/* Category badge */}
                 <div 
-                  className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium mb-1.5"
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-chip mb-2"
                   style={{ 
                     backgroundColor: `${categoryColor}20`,
                     color: categoryColor,
@@ -117,9 +117,9 @@ export function MapPlaceCards({ places, selectedPlaceId, onPlaceSelect, mapCente
                 </div>
 
                 {/* Distance + Price */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-secondary text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
+                    <MapPin className="w-4 h-4" />
                     <span>{distance.toFixed(1)} mi</span>
                   </div>
                   <span>•</span>
@@ -128,7 +128,7 @@ export function MapPlaceCards({ places, selectedPlaceId, onPlaceSelect, mapCente
               </div>
 
               {/* Arrow */}
-              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 self-center" />
+              <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 self-center" />
             </div>
           </div>
         );

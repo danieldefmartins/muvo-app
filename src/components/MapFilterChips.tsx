@@ -146,19 +146,19 @@ export function MapFilterChips({ filters, onFiltersChange, filteredCount }: MapF
             <SheetTrigger asChild>
               <button
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium',
+                  'flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-chip',
                   'bg-card/[0.88] backdrop-blur-xl transition-all duration-200',
                   'active:scale-[0.95] touch-manipulation',
                   activeFilterCount > 0
-                    ? 'ring-2 ring-primary text-primary'
-                    : 'text-foreground'
+                    ? 'ring-2 ring-primary text-primary font-semibold'
+                    : 'text-foreground font-medium'
                 )}
                 style={{ boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.12)' }}
               >
-                <Filter className="w-3.5 h-3.5" />
+                <Filter className="w-4 h-4" />
                 <span>Filters</span>
                 {activeFilterCount > 0 && (
-                  <span className="ml-0.5 w-5 h-5 flex items-center justify-center bg-primary text-primary-foreground rounded-full text-[10px] font-bold">
+                  <span className="ml-0.5 w-5 h-5 flex items-center justify-center bg-primary text-primary-foreground rounded-full text-chip font-bold">
                     {activeFilterCount}
                   </span>
                 )}
@@ -303,16 +303,16 @@ export function MapFilterChips({ filters, onFiltersChange, filteredCount }: MapF
                   onFiltersChange(chip.toggle(filters));
                 }}
                 className={cn(
-                  'flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium',
+                  'flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-chip',
                   'bg-card/[0.88] backdrop-blur-xl transition-all duration-200',
                   'active:scale-[0.95] touch-manipulation whitespace-nowrap',
                   isActive
-                    ? 'ring-2 ring-primary text-primary'
-                    : 'text-foreground'
+                    ? 'ring-2 ring-primary text-primary font-semibold'
+                    : 'text-foreground font-medium'
                 )}
                 style={{ boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.12)' }}
               >
-                <span className="text-sm leading-none">{chip.icon}</span>
+                <span className="text-base leading-none">{chip.icon}</span>
                 <span>{chip.label}</span>
               </button>
             );

@@ -17,6 +17,15 @@ export default {
         sans: ['DM Sans', 'sans-serif'],
         display: ['Fraunces', 'serif'],
       },
+      fontSize: {
+        // MUVO Font Scale (Google Maps Readability)
+        'page-title': ['var(--text-page-title)', { lineHeight: 'var(--leading-tight)', fontWeight: 'var(--font-semibold)' }],
+        'place-name': ['var(--text-place-name)', { lineHeight: 'var(--leading-tight)', fontWeight: 'var(--font-semibold)' }],
+        'input': ['var(--text-input)', { lineHeight: 'var(--leading-normal)', fontWeight: 'var(--font-normal)' }],
+        'secondary': ['var(--text-secondary)', { lineHeight: 'var(--leading-normal)', fontWeight: 'var(--font-normal)' }],
+        'chip': ['var(--text-chip)', { lineHeight: 'var(--leading-normal)', fontWeight: 'var(--font-medium)' }],
+        'min': ['var(--text-min)', { lineHeight: 'var(--leading-normal)', fontWeight: 'var(--font-normal)' }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
