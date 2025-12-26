@@ -20,13 +20,16 @@ export interface Profile {
   total_reviews_count: number;
   trust_score: number;
   reviewer_medal: 'none' | 'bronze' | 'silver' | 'gold';
-  // New identity fields
+  // Identity fields
   username: string | null;
   full_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   traveler_type: TravelerType | null;
   home_base: string | null;
   contributor_level: ContributorLevel;
   profile_completed: boolean;
+  terms_accepted_at: string | null;
   created_at: string;
 }
 
@@ -90,10 +93,70 @@ export function useAuth() {
     return !error && !data;
   }
 
-  // Complete profile after sign up
-  async function completeProfile(data: {
+  // Sign up with all required fields
+  async function signUp(data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
     username: string;
-    full_name: string;
+  }) {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { data: authData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          username: data.username.toLowerCase(),
+        }
+      }
+    });
+
+    // If signup successful, update profile with all the data
+    if (!error && authData.user) {
+      const fullName = `${data.firstName} ${data.lastName}`;
+      await supabase
+        .from('profiles')
+        .update({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          full_name: fullName,
+          display_name: fullName,
+          username: data.username.toLowerCase(),
+          email: data.email,
+          terms_accepted_at: new Date().toISOString(),
+          profile_completed: true,
+        })
+        .eq('id', authData.user.id);
+    }
+
+    return { data: authData, error };
+  }
+
+  // Accept terms (for existing users who haven't accepted yet)
+  async function acceptTerms() {
+    if (!user) return { error: new Error('Not authenticated') };
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        terms_accepted_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+
+    if (!error) {
+      await fetchProfile(user.id);
+    }
+
+    return { error };
+  }
+
+  // Complete optional profile info (traveler type, home base)
+  async function completeProfile(data: {
     traveler_type?: TravelerType | null;
     home_base?: string | null;
   }) {
@@ -102,12 +165,8 @@ export function useAuth() {
     const { error } = await supabase
       .from('profiles')
       .update({
-        username: data.username.toLowerCase(),
-        full_name: data.full_name,
-        display_name: data.full_name, // Set display_name to full_name for backwards compatibility
         traveler_type: data.traveler_type || null,
         home_base: data.home_base || null,
-        profile_completed: true,
       })
       .eq('id', user.id);
 
@@ -190,22 +249,7 @@ export function useAuth() {
     return { error };
   }
 
-  // Legacy methods for backwards compatibility
-  async function signUp(email: string, password: string, phone?: string) {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      phone,
-      options: {
-        emailRedirectTo: redirectUrl,
-      }
-    });
-
-    return { data, error };
-  }
-
+  // Legacy signIn method
   async function signIn(email: string, password: string) {
     return signInWithEmail(email, password);
   }
@@ -241,8 +285,15 @@ export function useAuth() {
       profile?.is_verified
   );
 
-  // Check if profile needs to be completed
-  const needsProfileCompletion = Boolean(user && profile && !profile.profile_completed);
+  // Check if profile is complete (has required fields)
+  const needsProfileCompletion = Boolean(
+    user && profile && !profile.profile_completed
+  );
+
+  // Check if user needs to accept terms (existing users who haven't accepted)
+  const needsTermsAcceptance = Boolean(
+    user && profile && profile.profile_completed && !profile.terms_accepted_at
+  );
 
   return {
     user,
@@ -251,15 +302,17 @@ export function useAuth() {
     loading,
     isVerified,
     needsProfileCompletion,
-    // New methods
+    needsTermsAcceptance,
+    // Core methods
     checkUsernameAvailable,
     completeProfile,
-    // Phone-first methods
+    acceptTerms,
+    // Phone methods
     signInWithPhone,
     verifyPhoneOtp,
     signInWithEmail,
     updateEmailPassword,
-    // Legacy methods
+    // Auth methods
     signUp,
     signIn,
     signOut,

@@ -1269,17 +1269,20 @@ export type Database = {
           email: string | null
           email_verified: boolean
           email_verified_at: string | null
+          first_name: string | null
           full_name: string | null
           home_base: string | null
           id: string
           is_pro: boolean
           is_verified: boolean
+          last_name: string | null
           phone_number: string | null
           phone_verified: boolean
           phone_verified_at: string | null
           profile_completed: boolean | null
           reviewer_medal: Database["public"]["Enums"]["reviewer_medal"]
           reviewer_medal_awarded_at: string | null
+          terms_accepted_at: string | null
           total_reviews_count: number
           traveler_type: Database["public"]["Enums"]["traveler_type"] | null
           trust_score: number
@@ -1299,17 +1302,20 @@ export type Database = {
           email?: string | null
           email_verified?: boolean
           email_verified_at?: string | null
+          first_name?: string | null
           full_name?: string | null
           home_base?: string | null
           id: string
           is_pro?: boolean
           is_verified?: boolean
+          last_name?: string | null
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
           profile_completed?: boolean | null
           reviewer_medal?: Database["public"]["Enums"]["reviewer_medal"]
           reviewer_medal_awarded_at?: string | null
+          terms_accepted_at?: string | null
           total_reviews_count?: number
           traveler_type?: Database["public"]["Enums"]["traveler_type"] | null
           trust_score?: number
@@ -1329,17 +1335,20 @@ export type Database = {
           email?: string | null
           email_verified?: boolean
           email_verified_at?: string | null
+          first_name?: string | null
           full_name?: string | null
           home_base?: string | null
           id?: string
           is_pro?: boolean
           is_verified?: boolean
+          last_name?: string | null
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
           profile_completed?: boolean | null
           reviewer_medal?: Database["public"]["Enums"]["reviewer_medal"]
           reviewer_medal_awarded_at?: string | null
+          terms_accepted_at?: string | null
           total_reviews_count?: number
           traveler_type?: Database["public"]["Enums"]["traveler_type"] | null
           trust_score?: number
