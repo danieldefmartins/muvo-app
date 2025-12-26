@@ -196,8 +196,8 @@ const MapView = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 The map couldn't be loaded. You can still browse places in list view.
               </p>
-              <Button asChild>
-                <Link to="/places">View as List</Link>
+              <Button onClick={() => navigate('/places')}>
+                View as List
               </Button>
             </div>
           </div>
@@ -322,19 +322,14 @@ const MapView = () => {
         )}
       </Button>
 
-      {/* Floating Place Cards - horizontal scroll */}
+      {/* Bottom Sheet Place Cards */}
       {mapboxToken && !isLoading && !hasError && filteredPlaces.length > 0 && (
-        <div 
-          className="absolute left-0 right-0 z-[35]"
-          style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}
-        >
-          <MapPlaceCards
-            places={filteredPlaces}
-            selectedPlaceId={selectedPlaceId}
-            onPlaceSelect={handleMapPlaceSelect}
-            mapCenter={mapCenter}
-          />
-        </div>
+        <MapPlaceBottomSheet
+          places={filteredPlaces}
+          selectedPlaceId={selectedPlaceId}
+          onPlaceSelect={handleMapPlaceSelect}
+          mapCenter={mapCenter}
+        />
       )}
 
       {/* Add Place Wizard */}
