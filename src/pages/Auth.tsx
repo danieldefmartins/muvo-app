@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, ArrowRight, CheckCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, CheckCircle, User, MapPin, Compass, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, TravelerType } from '@/hooks/useAuth';
 import { Header } from '@/components/Header';
 import { UserProfileCard } from '@/components/UserProfileCard';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,10 +24,34 @@ const signInEmailSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+const profileCompletionSchema = z.object({
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be 30 characters or less')
+    .regex(/^[a-z0-9]+$/, 'Only lowercase letters and numbers allowed'),
+  fullName: z
+    .string()
+    .min(3, 'Please enter your full name')
+    .max(100, 'Name is too long')
+    .regex(/^[A-Za-z'-]+(\s+[A-Za-z'-]+)+$/, 'Please enter first and last name (letters only)'),
+  travelerType: z.string().optional(),
+  homeBase: z.string().max(100, 'Home base is too long').optional(),
+});
+
 type EmailPasswordForm = z.infer<typeof emailPasswordSchema>;
 type SignInEmailForm = z.infer<typeof signInEmailSchema>;
+type ProfileCompletionForm = z.infer<typeof profileCompletionSchema>;
 
-type AuthMode = 'signup' | 'signin' | 'check-email' | 'confirmed';
+type AuthMode = 'signup' | 'signin' | 'check-email' | 'confirmed' | 'complete-profile';
+
+const TRAVELER_TYPES: { value: TravelerType; label: string; icon: string }[] = [
+  { value: 'rv_full_timer', label: 'RV Full-Timer', icon: '🚐' },
+  { value: 'weekend_rver', label: 'Weekend RVer', icon: '🏕️' },
+  { value: 'van_life', label: 'Van Life', icon: '🚌' },
+  { value: 'tent_camper', label: 'Tent Camper', icon: '⛺' },
+  { value: 'just_exploring', label: 'Just Exploring', icon: '🧭' },
+];
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -37,15 +61,21 @@ export default function Auth() {
     user, 
     profile, 
     loading, 
+    needsProfileCompletion,
     signInWithEmail,
     signUp,
     signOut,
+    checkUsernameAvailable,
+    completeProfile,
     refreshProfile,
   } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>('signup');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signupEmail, setSignupEmail] = useState('');
+  const [selectedTravelerType, setSelectedTravelerType] = useState<TravelerType | null>(null);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const signUpForm = useForm<EmailPasswordForm>({
     resolver: zodResolver(emailPasswordSchema),
@@ -57,6 +87,28 @@ export default function Auth() {
     defaultValues: { email: '', password: '' },
   });
 
+  const profileForm = useForm<ProfileCompletionForm>({
+    resolver: zodResolver(profileCompletionSchema),
+    defaultValues: { username: '', fullName: '', travelerType: '', homeBase: '' },
+  });
+
+  // Watch username for availability check
+  const watchedUsername = profileForm.watch('username');
+
+  useEffect(() => {
+    if (watchedUsername && watchedUsername.length >= 3) {
+      const timer = setTimeout(async () => {
+        setCheckingUsername(true);
+        const available = await checkUsernameAvailable(watchedUsername);
+        setUsernameAvailable(available);
+        setCheckingUsername(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setUsernameAvailable(null);
+    }
+  }, [watchedUsername, checkUsernameAvailable]);
+
   // Check URL params for mode and handle email confirmation
   useEffect(() => {
     const urlMode = searchParams.get('mode');
@@ -64,14 +116,13 @@ export default function Auth() {
       setMode('signin');
     }
     
-    // Handle email confirmation callback - when user clicks the link in their email
+    // Handle email confirmation callback
     const handleEmailConfirmation = async () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const type = hashParams.get('type');
       
       if (type === 'signup' && accessToken) {
-        // User just confirmed their email - update their profile
         const { data: { user: confirmedUser } } = await supabase.auth.getUser();
         if (confirmedUser) {
           await supabase
@@ -89,22 +140,25 @@ export default function Auth() {
             description: 'Your account is now fully verified.',
           });
           
-          // Clear the hash and redirect after a moment
           window.history.replaceState(null, '', window.location.pathname);
-          setTimeout(() => navigate('/'), 2000);
+          
+          // Check if profile needs completion
+          setTimeout(async () => {
+            await refreshProfile();
+          }, 500);
         }
       }
     };
     
     handleEmailConfirmation();
-  }, [searchParams, toast, navigate]);
+  }, [searchParams, toast, refreshProfile]);
 
-  // Redirect if user is logged in and verified
+  // Switch to profile completion mode if needed
   useEffect(() => {
-    if (!loading && user && profile?.is_verified) {
-      // User is fully verified, can redirect
+    if (!loading && user && profile && needsProfileCompletion) {
+      setMode('complete-profile');
     }
-  }, [user, profile, loading]);
+  }, [loading, user, profile, needsProfileCompletion]);
 
   // Sign up with email
   async function handleSignUp(data: EmailPasswordForm) {
@@ -121,7 +175,6 @@ export default function Auth() {
       return;
     }
 
-    // Show check-email screen
     setSignupEmail(data.email);
     setMode('check-email');
   }
@@ -143,6 +196,42 @@ export default function Auth() {
 
     toast({
       title: 'Welcome back!',
+    });
+    navigate('/');
+  }
+
+  // Complete profile
+  async function handleProfileCompletion(data: ProfileCompletionForm) {
+    if (!usernameAvailable) {
+      toast({
+        title: 'Username unavailable',
+        description: 'Please choose a different username.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    const { error } = await completeProfile({
+      username: data.username,
+      full_name: data.fullName,
+      traveler_type: selectedTravelerType,
+      home_base: data.homeBase || null,
+    });
+    setIsSubmitting(false);
+
+    if (error) {
+      toast({
+        title: 'Failed to save profile',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Welcome to MUVO!',
+      description: 'Your profile is all set.',
     });
     navigate('/');
   }
@@ -172,8 +261,139 @@ export default function Auth() {
             <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
             <h1 className="font-display text-xl font-semibold mb-2">Email Verified!</h1>
             <p className="text-muted-foreground mb-4">
-              Your account is now fully verified. Redirecting...
+              Now let's set up your profile...
             </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Profile completion step
+  if (mode === 'complete-profile' && user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header title="Complete Your Profile" />
+        <main className="container px-4 py-6 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h1 className="font-display text-xl font-semibold mb-2">Almost there!</h1>
+            <p className="text-muted-foreground text-sm mb-6">
+              Tell us a bit about yourself so other travelers can trust your reviews.
+            </p>
+
+            <form onSubmit={profileForm.handleSubmit(handleProfileCompletion)} className="space-y-5">
+              {/* Username */}
+              <div>
+                <Label htmlFor="username" className="flex items-center gap-1">
+                  <AtSign className="w-3.5 h-3.5" />
+                  Username <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative mt-1.5">
+                  <Input
+                    id="username"
+                    placeholder="roadlifemike"
+                    className="lowercase"
+                    {...profileForm.register('username')}
+                  />
+                  {checkingUsername && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                      Checking...
+                    </span>
+                  )}
+                  {!checkingUsername && usernameAvailable === true && watchedUsername.length >= 3 && (
+                    <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-success" />
+                  )}
+                  {!checkingUsername && usernameAvailable === false && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-destructive">
+                      Taken
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Lowercase letters and numbers only. This is your public handle.
+                </p>
+                {profileForm.formState.errors.username && (
+                  <p className="text-sm text-destructive mt-1">
+                    {profileForm.formState.errors.username.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Full Name */}
+              <div>
+                <Label htmlFor="fullName" className="flex items-center gap-1">
+                  <User className="w-3.5 h-3.5" />
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="fullName"
+                  placeholder="Mike Johnson"
+                  className="mt-1.5"
+                  {...profileForm.register('fullName')}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your name will be shown on your reviews.
+                </p>
+                {profileForm.formState.errors.fullName && (
+                  <p className="text-sm text-destructive mt-1">
+                    {profileForm.formState.errors.fullName.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Traveler Type */}
+              <div>
+                <Label className="flex items-center gap-1 mb-2">
+                  <Compass className="w-3.5 h-3.5" />
+                  Traveler Type <span className="text-muted-foreground text-xs">(optional)</span>
+                </Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {TRAVELER_TYPES.map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      onClick={() => setSelectedTravelerType(
+                        selectedTravelerType === type.value ? null : type.value
+                      )}
+                      className={`flex items-center gap-2 p-3 rounded-lg border text-left transition-colors ${
+                        selectedTravelerType === type.value
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <span className="text-lg">{type.icon}</span>
+                      <span className="text-sm font-medium">{type.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Home Base */}
+              <div>
+                <Label htmlFor="homeBase" className="flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  Home Base <span className="text-muted-foreground text-xs">(optional)</span>
+                </Label>
+                <Input
+                  id="homeBase"
+                  placeholder="Austin, TX"
+                  className="mt-1.5"
+                  {...profileForm.register('homeBase')}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Where you're from. Just city and state/country.
+                </p>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isSubmitting || usernameAvailable === false}
+              >
+                {isSubmitting ? 'Saving...' : 'Complete Profile'}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </form>
           </div>
         </main>
       </div>
@@ -205,8 +425,8 @@ export default function Auth() {
     );
   }
 
-  // User is logged in - show profile
-  if (user && profile) {
+  // User is logged in and profile is complete - show profile
+  if (user && profile && profile.profile_completed) {
     return (
       <div className="min-h-screen bg-background">
         <Header title="My Profile" showBack />
@@ -222,7 +442,14 @@ export default function Auth() {
             </div>
           )}
           
-          <div className="mt-4">
+          <div className="mt-4 space-y-2">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate(`/profile/${profile.username}`)}
+            >
+              View Public Profile
+            </Button>
             <Button 
               variant="outline" 
               className="w-full"
@@ -237,6 +464,12 @@ export default function Auth() {
         </main>
       </div>
     );
+  }
+
+  // User is logged in but profile not complete - should not reach here but fallback
+  if (user && profile && !profile.profile_completed) {
+    setMode('complete-profile');
+    return null;
   }
 
   // Sign in form
