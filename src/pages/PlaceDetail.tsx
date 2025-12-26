@@ -37,7 +37,7 @@ import { PlaceEntrances, extractEntrances, Entrance } from '@/components/PlaceEn
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
-import { useMuvoScore, getMedalUnlockText } from '@/hooks/useMuvoScore';
+import { useMuvoScore, hasEnoughTapsForScore, getConfidenceBuildingText } from '@/hooks/useMuvoScore';
 import { PlaceMiniMap, PlaceMiniMapPlaceholder } from '@/components/PlaceMiniMap';
 import { NavigateButton } from '@/components/NavigateButton';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -171,20 +171,21 @@ const PlaceDetail = () => {
             <MuvoReviewHowItWorks />
           </div>
           
-          {/* MUVO Score display - show score if medal earned, otherwise show unlock message */}
+          {/* MUVO Confidence Score display - show only on Place Detail page, after threshold met */}
           {muvoData && (
             <div className="mb-4">
-              {muvoData.muvo_medal_level !== 'none' && muvoData.muvo_score !== null ? (
+              {hasEnoughTapsForScore(muvoData.qual_taps_total, place.primaryCategory) && muvoData.muvo_score !== null ? (
                 <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <MuvoMedalBadge 
-                    level={muvoData.muvo_medal_level} 
-                    score={muvoData.muvo_score}
-                    size="lg"
-                    showScore
-                  />
+                  {/* Medal badge - only if earned */}
+                  {muvoData.muvo_medal_level !== 'none' && (
+                    <MuvoMedalBadge 
+                      level={muvoData.muvo_medal_level} 
+                      size="lg"
+                    />
+                  )}
                   <div>
                     <p className="font-semibold text-foreground">
-                      MUVO Score: {Math.round(muvoData.muvo_score)}
+                      Confidence: {Math.round(muvoData.muvo_score)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Based on {muvoData.qual_taps_total} community taps
@@ -193,7 +194,7 @@ const PlaceDetail = () => {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground italic">
-                  {getMedalUnlockText(muvoData.qual_taps_total)}
+                  {getConfidenceBuildingText(muvoData.qual_taps_total, place.primaryCategory)}
                 </p>
               )}
             </div>
