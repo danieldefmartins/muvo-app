@@ -1,6 +1,6 @@
 import { Place, PlaceHours } from '@/hooks/usePlaces';
 import { cn } from '@/lib/utils';
-import { ShieldCheck, MapPin, ChevronRight, Clock } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { getCategoryLabel } from '@/lib/categoryColors';
 import { hapticLight } from '@/lib/haptics';
 import { MuvoReviewLine } from '@/components/MuvoReviewLine';
@@ -15,58 +15,6 @@ interface PlaceCardBottomSheetProps {
   variant?: 'peek' | 'list';
 }
 
-// Format hours status for display
-function getHoursStatus(place: Place): { text: string; isOpen: boolean | null } {
-  if (place.is24_7) {
-    return { text: 'Open 24/7', isOpen: true };
-  }
-
-  // If no hours data, show message per spec
-  if (!place.hoursJson) {
-    return { text: 'Please check hours of operation', isOpen: null };
-  }
-
-  const now = new Date();
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const today = days[now.getDay()];
-  const todayHours = place.hoursJson[today];
-
-  if (!todayHours || todayHours.closed) {
-    return { text: 'Closed today', isOpen: false };
-  }
-
-  const currentTime = now.getHours() * 100 + now.getMinutes();
-  const openTime = parseInt(todayHours.open.replace(':', ''));
-  const closeTime = parseInt(todayHours.close.replace(':', ''));
-
-  if (currentTime >= openTime && currentTime < closeTime) {
-    const closeFormatted = formatTime(todayHours.close);
-    return { text: `Open · Closes ${closeFormatted}`, isOpen: true };
-  } else if (currentTime < openTime) {
-    const openFormatted = formatTime(todayHours.open);
-    return { text: `Closed · Opens ${openFormatted}`, isOpen: false };
-  } else {
-    // Find next opening day
-    for (let i = 1; i <= 7; i++) {
-      const nextDayIndex = (now.getDay() + i) % 7;
-      const nextDay = days[nextDayIndex];
-      const nextHours = place.hoursJson[nextDay];
-      if (nextHours && !nextHours.closed) {
-        const dayName = i === 1 ? 'tomorrow' : nextDay.charAt(0).toUpperCase() + nextDay.slice(1);
-        return { text: `Closed · Opens ${dayName}`, isOpen: false };
-      }
-    }
-    return { text: 'Closed', isOpen: false };
-  }
-}
-
-function formatTime(time: string): string {
-  const [hours, minutes] = time.split(':').map(Number);
-  const period = hours >= 12 ? 'PM' : 'AM';
-  const displayHours = hours % 12 || 12;
-  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
-}
-
 export function PlaceCardBottomSheet({ 
   place, 
   distance, 
@@ -79,8 +27,6 @@ export function PlaceCardBottomSheet({
   
   // Medal level comes from server (database trigger computed)
   const medalLevel = muvoData?.muvo_medal_level ?? null;
-
-  const hoursStatus = getHoursStatus(place);
 
   const handleClick = () => {
     hapticLight();
@@ -105,76 +51,50 @@ export function PlaceCardBottomSheet({
           : '0 4px 16px -4px rgba(0, 0, 0, 0.1), 0 2px 6px -2px rgba(0, 0, 0, 0.04)'
       }}
     >
-      {/* Left accent bar - refined */}
-      <div 
-        className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-2xl"
-        style={{ borderRadius: '16px 0 0 16px' }}
-      />
-
-      <div className={cn('pl-4', isPeek ? 'p-4' : 'p-3.5')}>
-        {/* Line 1: Place Name - 18px bold + Medal Badge */}
-        <div className="flex items-start gap-2 mb-2 pr-8">
-          <h3 
-            className="font-bold text-foreground line-clamp-1 flex-1"
-            style={{ fontSize: '18px', lineHeight: '22px' }}
-          >
-            {place.name}
-          </h3>
-          {medalLevel && (
-            <MuvoMedalBadge level={medalLevel} size="sm" className="flex-shrink-0" />
-          )}
-          {place.isVerified && !medalLevel && (
-            <ShieldCheck className="w-[18px] h-[18px] text-primary flex-shrink-0 mt-0.5" />
-          )}
+      {/* Medal Badge - Top Right Corner */}
+      {medalLevel && (
+        <div className="absolute top-3 right-3 z-10">
+          <MuvoMedalBadge level={medalLevel} size="sm" />
         </div>
+      )}
 
-        {/* Line 2: MUVO Review Summary - [1 Positive] | [1 Neutral] | [1 Negative] */}
+      <div className={cn('pr-12', isPeek ? 'p-4' : 'p-3.5')}>
+        {/* A) PLACE NAME - Largest text, bold */}
+        <h3 
+          className="font-bold text-foreground line-clamp-2 mb-2"
+          style={{ fontSize: '18px', lineHeight: '22px' }}
+        >
+          {place.name}
+        </h3>
+
+        {/* B) REVIEW SUMMARY LINE - Second biggest and boldest */}
         <div className="mb-2.5">
           <MuvoReviewLine placeId={place.id} />
         </div>
 
-        {/* Line 3: Category + Key Details - 14px medium */}
-        <p 
-          className="text-muted-foreground mb-2"
-          style={{ fontSize: '14px', lineHeight: '18px', fontWeight: 500 }}
-        >
-          {getCategoryLabel(place.primaryCategory)}
-        </p>
-
-        {/* Line 4: Meta Row - 13px, icons + text */}
+        {/* C) METADATA LINE - Category + Distance */}
         <div 
-          className="flex items-center flex-wrap gap-x-2 gap-y-1 text-muted-foreground"
-          style={{ fontSize: '13px', lineHeight: '16px', fontWeight: 500 }}
+          className="flex items-center justify-between text-muted-foreground"
+          style={{ fontSize: '13px', lineHeight: '16px' }}
         >
-          <div className="flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{getCategoryLabel(place.primaryCategory)}</span>
+            <span className="text-muted-foreground/40">·</span>
             <span>{distance.toFixed(1)} mi</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="font-semibold">{place.priceLevel}</span>
           </div>
-          <span className="text-muted-foreground/40">·</span>
-          <span className="font-semibold">{place.priceLevel}</span>
-          {place.isVerified && (
-            <>
-              <span className="text-muted-foreground/40">·</span>
-              <span className="text-primary font-semibold">Verified</span>
-            </>
-          )}
-          <span className="text-muted-foreground/40">·</span>
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            <span className={cn(
-              hoursStatus.isOpen === true && 'text-emerald-600 dark:text-emerald-400',
-              hoursStatus.isOpen === false && 'text-amber-600 dark:text-amber-400',
-              hoursStatus.isOpen === null && 'text-muted-foreground'
-            )}>
-              {hoursStatus.text}
-            </span>
+
+          {/* E) EXTERNAL RATINGS - Bottom right, small, informational */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+            {/* Placeholder for external ratings when available */}
           </div>
         </div>
       </div>
 
-      {/* Chevron - right side, consistent */}
+      {/* Chevron - right side */}
       <ChevronRight 
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 w-[18px] h-[18px]" 
+        className="absolute right-3 bottom-4 text-muted-foreground/40 w-[18px] h-[18px]" 
       />
     </div>
   );

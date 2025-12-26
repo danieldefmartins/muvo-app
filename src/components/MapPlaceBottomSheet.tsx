@@ -146,7 +146,7 @@ export function MapPlaceBottomSheet({
   return (
     <div
       ref={sheetRef}
-      className="fixed left-0 right-0 z-[500] bg-card rounded-t-3xl transition-all duration-300 ease-out"
+      className="fixed left-0 right-0 z-[600] bg-card rounded-t-3xl transition-all duration-300 ease-out"
       style={{
         bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
         height: getSheetHeight(),
