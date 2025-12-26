@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { MapSearchBar } from '@/components/MapSearchBar';
 import { MapFilterChips } from '@/components/MapFilterChips';
-import { MapPlaceCards } from '@/components/MapPlaceCards';
+import { MapPlaceBottomSheet } from '@/components/MapPlaceBottomSheet';
 import { AddPlaceWizard } from '@/components/place-wizard/AddPlaceWizard';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -14,7 +14,6 @@ import { AlertCircle, MapPinOff, FilterX, ArrowLeft, Navigation, Loader2 } from 
 import { Button } from '@/components/ui/button';
 import { PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
 import { hapticLight } from '@/lib/haptics';
-import muvoLogo from '@/assets/muvo-logo.png';
 
 const MapView = () => {
   const [searchParams] = useSearchParams();
@@ -247,18 +246,7 @@ const MapView = () => {
         />
       )}
 
-      {/* Floating MUVO logo - top left */}
-      <div 
-        className="absolute top-0 left-0 z-[55] pointer-events-none"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)', paddingLeft: '12px' }}
-      >
-        <Link 
-          to="/" 
-          className="pointer-events-auto inline-flex items-center px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-md shadow-sm"
-        >
-          <img src={muvoLogo} alt="MUVO" className="h-5" />
-        </Link>
-      </div>
+      {/* MUVO logo removed - now in search bar as icon */}
 
       {/* Top controls - compact single row: Back + Search */}
       <div 

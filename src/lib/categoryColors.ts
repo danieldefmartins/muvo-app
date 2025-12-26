@@ -12,78 +12,128 @@ export const MUVO_BRAND = {
   border: '#E5E7EB',
 } as const;
 
-// Category color mapping (HEX)
+// Category color mapping (HEX) - EXPANDED FOR RV LIFE
 export const CATEGORY_COLORS: Record<string, string> = {
-  // Places to Stay
-  'RV Campground': '#2563EB',      // Deep Blue
-  'Luxury RV Resort': '#7C3AED',   // Purple
-  'RV Resort': '#7C3AED',          // Purple (alias)
-  'Boondocking': '#16A34A',        // Forest Green
-  'Overnight Parking': '#EAB308',  // Amber
-  'State Park': '#22C55E',         // Green
-  'National Park': '#16A34A',      // Forest Green
+  // === PLACES TO STAY ===
+  'RV Campground': '#2563EB',        // Deep Blue
+  'Luxury RV Resort': '#7C3AED',     // Purple
+  'RV Resort': '#7C3AED',            // Purple (alias)
+  'Boondocking': '#16A34A',          // Forest Green
+  'Overnight Parking': '#EAB308',    // Amber
+  'Street Parking': '#F59E0B',       // Orange-Amber
+  'State Park': '#22C55E',           // Green
+  'National Park': '#16A34A',        // Forest Green
   'County / Regional Park': '#22C55E', // Green
   'Rest Area / Travel Plaza': '#0EA5E9', // Sky
   'Fairgrounds / Event Grounds': '#F97316', // Orange
   'Business Allowing Overnight': '#EAB308', // Amber
   
-  // Services (from features/subcategories)
-  'Dump Station': '#F97316',       // Orange
-  'Fresh Water': '#06B6D4',        // Cyan
-  'Electric Hookups': '#7C3AED',   // Purple
-  'Sewer Hookups': '#7C3AED',      // Purple
-  'RV Repair': '#8B5CF6',          // Violet
-  'Tire Service': '#8B5CF6',       // Violet
-  'Propane': '#EF4444',            // Red
-  'Gas Station': '#EF4444',        // Red
+  // === RV SERVICES ===
+  'Dump Station': '#F97316',         // Orange
+  'Water Fill': '#06B6D4',           // Cyan
+  'Fresh Water': '#06B6D4',          // Cyan (alias)
+  'Propane': '#EF4444',              // Red
+  'Laundromat': '#3B82F6',           // Blue
+  'Showers': '#3B82F6',              // Blue
+  'RV Repair': '#8B5CF6',            // Violet
+  'Mechanics': '#8B5CF6',            // Violet (alias)
   
-  // Amenities
-  'Laundry': '#3B82F6',            // Blue
-  'Showers': '#3B82F6',            // Blue
-  'Wi-Fi': '#A855F7',              // Purple alt
-  'Pet Friendly': '#84CC16',       // Lime
+  // === HOOKUPS ===
+  'Electric Hookups': '#7C3AED',     // Purple
+  'Sewer Hookups': '#7C3AED',        // Purple
   
-  // Nature & Experiences
-  'Scenic Viewpoint': '#EC4899',   // Pink
-  'Hiking Trailhead': '#22C55E',   // Green
-  'Beach Access': '#0EA5E9',       // Sky
+  // === PET FRIENDLY ===
+  'Dog Park': '#84CC16',             // Lime
+  'Dog Friendly Place': '#65A30D',   // Green-Lime
+  'Pet Friendly': '#84CC16',         // Lime (alias)
   
-  // Other
-  'Groceries': '#14B8A6',          // Teal
-  'RV Storage': '#64748B',         // Slate
-  'Caution': '#111827',            // Near Black
+  // === OTHER SERVICES ===
+  'Tire Service': '#8B5CF6',         // Violet
+  'Gas Station': '#EF4444',          // Red
+  'Wi-Fi': '#A855F7',                // Purple alt
+  
+  // === NATURE & EXPERIENCES ===
+  'Scenic Viewpoint': '#EC4899',     // Pink
+  'Hiking Trailhead': '#22C55E',     // Green
+  'Beach Access': '#0EA5E9',         // Sky
+  
+  // === OTHER ===
+  'Groceries': '#14B8A6',            // Teal
+  'RV Storage': '#64748B',           // Slate
+  'Caution': '#111827',              // Near Black
 };
 
 // Icon names for each category (lucide icons)
 export const CATEGORY_ICONS: Record<string, string> = {
+  // === PLACES TO STAY ===
   'RV Campground': 'Tent',
   'Luxury RV Resort': 'Sparkles',
   'RV Resort': 'Sparkles',
   'Boondocking': 'Mountain',
   'Overnight Parking': 'ParkingCircle',
+  'Street Parking': 'Car',
   'State Park': 'Trees',
   'National Park': 'TreePine',
   'County / Regional Park': 'Trees',
   'Rest Area / Travel Plaza': 'CircleParking',
   'Fairgrounds / Event Grounds': 'Flag',
   'Business Allowing Overnight': 'Store',
+  
+  // === RV SERVICES ===
   'Dump Station': 'Droplets',
+  'Water Fill': 'Droplet',
   'Fresh Water': 'Droplet',
+  'Propane': 'Flame',
+  'Laundromat': 'WashingMachine',
+  'Showers': 'ShowerHead',
+  'RV Repair': 'Wrench',
+  'Mechanics': 'Wrench',
+  
+  // === HOOKUPS ===
   'Electric Hookups': 'Zap',
   'Sewer Hookups': 'Droplets',
-  'RV Repair': 'Wrench',
-  'Tire Service': 'Circle',
-  'Propane': 'Flame',
-  'Gas Station': 'Fuel',
-  'Laundry': 'WashingMachine',
-  'Showers': 'ShowerHead',
-  'Wi-Fi': 'Wifi',
+  
+  // === PET FRIENDLY ===
+  'Dog Park': 'Dog',
+  'Dog Friendly Place': 'Dog',
   'Pet Friendly': 'Dog',
+  
+  // === OTHER SERVICES ===
+  'Tire Service': 'Circle',
+  'Gas Station': 'Fuel',
+  'Wi-Fi': 'Wifi',
+  
+  // === NATURE & EXPERIENCES ===
   'Scenic Viewpoint': 'Eye',
   'Hiking Trailhead': 'Footprints',
   'Beach Access': 'Waves',
+  
+  // === OTHER ===
   'Groceries': 'ShoppingCart',
   'RV Storage': 'Warehouse',
+};
+
+// Category labels for display (human-readable)
+export const CATEGORY_LABELS: Record<string, string> = {
+  'RV Campground': 'RV Campground',
+  'Luxury RV Resort': 'Luxury RV Resort',
+  'Boondocking': 'Boondocking',
+  'Overnight Parking': 'Overnight Parking',
+  'Street Parking': 'Street Parking',
+  'State Park': 'State Park',
+  'National Park': 'National Park',
+  'County / Regional Park': 'County Park',
+  'Rest Area / Travel Plaza': 'Rest Area',
+  'Fairgrounds / Event Grounds': 'Fairgrounds',
+  'Business Allowing Overnight': 'Business Overnight',
+  'Dump Station': 'Dump Station',
+  'Water Fill': 'Water Fill',
+  'Propane': 'Propane',
+  'Laundromat': 'Laundromat',
+  'Showers': 'Showers',
+  'RV Repair': 'RV Repair',
+  'Dog Park': 'Dog Park',
+  'Dog Friendly Place': 'Dog Friendly',
 };
 
 // Default color for unknown categories
@@ -106,6 +156,14 @@ export function getCategoryIconName(category: string | undefined | null): string
 }
 
 /**
+ * Get a readable label for a category
+ */
+export function getCategoryLabel(category: string | undefined | null): string {
+  if (!category) return 'Place';
+  return CATEGORY_LABELS[category] || category;
+}
+
+/**
  * Get SVG icon for a category (for map pins)
  */
 export function getCategoryIconSVG(category: string | undefined | null, size: number = 16, color: string = 'white'): string {
@@ -117,6 +175,7 @@ export function getCategoryIconSVG(category: string | undefined | null, size: nu
     'Sparkles': '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>',
     'Mountain': '<path d="m8 3 4 8 5-5 5 15H2L8 3z"/>',
     'ParkingCircle': '<circle cx="12" cy="12" r="10"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
+    'Car': '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
     'Trees': '<path d="M10 10v.2A3 3 0 0 1 8.9 16v0H5v0h0a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z"/><path d="M7 16v6"/><path d="M13 19v3"/><path d="M10.3 14H19a3 3 0 0 0-1-5.8V8a3 3 0 0 0-6 0v.2A3 3 0 0 0 10.3 14Z"/>',
     'TreePine': '<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7H17Z"/><path d="M12 22v-3"/>',
     'CircleParking': '<circle cx="12" cy="12" r="10"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
@@ -137,6 +196,7 @@ export function getCategoryIconSVG(category: string | undefined | null, size: nu
     'Waves': '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
     'ShoppingCart': '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
     'Warehouse': '<path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect width="12" height="12" x="6" y="10"/>',
+    'Circle': '<circle cx="12" cy="12" r="10"/>',
     'MapPin': '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
   };
   

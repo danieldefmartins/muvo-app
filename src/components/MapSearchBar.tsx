@@ -4,6 +4,17 @@ import { Place } from '@/hooks/usePlaces';
 import { cn } from '@/lib/utils';
 import { hapticLight } from '@/lib/haptics';
 
+// MUVO Pin Icon for search bar
+const MuvoIcon = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className}
+  >
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+  </svg>
+);
+
 interface MapSearchBarProps {
   mapboxToken: string;
   places?: Place[];
@@ -136,10 +147,10 @@ export function MapSearchBar({
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
-      {/* Search input - pill style with frosted glass */}
+      {/* Search input - pill style with frosted glass and MUVO icon */}
       <div 
         className={cn(
-          'flex items-center gap-3 px-4 py-3 bg-card/[0.88] backdrop-blur-xl rounded-2xl transition-all duration-200',
+          'flex items-center gap-2.5 px-3 py-2.5 bg-card/[0.92] backdrop-blur-xl rounded-2xl transition-all duration-200',
           isFocused ? 'ring-2 ring-primary' : '',
         )}
         style={{ 
@@ -148,7 +159,9 @@ export function MapSearchBar({
             : '0 4px 16px -4px rgba(0, 0, 0, 0.15)' 
         }}
       >
-        <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+        {/* MUVO Pin Icon - like Google Maps */}
+        <MuvoIcon className="w-5 h-5 text-primary flex-shrink-0" />
+        
         <input
           ref={inputRef}
           type="text"
@@ -156,15 +169,17 @@ export function MapSearchBar({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={handleFocus}
           placeholder="Search places or locations"
-          className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/80 outline-none text-input"
+          className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/80 outline-none text-sm"
         />
-        {query && (
+        {query ? (
           <button
             onClick={handleClear}
             className="p-1.5 hover:bg-muted rounded-full transition-colors"
           >
-            <X className="w-5 h-5 text-muted-foreground" />
+            <X className="w-4 h-4 text-muted-foreground" />
           </button>
+        ) : (
+          <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         )}
       </div>
 
@@ -181,21 +196,21 @@ export function MapSearchBar({
           {/* Matching places */}
           {matchingPlaces.length > 0 && (
             <div>
-              <div className="px-4 py-2 text-chip font-medium text-muted-foreground uppercase tracking-wider bg-muted/30">
+              <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/30">
                 Places
               </div>
               {matchingPlaces.map((place) => (
                 <button
                   key={place.id}
                   onClick={() => handleSelectPlace(place)}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted/50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-primary" />
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-4 h-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-place-name text-foreground truncate">{place.name}</p>
-                    <p className="text-secondary text-muted-foreground truncate">
+                    <p className="text-sm font-medium text-foreground truncate">{place.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
                       {place.primaryCategory} · {place.priceLevel}
                     </p>
                   </div>
@@ -207,23 +222,23 @@ export function MapSearchBar({
           {/* Geocoding results */}
           {geocodingResults.length > 0 && (
             <div>
-              <div className="px-4 py-2 text-chip font-medium text-muted-foreground uppercase tracking-wider bg-muted/30">
+              <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/30">
                 Locations
               </div>
               {geocodingResults.map((result) => (
                 <button
                   key={result.id}
                   onClick={() => handleSelectLocation(result)}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted/50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <Navigation className="w-5 h-5 text-accent" />
+                  <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <Navigation className="w-4 h-4 text-accent" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-place-name text-foreground truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {result.place_name.split(',')[0]}
                     </p>
-                    <p className="text-secondary text-muted-foreground truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {result.place_name.split(',').slice(1).join(',').trim()}
                     </p>
                   </div>
@@ -234,7 +249,7 @@ export function MapSearchBar({
 
           {/* No results */}
           {!isLoading && query.length >= 2 && !hasResults && (
-            <div className="px-4 py-6 text-center text-secondary text-muted-foreground">
+            <div className="px-4 py-6 text-center text-sm text-muted-foreground">
               No results found for "{query}"
             </div>
           )}
