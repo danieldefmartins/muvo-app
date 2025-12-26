@@ -3,32 +3,33 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { MapSearchBar } from '@/components/MapSearchBar';
 import { MapFilterChips } from '@/components/MapFilterChips';
-import { MapBottomSheet } from '@/components/MapBottomSheet';
+import { MapPlaceCards } from '@/components/MapPlaceCards';
 import { AddPlaceWizard } from '@/components/place-wizard/AddPlaceWizard';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { useAuth } from '@/hooks/useAuth';
 import { useFooter } from '@/contexts/FooterContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, MapPinOff, FilterX, ArrowLeft, User, LogOut, Plus } from 'lucide-react';
+import { AlertCircle, MapPinOff, FilterX, ArrowLeft, Navigation, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
+import { hapticLight } from '@/lib/haptics';
 
 const MapView = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { data: places, isLoading: isLoadingPlaces, error: placesError } = usePlaces();
   const mapRef = useRef<PlacesMapRef>(null);
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { setMapInteracting } = useFooter();
   
-  // Bottom sheet state
+  // State
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lng: number; lat: number } | undefined>(undefined);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [showAddPlace, setShowAddPlace] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Parse URL params for initial map position
   const initialCenter = useMemo(() => {
@@ -123,15 +124,8 @@ const MapView = () => {
   const handleSearchPlaceSelect = useCallback((place: Place) => {
     mapRef.current?.flyTo(place.longitude, place.latitude, 14);
     setSelectedPlaceId(place.id);
+    setSelectedPlace(place);
     setIsSearchFocused(false);
-    setTimeout(() => {
-      mapRef.current?.openPopup(place.id);
-    }, 1100);
-  }, []);
-
-  // Handle bounds/center changes from map
-  const handleBoundsChange = useCallback((placeIds: string[]) => {
-    // No longer using carousel - we use bottom sheet now
   }, []);
 
   const handleCenterChange = useCallback((center: { lng: number; lat: number }) => {
@@ -144,17 +138,6 @@ const MapView = () => {
     setSelectedPlace(place);
   }, []);
 
-  // Handle bottom sheet close
-  const handleSheetClose = useCallback(() => {
-    setSelectedPlace(null);
-    setSelectedPlaceId(null);
-  }, []);
-
-  // Handle sheet state change
-  const handleSheetStateChange = useCallback((state: 'hidden' | 'peek' | 'expanded') => {
-    setIsSheetExpanded(state === 'expanded');
-  }, []);
-
   // Handle map interaction for footer auto-hide
   const handleMapInteractionStart = useCallback(() => {
     setMapInteracting(true);
@@ -164,10 +147,25 @@ const MapView = () => {
     setMapInteracting(false);
   }, [setMapInteracting]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
+  // GPS location request
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) return;
+    
+    hapticLight();
+    setIsLocating(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords: [number, number] = [position.coords.longitude, position.coords.latitude];
+        setIsLocating(false);
+        mapRef.current?.flyTo(coords[0], coords[1], 12);
+      },
+      () => {
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
 
   return (
     <div 
@@ -233,7 +231,6 @@ const MapView = () => {
             showSearch={false}
             selectedPlaceId={selectedPlaceId}
             onPlaceSelect={handleMapPlaceSelect}
-            onBoundsChange={handleBoundsChange}
             onCenterChange={handleCenterChange}
             onInteractionStart={handleMapInteractionStart}
             onInteractionEnd={handleMapInteractionEnd}
@@ -249,63 +246,39 @@ const MapView = () => {
         />
       )}
 
-      {/* Floating top controls container - unified frosted glass */}
+      {/* Top controls - compact single row: Back + Search */}
       <div 
         className="absolute top-0 left-0 right-0 z-[50] pointer-events-none"
-        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 8px)' }}
       >
-        {/* Header buttons row */}
-        <div className="flex items-center justify-between px-4 py-3 pointer-events-auto">
+        {/* Search row with back button inline */}
+        <div className="flex items-center gap-2 px-3 py-2 pointer-events-auto">
           {/* Back button */}
           <Button
             variant="secondary"
             size="icon"
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-card/[0.88] backdrop-blur-xl shadow-lg border-0 hover:bg-card/95"
-            style={{ boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.2)' }}
+            className="w-10 h-10 rounded-full bg-card/[0.92] backdrop-blur-xl shadow-md border-0 hover:bg-card/95 flex-shrink-0"
             aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
 
-          {/* User/Profile button */}
-          {user ? (
-            <Button
-              variant="secondary"
-              size="icon"
-              onClick={handleSignOut}
-              className="w-10 h-10 rounded-full bg-card/[0.88] backdrop-blur-xl shadow-lg border-0 hover:bg-card/95"
-              style={{ boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.2)' }}
-              aria-label="Sign out"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
-          ) : (
-            <Button
-              asChild
-              variant="secondary"
-              size="icon"
-              className="w-10 h-10 rounded-full bg-card/[0.88] backdrop-blur-xl shadow-lg border-0 hover:bg-card/95"
-              style={{ boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.2)' }}
-            >
-              <Link to="/auth" aria-label="Sign in">
-                <User className="w-5 h-5" />
-              </Link>
-            </Button>
-          )}
+          {/* Search bar - takes remaining space */}
+          <div className="flex-1">
+            <MapSearchBar
+              mapboxToken={mapboxToken || ''}
+              places={places || []}
+              onSelectLocation={handleSearchLocation}
+              onSelectPlace={handleSearchPlaceSelect}
+              onFocusChange={setIsSearchFocused}
+              isFocused={isSearchFocused}
+            />
+          </div>
         </div>
 
-        {/* Search + Filters container with frosted glass */}
-        <div className="px-4 pb-3 space-y-2 pointer-events-auto">
-          <MapSearchBar
-            mapboxToken={mapboxToken || ''}
-            places={places || []}
-            onSelectLocation={handleSearchLocation}
-            onSelectPlace={handleSearchPlaceSelect}
-            onFocusChange={setIsSearchFocused}
-            isFocused={isSearchFocused}
-          />
-          
+        {/* Filter chips */}
+        <div className="px-3 pb-2 pointer-events-auto">
           <MapFilterChips 
             filters={filters} 
             onFiltersChange={setFilters}
@@ -331,31 +304,35 @@ const MapView = () => {
         </div>
       )}
 
-      {/* Floating Add Place button */}
+      {/* GPS Location button - bottom right (where + was) */}
       <Button
-        onClick={() => {
-          if (!user) {
-            navigate('/auth');
-            return;
-          }
-          setShowAddPlace(true);
-        }}
+        variant="secondary"
         size="icon"
-        className="fixed right-4 z-40 w-14 h-14 rounded-full shadow-lg"
-        style={{ bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
+        onClick={requestLocation}
+        disabled={isLocating}
+        className="fixed right-4 z-40 w-12 h-12 rounded-full shadow-lg bg-card/95 backdrop-blur-sm hover:bg-card"
+        style={{ bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}
       >
-        <Plus className="w-6 h-6" />
+        {isLocating ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : (
+          <Navigation className="w-5 h-5" />
+        )}
       </Button>
 
-      {/* Bottom Sheet */}
-      {mapboxToken && !isLoading && !hasError && (
-        <MapBottomSheet
-          place={selectedPlace}
-          places={filteredPlaces}
-          mapCenter={mapCenter}
-          onClose={handleSheetClose}
-          onSheetStateChange={handleSheetStateChange}
-        />
+      {/* Floating Place Cards - horizontal scroll */}
+      {mapboxToken && !isLoading && !hasError && filteredPlaces.length > 0 && (
+        <div 
+          className="absolute left-0 right-0 z-[35]"
+          style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}
+        >
+          <MapPlaceCards
+            places={filteredPlaces}
+            selectedPlaceId={selectedPlaceId}
+            onPlaceSelect={handleMapPlaceSelect}
+            mapCenter={mapCenter}
+          />
+        </div>
       )}
 
       {/* Add Place Wizard */}
