@@ -306,20 +306,23 @@ export function MapFilterChips({
                     </>
                   )}
 
-                  {/* REVIEW FILTERS - NEGATIVE (AVOID) */}
+                  {/* REVIEW FILTERS - NEGATIVE (EXCLUDE/HIDE) */}
                   {onReviewFiltersChange && uniqueNegative.length > 0 && (
                     <>
                       <Separator />
                       <div>
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-2 mb-2">
                           <Ban className="w-4 h-4 text-red-500" />
-                          <h3 className="text-sm font-medium text-foreground">Avoid places with</h3>
+                          <h3 className="text-sm font-medium text-foreground">Exclude places with</h3>
                           {reviewFilters.negativeStamps.length > 0 && (
                             <span className="text-xs text-muted-foreground">
                               ({reviewFilters.negativeStamps.length})
                             </span>
                           )}
                         </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Places with these issues will be hidden from results
+                        </p>
                         <div className="flex flex-wrap gap-2">
                           {uniqueNegative.slice(0, 15).map((stamp) => {
                             const isActive = reviewFilters.negativeStamps.includes(stamp.id);

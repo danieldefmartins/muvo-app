@@ -7,13 +7,13 @@ import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Map, List, AlertCircle } from 'lucide-react';
+import { Map as MapIcon, List, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
   ReviewFiltersState, 
   DEFAULT_REVIEW_FILTERS, 
   usePlaceStampAggregatesAll, 
-  filterPlacesByReviews 
+  rankPlacesByReviews 
 } from '@/hooks/useReviewFilters';
 
 type ViewMode = 'list' | 'map';
@@ -66,14 +66,31 @@ const PlacesToStay = () => {
       result = result.filter((p) => p.openYearRound);
     }
 
-    // Apply review-based filtering
+    // Apply review-based filtering and ranking
     const placeIds = result.map(p => p.id);
-    const filteredIds = filterPlacesByReviews(placeIds, stampData, reviewFilters);
-    const filteredIdSet = new Set(filteredIds);
-    result = result.filter(p => filteredIdSet.has(p.id));
+    const { rankedIds } = rankPlacesByReviews(placeIds, stampData, reviewFilters);
+    const rankedIdSet = new Set(rankedIds);
+    
+    // Filter to only include ranked places (excludes negatively filtered)
+    result = result.filter(p => rankedIdSet.has(p.id));
+    
+    // Create rank map for sorting
+    const rankMap = new Map(rankedIds.map((id, idx) => [id, idx]));
 
     // Apply sorting
-    if (sort === 'alphabetical') {
+    const hasReviewFilters = 
+      reviewFilters.positiveStamps.length > 0 || 
+      reviewFilters.neutralStamps.length > 0 || 
+      reviewFilters.negativeStamps.length > 0;
+
+    if (hasReviewFilters) {
+      // Sort by review filter ranking
+      result.sort((a, b) => {
+        const rankA = rankMap.get(a.id) ?? Infinity;
+        const rankB = rankMap.get(b.id) ?? Infinity;
+        return rankA - rankB;
+      });
+    } else if (sort === 'alphabetical') {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else {
       // Recently updated - pro recommended first, then by date
@@ -147,7 +164,7 @@ const PlacesToStay = () => {
                 )}
                 onClick={() => setViewMode('map')}
               >
-                <Map className="w-4 h-4 mr-1.5" />
+                <MapIcon className="w-4 h-4 mr-1.5" />
                 Map
               </Button>
             </div>
