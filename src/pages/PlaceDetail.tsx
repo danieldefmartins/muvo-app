@@ -14,6 +14,7 @@ import {
   ChevronUp,
   Cloud,
   Navigation,
+  MessageSquareText,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { WeatherBadge } from '@/components/WeatherBadge';
@@ -28,6 +29,7 @@ import { ReportStatusForm } from '@/components/ReportStatusForm';
 import { PlacePhotoGallery } from '@/components/PlacePhotoGallery';
 import { PhotoUploadForm } from '@/components/PhotoUploadForm';
 import { CompactReviewStrip } from '@/components/CompactReviewStrip';
+import { ReviewsPreview } from '@/components/ReviewsPreview';
 import { PlaceEntrances, extractEntrances, Entrance } from '@/components/PlaceEntrances';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
@@ -144,11 +146,25 @@ const PlaceDetail = () => {
 
         {/* 2. Reviews Summary + CTA */}
         <section className="animate-fade-in bg-card border border-border rounded-xl p-4">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            <MessageSquareText className="w-5 h-5 text-primary" />
+            Community Reviews
+          </h2>
           <CompactReviewStrip
             placeId={id!}
             placeName={place.name}
             placeCategory={place.primaryCategory}
           />
+          
+          {/* Reviews Preview */}
+          <div className="mt-4 pt-4 border-t border-border">
+            <ReviewsPreview 
+              placeId={id!}
+              placeName={place.name}
+              placeCategory={place.primaryCategory}
+              maxReviews={3}
+            />
+          </div>
         </section>
 
         {/* Quick Actions */}
