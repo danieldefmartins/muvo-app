@@ -1,7 +1,11 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { hapticLight } from '@/lib/haptics';
 import { useFooter } from '@/contexts/FooterContext';
+import { useAuth } from '@/hooks/useAuth';
+import { AddPlaceWizard } from '@/components/place-wizard/AddPlaceWizard';
 
 interface NavItem {
   icon: React.FC<{ className?: string; strokeWidth?: number }>;
@@ -90,10 +94,13 @@ const ProfileIcon = ({ className, strokeWidth = 2 }: { className?: string; strok
   </svg>
 );
 
-const navItems: NavItem[] = [
+// Navigation items - split into left (2) and right (2) with center + button
+const leftNavItems: NavItem[] = [
   { icon: MapIcon, label: 'Map', path: '/map' },
   { icon: PlacesIcon, label: 'Places', path: '/places' },
-  { icon: RoutesIcon, label: 'Routes', path: '/route' },
+];
+
+const rightNavItems: NavItem[] = [
   { icon: SavedIcon, label: 'Saved', path: '/saved' },
   { icon: ProfileIcon, label: 'Profile', path: '/auth' },
 ];
