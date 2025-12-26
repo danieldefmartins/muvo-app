@@ -29,10 +29,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { useAuth } from '@/hooks/useAuth';
-import { usePrimaryCategories, useSecondaryCategories, useSubmitPlace } from '@/hooks/usePlaceForm';
+import { usePrimaryCategories, useSecondaryCategories } from '@/hooks/usePlaceForm';
 import { useCheckNearbyPlaces } from '@/hooks/usePlaceSubmissions';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { useToast as useToastHook } from '@/hooks/use-toast';
 
 interface AddPlaceWizardProps {
   open: boolean;
@@ -88,7 +89,6 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
   const { data: primaryCategories } = usePrimaryCategories();
   const { data: secondaryCategories } = useSecondaryCategories();
   const checkNearby = useCheckNearbyPlaces();
-  const submitPlace = useSubmitPlace();
 
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -282,19 +282,25 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
     setIsSubmitting(true);
 
     try {
-      await submitPlace.mutateAsync({
-        name: formData.name.trim(),
-        primaryCategoryId: formData.primaryCategoryId,
-        secondaryTags: formData.secondaryTags,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
-        city: formData.city,
-        state: formData.state,
-        country: formData.country,
-        shortSummary: formData.shortSummary.trim(),
-        description: formData.accessNotes.trim(),
-        openYearRound: formData.openYearRound,
-      });
+      // Submit to import_queue for admin review
+      const { error } = await supabase
+        .from('import_queue')
+        .insert({
+          source: 'user_submission',
+          name: formData.name.trim(),
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          suggested_primary_category: formData.primaryCategoryId || null,
+          suggested_tags: formData.secondaryTags,
+          raw_data: {
+            ...formData,
+            submittedBy: user.id,
+            submittedAt: new Date().toISOString(),
+          },
+          status: 'pending',
+        });
+
+      if (error) throw error;
 
       setSubmitSuccess(true);
     } catch (error: any) {
