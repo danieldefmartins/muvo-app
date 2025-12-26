@@ -334,6 +334,7 @@ export function useCreateReview() {
       queryClient.invalidateQueries({ queryKey: ['place-signals', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-stamp-aggregates', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-review-count', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['muvo-score', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['places'] });
       queryClient.invalidateQueries({ queryKey: ['place', variables.placeId] });
     },
@@ -393,6 +394,7 @@ export function useUpdateReview() {
       queryClient.invalidateQueries({ queryKey: ['place-signals', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-stamp-aggregates', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-review-count', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['muvo-score', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['places'] });
       queryClient.invalidateQueries({ queryKey: ['place', variables.placeId] });
     },
@@ -418,6 +420,7 @@ export function useDeleteReview() {
       queryClient.invalidateQueries({ queryKey: ['place-signals', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-stamp-aggregates', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['place-review-count', variables.placeId] });
+      queryClient.invalidateQueries({ queryKey: ['muvo-score', variables.placeId] });
       queryClient.invalidateQueries({ queryKey: ['places'] });
       queryClient.invalidateQueries({ queryKey: ['place', variables.placeId] });
     },

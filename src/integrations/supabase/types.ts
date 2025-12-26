@@ -746,6 +746,7 @@ export type Database = {
       }
       places: {
         Row: {
+          active_weeks_count: number
           address: string | null
           address_line1: string | null
           address_line2: string | null
@@ -823,6 +824,7 @@ export type Database = {
           features: Database["public"]["Enums"]["place_feature"][] | null
           fees_json: Json | null
           fire_pits: Database["public"]["Enums"]["yes_no_unknown"] | null
+          first_muvo_tap_at: string | null
           fresh_water_fill: Database["public"]["Enums"]["yes_no_unknown"] | null
           full_hookups: Database["public"]["Enums"]["yes_no_unknown"] | null
           generator_hours: string | null
@@ -848,8 +850,14 @@ export type Database = {
           longitude: number
           max_height_ft: number | null
           max_rv_length_ft: number | null
+          medal_awarded_at: string | null
+          muvo_medal_level: Database["public"]["Enums"]["muvo_medal_level"]
+          muvo_score: number | null
           name: string
           needs_review: boolean
+          neg_label_counts: Json | null
+          neg_taps_total: number
+          neg_types_count: number
           nightly_rate_max: number | null
           nightly_rate_min: number | null
           no_formal_address: boolean | null
@@ -868,10 +876,13 @@ export type Database = {
           pool_open_year_round:
             | Database["public"]["Enums"]["yes_no_unknown"]
             | null
+          pos_taps_total: number
           postal_code: string | null
           price_level: Database["public"]["Enums"]["price_level"]
           primary_category: Database["public"]["Enums"]["place_category"]
+          qual_taps_total: number
           recycling: Database["public"]["Enums"]["yes_no_unknown"] | null
+          repeat_neg_ratio: number
           restrooms: Database["public"]["Enums"]["yes_no_unknown"] | null
           review_count: number
           road_condition: Database["public"]["Enums"]["road_condition"] | null
@@ -889,6 +900,7 @@ export type Database = {
           swimming_pool: Database["public"]["Enums"]["yes_no_unknown"] | null
           taxes_included: Database["public"]["Enums"]["yes_no_unknown"] | null
           timezone: string | null
+          top_neg_taps: number
           towing_friendly: Database["public"]["Enums"]["yes_no_unknown"] | null
           trash: Database["public"]["Enums"]["yes_no_unknown"] | null
           turnaround_available:
@@ -903,6 +915,7 @@ export type Database = {
           zip_code: string | null
         }
         Insert: {
+          active_weeks_count?: number
           address?: string | null
           address_line1?: string | null
           address_line2?: string | null
@@ -980,6 +993,7 @@ export type Database = {
           features?: Database["public"]["Enums"]["place_feature"][] | null
           fees_json?: Json | null
           fire_pits?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          first_muvo_tap_at?: string | null
           fresh_water_fill?:
             | Database["public"]["Enums"]["yes_no_unknown"]
             | null
@@ -1007,8 +1021,14 @@ export type Database = {
           longitude: number
           max_height_ft?: number | null
           max_rv_length_ft?: number | null
+          medal_awarded_at?: string | null
+          muvo_medal_level?: Database["public"]["Enums"]["muvo_medal_level"]
+          muvo_score?: number | null
           name: string
           needs_review?: boolean
+          neg_label_counts?: Json | null
+          neg_taps_total?: number
+          neg_types_count?: number
           nightly_rate_max?: number | null
           nightly_rate_min?: number | null
           no_formal_address?: boolean | null
@@ -1027,10 +1047,13 @@ export type Database = {
           pool_open_year_round?:
             | Database["public"]["Enums"]["yes_no_unknown"]
             | null
+          pos_taps_total?: number
           postal_code?: string | null
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
+          qual_taps_total?: number
           recycling?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          repeat_neg_ratio?: number
           restrooms?: Database["public"]["Enums"]["yes_no_unknown"] | null
           review_count?: number
           road_condition?: Database["public"]["Enums"]["road_condition"] | null
@@ -1048,6 +1071,7 @@ export type Database = {
           swimming_pool?: Database["public"]["Enums"]["yes_no_unknown"] | null
           taxes_included?: Database["public"]["Enums"]["yes_no_unknown"] | null
           timezone?: string | null
+          top_neg_taps?: number
           towing_friendly?: Database["public"]["Enums"]["yes_no_unknown"] | null
           trash?: Database["public"]["Enums"]["yes_no_unknown"] | null
           turnaround_available?:
@@ -1062,6 +1086,7 @@ export type Database = {
           zip_code?: string | null
         }
         Update: {
+          active_weeks_count?: number
           address?: string | null
           address_line1?: string | null
           address_line2?: string | null
@@ -1139,6 +1164,7 @@ export type Database = {
           features?: Database["public"]["Enums"]["place_feature"][] | null
           fees_json?: Json | null
           fire_pits?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          first_muvo_tap_at?: string | null
           fresh_water_fill?:
             | Database["public"]["Enums"]["yes_no_unknown"]
             | null
@@ -1166,8 +1192,14 @@ export type Database = {
           longitude?: number
           max_height_ft?: number | null
           max_rv_length_ft?: number | null
+          medal_awarded_at?: string | null
+          muvo_medal_level?: Database["public"]["Enums"]["muvo_medal_level"]
+          muvo_score?: number | null
           name?: string
           needs_review?: boolean
+          neg_label_counts?: Json | null
+          neg_taps_total?: number
+          neg_types_count?: number
           nightly_rate_max?: number | null
           nightly_rate_min?: number | null
           no_formal_address?: boolean | null
@@ -1186,10 +1218,13 @@ export type Database = {
           pool_open_year_round?:
             | Database["public"]["Enums"]["yes_no_unknown"]
             | null
+          pos_taps_total?: number
           postal_code?: string | null
           price_level?: Database["public"]["Enums"]["price_level"]
           primary_category?: Database["public"]["Enums"]["place_category"]
+          qual_taps_total?: number
           recycling?: Database["public"]["Enums"]["yes_no_unknown"] | null
+          repeat_neg_ratio?: number
           restrooms?: Database["public"]["Enums"]["yes_no_unknown"] | null
           review_count?: number
           road_condition?: Database["public"]["Enums"]["road_condition"] | null
@@ -1207,6 +1242,7 @@ export type Database = {
           swimming_pool?: Database["public"]["Enums"]["yes_no_unknown"] | null
           taxes_included?: Database["public"]["Enums"]["yes_no_unknown"] | null
           timezone?: string | null
+          top_neg_taps?: number
           towing_friendly?: Database["public"]["Enums"]["yes_no_unknown"] | null
           trash?: Database["public"]["Enums"]["yes_no_unknown"] | null
           turnaround_available?:
@@ -1640,6 +1676,16 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: Database["public"]["Enums"]["contributor_level"]
       }
+      calculate_muvo_score: {
+        Args: {
+          p_active_weeks: number
+          p_neg_taps: number
+          p_neg_types_count: number
+          p_pos_taps: number
+          p_repeat_neg_ratio: number
+        }
+        Returns: number
+      }
       calculate_reviewer_medal: {
         Args: { user_id_param: string }
         Returns: Database["public"]["Enums"]["reviewer_medal"]
@@ -1651,6 +1697,14 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      determine_medal_level: {
+        Args: {
+          p_days_since_first: number
+          p_qual_taps: number
+          p_repeat_neg_ratio: number
+        }
+        Returns: Database["public"]["Enums"]["muvo_medal_level"]
       }
       find_duplicate_places: {
         Args: {
@@ -1725,6 +1779,10 @@ export type Database = {
         }
         Returns: string
       }
+      recompute_place_muvo_aggregates: {
+        Args: { p_place_id: string }
+        Returns: undefined
+      }
       reduce_trust_score: {
         Args: { reduction?: number; user_id_param: string }
         Returns: undefined
@@ -1774,6 +1832,7 @@ export type Database = {
         | "rejected"
         | "merged"
         | "needs_review"
+      muvo_medal_level: "none" | "bronze" | "silver" | "gold" | "platinum"
       noise_level: "quiet" | "moderate" | "loud" | "unknown"
       notification_type:
         | "place_status_changed"
@@ -2038,6 +2097,7 @@ export const Constants = {
         "merged",
         "needs_review",
       ],
+      muvo_medal_level: ["none", "bronze", "silver", "gold", "platinum"],
       noise_level: ["quiet", "moderate", "loud", "unknown"],
       notification_type: [
         "place_status_changed",

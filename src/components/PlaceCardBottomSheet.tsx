@@ -1,12 +1,11 @@
-import { useMemo } from 'react';
 import { Place, PlaceHours } from '@/hooks/usePlaces';
 import { cn } from '@/lib/utils';
 import { ShieldCheck, MapPin, ChevronRight, Clock } from 'lucide-react';
 import { getCategoryLabel } from '@/lib/categoryColors';
-import { usePlaceStampAggregates } from '@/hooks/useReviews';
 import { hapticLight } from '@/lib/haptics';
 import { MuvoReviewLine } from '@/components/MuvoReviewLine';
-import { MuvoMedalBadge, calculateMedalLevel } from '@/components/MuvoMedalBadge';
+import { MuvoMedalBadge } from '@/components/MuvoMedalBadge';
+import { useMuvoScore } from '@/hooks/useMuvoScore';
 
 interface PlaceCardBottomSheetProps {
   place: Place;
@@ -74,24 +73,11 @@ export function PlaceCardBottomSheet({
   onClick,
   variant = 'list'
 }: PlaceCardBottomSheetProps) {
-  const { data: aggregates } = usePlaceStampAggregates(place.id);
-
-  // Calculate medal level from aggregates
-  const medalLevel = useMemo(() => {
-    if (!aggregates || aggregates.length === 0) return null;
-    
-    const totalPositive = aggregates
-      .filter(a => a.polarity === 'positive')
-      .reduce((sum, a) => sum + a.total_votes, 0);
-    
-    const totalNegative = aggregates
-      .filter(a => a.polarity === 'improvement')
-      .reduce((sum, a) => sum + a.total_votes, 0);
-    
-    const reviewCount = aggregates.reduce((sum, a) => sum + a.review_count, 0);
-    
-    return calculateMedalLevel(totalPositive, totalNegative, reviewCount);
-  }, [aggregates]);
+  // Use the server-computed MUVO score data
+  const { data: muvoData } = useMuvoScore(place.id);
+  
+  // Medal level comes from server (database trigger computed)
+  const medalLevel = muvoData?.muvo_medal_level ?? null;
 
   const hoursStatus = getHoursStatus(place);
 

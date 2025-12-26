@@ -1,16 +1,19 @@
 import { Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { MuvoMedalLevel } from '@/hooks/useMuvoScore';
 
-export type MedalLevel = 'bronze' | 'silver' | 'gold' | 'platinum' | null;
+// Re-export for backwards compatibility
+export type MedalLevel = MuvoMedalLevel | null;
 
 interface MuvoMedalBadgeProps {
-  level: MedalLevel;
-  score?: number;
+  level: MuvoMedalLevel | null;
+  score?: number | null;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  showScore?: boolean;
 }
 
-const medalStyles: Record<NonNullable<MedalLevel>, { bg: string; text: string; border: string; glow: string }> = {
+const medalStyles: Record<Exclude<MuvoMedalLevel, 'none'>, { bg: string; text: string; border: string; glow: string }> = {
   bronze: {
     bg: 'bg-amber-700/20',
     text: 'text-amber-700 dark:text-amber-500',
@@ -42,16 +45,19 @@ const sizeStyles = {
     wrapper: 'w-6 h-6',
     icon: 'w-3.5 h-3.5',
     text: 'text-[10px]',
+    scoreWrapper: 'min-w-[16px] h-[16px] -bottom-1 -right-1',
   },
   md: {
     wrapper: 'w-8 h-8',
     icon: 'w-4 h-4',
     text: 'text-xs',
+    scoreWrapper: 'min-w-[18px] h-[18px] -bottom-1 -right-1',
   },
   lg: {
-    wrapper: 'w-10 h-10',
-    icon: 'w-5 h-5',
-    text: 'text-sm',
+    wrapper: 'w-12 h-12',
+    icon: 'w-6 h-6',
+    text: 'text-sm font-bold',
+    scoreWrapper: 'min-w-[24px] h-[24px] -bottom-1.5 -right-1.5',
   },
 };
 
@@ -60,14 +66,22 @@ const sizeStyles = {
  * 
  * Medals recognize CONSISTENCY over time.
  * - Bronze / Silver / Gold / Platinum
- * - Number inside medal = MUVO Score (optional)
+ * - Number inside medal = MUVO Score (when showScore is true)
  * - Does NOT replace tap counts
  */
-export function MuvoMedalBadge({ level, score, className, size = 'md' }: MuvoMedalBadgeProps) {
-  if (!level) return null;
+export function MuvoMedalBadge({ 
+  level, 
+  score, 
+  className, 
+  size = 'md',
+  showScore = false 
+}: MuvoMedalBadgeProps) {
+  // Don't render if no medal or level is 'none'
+  if (!level || level === 'none') return null;
 
   const style = medalStyles[level];
   const sizeStyle = sizeStyles[size];
+  const displayScore = score !== null && score !== undefined ? Math.round(score) : null;
 
   return (
     <div
@@ -80,45 +94,24 @@ export function MuvoMedalBadge({ level, score, className, size = 'md' }: MuvoMed
         sizeStyle.wrapper,
         className
       )}
-      title={`${level.charAt(0).toUpperCase() + level.slice(1)} Medal${score ? ` - Score: ${score}` : ''}`}
+      title={`${level.charAt(0).toUpperCase() + level.slice(1)} Medal${displayScore !== null ? ` - Score: ${displayScore}` : ''}`}
     >
       <Award className={cn(sizeStyle.icon)} strokeWidth={2.5} />
       
-      {/* Score overlay */}
-      {score !== undefined && size !== 'sm' && (
+      {/* Score overlay - only show on larger sizes when showScore is true and score exists */}
+      {showScore && displayScore !== null && size !== 'sm' && (
         <span 
           className={cn(
-            'absolute -bottom-1 -right-1 rounded-full bg-background border px-1 font-bold',
+            'absolute flex items-center justify-center rounded-full bg-background border px-1',
             style.border,
             style.text,
-            sizeStyle.text
+            sizeStyle.text,
+            sizeStyle.scoreWrapper
           )}
         >
-          {score}
+          {displayScore}
         </span>
       )}
     </div>
   );
-}
-
-/**
- * Calculate medal level based on place stats
- * This is a placeholder - actual thresholds will be defined in future prompt
- */
-export function calculateMedalLevel(
-  positiveVotes: number,
-  negativeVotes: number,
-  _reviewCount: number
-): MedalLevel {
-  // Placeholder logic - real thresholds TBD
-  const ratio = positiveVotes / Math.max(negativeVotes, 1);
-  
-  if (positiveVotes < 10) return null; // Not enough data
-  
-  if (ratio >= 10 && positiveVotes >= 100) return 'platinum';
-  if (ratio >= 5 && positiveVotes >= 50) return 'gold';
-  if (ratio >= 3 && positiveVotes >= 25) return 'silver';
-  if (ratio >= 2 && positiveVotes >= 10) return 'bronze';
-  
-  return null;
 }
