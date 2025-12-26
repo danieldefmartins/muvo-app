@@ -89,6 +89,15 @@ export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCan
     sort_order: 0,
   }));
 
+  const neutralStamps = stamps?.neutral || FALLBACK_STAMPS.neutral.map(f => ({
+    id: f.id,
+    label: f.label,
+    icon: f.icon,
+    category: 'fallback',
+    polarity: 'neutral' as const,
+    sort_order: 0,
+  }));
+
   const isEditing = !!existingReview;
 
   // Parse existing review into initial state
@@ -138,12 +147,13 @@ export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCan
   const handleSubmit = async (data: {
     positiveSignals: Map<string, number>;
     improvementSignals: Map<string, number>;
+    neutralSignals: Map<string, number>;
     notePublic: string;
     notePrivate: string;
   }) => {
-    const { positiveSignals, improvementSignals, notePublic, notePrivate } = data;
+    const { positiveSignals, improvementSignals, neutralSignals, notePublic, notePrivate } = data;
 
-    const totalStamps = positiveSignals.size + improvementSignals.size;
+    const totalStamps = positiveSignals.size + improvementSignals.size + neutralSignals.size;
     if (totalStamps === 0) {
       toast({
         title: "Something needs to stand out",
@@ -164,6 +174,12 @@ export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCan
       ...Array.from(improvementSignals.entries()).map(([stampId, level]) => ({
         dimension: 'quality' as const,
         polarity: 'improvement' as const,
+        level,
+        stamp_id: stampId,
+      })),
+      ...Array.from(neutralSignals.entries()).map(([stampId, level]) => ({
+        dimension: 'quality' as const,
+        polarity: 'neutral' as const,
         level,
         stamp_id: stampId,
       })),
@@ -258,9 +274,11 @@ export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCan
         onOpenChange={setShowPopup}
         positiveStamps={positiveStamps}
         improvementStamps={improvementStamps}
+        neutralStamps={neutralStamps}
         placeName={placeName}
         initialPositive={getInitialPositive()}
         initialImprovement={getInitialImprovement()}
+        initialNeutral={new Map()}
         initialNotePublic={existingReview?.note_public || ''}
         initialNotePrivate={existingReview?.note_private || ''}
         isEditing={isEditing}

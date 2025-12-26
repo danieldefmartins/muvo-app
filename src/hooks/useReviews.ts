@@ -14,7 +14,7 @@ export type ReviewDimension =
   | 'speed' 
   | 'restrictions';
 
-export type SignalPolarity = 'positive' | 'improvement';
+export type SignalPolarity = 'positive' | 'improvement' | 'neutral';
 
 export interface ReviewSignal {
   dimension: ReviewDimension;

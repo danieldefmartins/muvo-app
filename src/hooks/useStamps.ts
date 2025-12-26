@@ -8,7 +8,7 @@ export interface StampDefinition {
   id: string;
   category: string;
   label: string;
-  polarity: 'positive' | 'improvement';
+  polarity: 'positive' | 'improvement' | 'neutral';
   sort_order: number;
   icon: string | null;
 }
@@ -54,6 +54,7 @@ export function useStamps(placeCategory: PlaceCategory | undefined) {
       return {
         positive: stamps.filter(s => s.polarity === 'positive'),
         improvement: stamps.filter(s => s.polarity === 'improvement'),
+        neutral: stamps.filter(s => s.polarity === 'neutral'),
         all: stamps,
       };
     },
@@ -102,5 +103,11 @@ export const FALLBACK_STAMPS = {
     { id: 'fallback_dirty', label: 'Not Clean', icon: 'Ban' },
     { id: 'fallback_expensive', label: 'Expensive', icon: 'DollarSign' },
     { id: 'fallback_poor_service', label: 'Poor Service', icon: 'Frown' },
+  ],
+  neutral: [
+    { id: 'fallback_modern', label: 'Modern', icon: 'Building2' },
+    { id: 'fallback_rustic', label: 'Rustic', icon: 'TreePine' },
+    { id: 'fallback_cozy', label: 'Cozy', icon: 'Flame' },
+    { id: 'fallback_outdated', label: 'Outdated', icon: 'Clock' },
   ],
 };
