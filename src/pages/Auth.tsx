@@ -669,7 +669,11 @@ export default function Auth() {
                   id="username"
                   placeholder="roadlifemike"
                   className="lowercase"
-                  {...signUpForm.register('username')}
+                  {...signUpForm.register('username', {
+                    onChange: (e) => {
+                      e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    },
+                  })}
                 />
                 {checkingUsername && (
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
