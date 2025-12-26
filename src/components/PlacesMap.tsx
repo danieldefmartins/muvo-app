@@ -274,7 +274,7 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
           background: ${MUVO_BRAND.background};
           color: ${MUVO_BRAND.textPrimary};
           font-weight: 600;
-          font-size: 14px;
+          font-size: 16px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.25);
           border: 3px solid ${MUVO_BRAND.blue};
           cursor: pointer;

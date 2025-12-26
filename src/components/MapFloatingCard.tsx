@@ -121,18 +121,18 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
           : '0 6px 24px -4px rgba(0, 0, 0, 0.3), 0 2px 8px -2px rgba(0, 0, 0, 0.15)',
       }}
     >
-      <div className="p-3">
+      <div className="p-4">
         {/* Row 1: Name + Verification + Micro Tag */}
         <div className="flex items-center gap-2 mb-2">
-          <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-1 flex-1">
+          <h3 className="text-place-name text-foreground line-clamp-1 flex-1">
             {place.name}
           </h3>
           {place.isVerified && (
-            <ShieldCheck className="w-4 h-4 text-accent flex-shrink-0" />
+            <ShieldCheck className="w-5 h-5 text-accent flex-shrink-0" />
           )}
           {microTag && (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium flex-shrink-0">
-              <microTag.icon className="w-3 h-3" />
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-chip flex-shrink-0">
+              <microTag.icon className="w-3.5 h-3.5" />
               {microTag.label}
             </div>
           )}
@@ -140,15 +140,15 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
 
         {/* Row 2: Experience Signals */}
         {experienceSignals.length > 0 && (
-          <div className="flex items-center gap-1.5 mb-2">
+          <div className="flex items-center gap-2 mb-2">
             {experienceSignals.map((signal, idx) => {
               const IconComponent = signal.icon;
               return (
                 <div
                   key={signal.id + idx}
-                  className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center"
+                  className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center"
                 >
-                  <IconComponent className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
+                  <IconComponent className="w-4 h-4 text-primary" strokeWidth={2.5} />
                 </div>
               );
             })}
@@ -156,7 +156,7 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
         )}
 
         {/* Row 3: Distance + Price */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
+        <div className="flex items-center gap-2 text-secondary text-muted-foreground mb-2">
           <span>{distance.toFixed(1)} mi</span>
           <span className="text-muted-foreground/40">·</span>
           <span className="font-medium">{place.priceLevel}</span>
@@ -165,7 +165,7 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
         {/* Row 4: Confidence Label */}
         <div className="flex items-center justify-between">
           <span className={cn(
-            'text-xs font-medium',
+            'text-chip font-medium',
             confidenceInfo.variant === 'positive' && 'text-emerald-600 dark:text-emerald-400',
             confidenceInfo.variant === 'neutral' && 'text-muted-foreground',
             confidenceInfo.variant === 'caution' && 'text-amber-600 dark:text-amber-400'
@@ -178,7 +178,7 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
             "flex-shrink-0 transition-colors",
             isSelected ? "text-primary" : "text-muted-foreground/30"
           )}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </div>

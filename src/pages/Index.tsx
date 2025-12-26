@@ -117,31 +117,31 @@ const Index = () => {
 
         {/* Why Travelers Use MUVO */}
         <section className="mb-12">
-          <h2 className="font-display text-xl font-semibold text-foreground mb-5 text-center">
+          <h2 className="font-display text-page-title text-foreground mb-5 text-center">
             Why travelers use MUVO
           </h2>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Check className="w-4 h-4 text-accent" />
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-secondary text-muted-foreground">
                 Real experiences, not star ratings
               </p>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Check className="w-4 h-4 text-accent" />
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-secondary text-muted-foreground">
                 See what actually stood out
               </p>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Check className="w-4 h-4 text-accent" />
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-secondary text-muted-foreground">
                 Decide based on what matters to you
               </p>
             </div>
@@ -151,7 +151,7 @@ const Index = () => {
         {/* Trending Near You Carousel */}
         {trendingPlaces.length > 0 && (
           <section className="mb-10">
-            <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+            <h2 className="font-display text-page-title text-foreground mb-4">
               Trending near you
             </h2>
             <Carousel
@@ -180,11 +180,11 @@ const Index = () => {
                             </div>
                           )}
                         </div>
-                        <div className="p-3">
-                          <h3 className="font-semibold text-sm text-foreground leading-tight group-hover:text-accent transition-colors line-clamp-1">
+                        <div className="p-3.5">
+                          <h3 className="text-place-name text-foreground group-hover:text-accent transition-colors line-clamp-1">
                             {place.name}
                           </h3>
-                          <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                          <p className="text-secondary text-muted-foreground mt-1 mb-2">
                             {place.primaryCategory}
                           </p>
                           <PlaceStampBadges 

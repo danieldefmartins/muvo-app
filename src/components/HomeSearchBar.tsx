@@ -82,7 +82,7 @@ export const HomeSearchBar = forwardRef<HTMLDivElement, HomeSearchBarProps>(
             onChange={handleInputChange}
             onFocus={() => setIsOpen(true)}
             placeholder="Where do you want to go?"
-            className="w-full h-14 pl-12 pr-10 rounded-full bg-white/95 backdrop-blur-sm border-0 shadow-lg text-foreground placeholder:text-muted-foreground text-base"
+            className="w-full h-14 pl-12 pr-10 rounded-full bg-white/95 backdrop-blur-sm border-0 shadow-lg text-foreground placeholder:text-muted-foreground/80 text-input"
           />
           {query && (
             <button
@@ -106,14 +106,14 @@ export const HomeSearchBar = forwardRef<HTMLDivElement, HomeSearchBarProps>(
                   key={place.id}
                   type="button"
                   onClick={() => handleSelectPlace(place)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-muted transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-4 h-4 text-primary" />
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-foreground">{place.name}</p>
-                    <p className="text-xs text-muted-foreground">{place.primaryCategory}</p>
+                    <p className="text-place-name text-foreground">{place.name}</p>
+                    <p className="text-secondary text-muted-foreground">{place.primaryCategory}</p>
                   </div>
                   <WeatherBadge 
                     latitude={place.latitude} 
