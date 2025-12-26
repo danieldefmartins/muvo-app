@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ReviewFiltersState {
-  positiveStamps: string[];  // What people liked - include places with these
-  neutralStamps: string[];   // Place feels like - include places with these
-  negativeStamps: string[];  // Avoid places with - exclude places with these
+  positiveStamps: string[];  // What people liked - boost places with these
+  neutralStamps: string[];   // Place feels like - boost places with these
+  negativeStamps: string[];  // Avoid places with - penalize places with these
 }
 
 export const DEFAULT_REVIEW_FILTERS: ReviewFiltersState = {
@@ -15,9 +15,9 @@ export const DEFAULT_REVIEW_FILTERS: ReviewFiltersState = {
 
 export interface PlaceStampData {
   placeId: string;
-  positiveStamps: Set<string>;
-  neutralStamps: Set<string>;
-  negativeStamps: Set<string>;
+  positiveStamps: Map<string, number>; // stampId -> vote count
+  neutralStamps: Map<string, number>;
+  negativeStamps: Map<string, number>;
 }
 
 // Fetch all place stamp aggregates for filtering
@@ -42,19 +42,19 @@ export function usePlaceStampAggregatesAll() {
         if (!placeData) {
           placeData = {
             placeId: row.place_id,
-            positiveStamps: new Set(),
-            neutralStamps: new Set(),
-            negativeStamps: new Set(),
+            positiveStamps: new Map(),
+            neutralStamps: new Map(),
+            negativeStamps: new Map(),
           };
           placeStampMap.set(row.place_id, placeData);
         }
 
         if (row.polarity === 'positive') {
-          placeData.positiveStamps.add(row.stamp_id);
+          placeData.positiveStamps.set(row.stamp_id, row.total_votes);
         } else if (row.polarity === 'neutral') {
-          placeData.neutralStamps.add(row.stamp_id);
+          placeData.neutralStamps.set(row.stamp_id, row.total_votes);
         } else if (row.polarity === 'improvement') {
-          placeData.negativeStamps.add(row.stamp_id);
+          placeData.negativeStamps.set(row.stamp_id, row.total_votes);
         }
       });
 
@@ -64,57 +64,103 @@ export function usePlaceStampAggregatesAll() {
   });
 }
 
-// Filter places by review stamps
-export function filterPlacesByReviews(
+// Score places by how well they match filters (higher = better match)
+export interface PlaceFilterScore {
+  placeId: string;
+  score: number;
+  matchedPositive: { stampId: string; votes: number }[];
+  matchedNeutral: { stampId: string; votes: number }[];
+  matchedNegative: { stampId: string; votes: number }[];
+}
+
+export function scorePlacesByReviews(
   placeIds: string[],
   stampData: Map<string, PlaceStampData> | undefined,
   filters: ReviewFiltersState
-): string[] {
-  if (!stampData) return placeIds;
+): Map<string, PlaceFilterScore> {
+  const scores = new Map<string, PlaceFilterScore>();
   
+  placeIds.forEach((placeId) => {
+    const data = stampData?.get(placeId);
+    let score = 0;
+    const matchedPositive: { stampId: string; votes: number }[] = [];
+    const matchedNeutral: { stampId: string; votes: number }[] = [];
+    const matchedNegative: { stampId: string; votes: number }[] = [];
+
+    // Positive stamps boost score
+    filters.positiveStamps.forEach((stampId) => {
+      const votes = data?.positiveStamps.get(stampId);
+      if (votes) {
+        score += votes * 2; // Weight positive matches heavily
+        matchedPositive.push({ stampId, votes });
+      }
+    });
+
+    // Neutral stamps boost score (lighter weight)
+    filters.neutralStamps.forEach((stampId) => {
+      const votes = data?.neutralStamps.get(stampId);
+      if (votes) {
+        score += votes; // Neutral has moderate weight
+        matchedNeutral.push({ stampId, votes });
+      }
+    });
+
+    // Negative stamps PENALIZE score
+    filters.negativeStamps.forEach((stampId) => {
+      const votes = data?.negativeStamps.get(stampId);
+      if (votes) {
+        score -= votes * 3; // Penalize negative matches heavily
+        matchedNegative.push({ stampId, votes });
+      }
+    });
+
+    scores.set(placeId, {
+      placeId,
+      score,
+      matchedPositive,
+      matchedNeutral,
+      matchedNegative,
+    });
+  });
+
+  return scores;
+}
+
+// Re-rank places by filter scores (instead of hiding them)
+export function rankPlacesByReviews(
+  placeIds: string[],
+  stampData: Map<string, PlaceStampData> | undefined,
+  filters: ReviewFiltersState
+): { rankedIds: string[]; scores: Map<string, PlaceFilterScore> } {
   const hasActiveFilters = 
     filters.positiveStamps.length > 0 || 
     filters.neutralStamps.length > 0 || 
     filters.negativeStamps.length > 0;
 
-  if (!hasActiveFilters) return placeIds;
+  const scores = scorePlacesByReviews(placeIds, stampData, filters);
 
-  return placeIds.filter((placeId) => {
-    const data = stampData.get(placeId);
-    
-    // If no stamp data for this place and filters are active, exclude it
-    // unless only negative filters are set (we'd keep places without negatives)
-    if (!data) {
-      // If only negative filters active, include places without data
-      return filters.positiveStamps.length === 0 && filters.neutralStamps.length === 0;
-    }
+  if (!hasActiveFilters) {
+    return { rankedIds: placeIds, scores };
+  }
 
-    // Check positive filters (must have at least ONE of the selected)
-    if (filters.positiveStamps.length > 0) {
-      const hasAnyPositive = filters.positiveStamps.some((stamp) => 
-        data.positiveStamps.has(stamp)
-      );
-      if (!hasAnyPositive) return false;
-    }
-
-    // Check neutral filters (must have at least ONE of the selected)
-    if (filters.neutralStamps.length > 0) {
-      const hasAnyNeutral = filters.neutralStamps.some((stamp) => 
-        data.neutralStamps.has(stamp)
-      );
-      if (!hasAnyNeutral) return false;
-    }
-
-    // Check negative filters (must NOT have ANY of the selected)
-    if (filters.negativeStamps.length > 0) {
-      const hasAnyNegative = filters.negativeStamps.some((stamp) => 
-        data.negativeStamps.has(stamp)
-      );
-      if (hasAnyNegative) return false;
-    }
-
-    return true;
+  // Sort by score descending (places with better filter matches first)
+  const rankedIds = [...placeIds].sort((a, b) => {
+    const scoreA = scores.get(a)?.score || 0;
+    const scoreB = scores.get(b)?.score || 0;
+    return scoreB - scoreA;
   });
+
+  return { rankedIds, scores };
+}
+
+// Legacy filter function (still used for explicit exclusion if needed)
+export function filterPlacesByReviews(
+  placeIds: string[],
+  stampData: Map<string, PlaceStampData> | undefined,
+  filters: ReviewFiltersState
+): string[] {
+  // Now we just return all places - no hiding, only re-ranking
+  return placeIds;
 }
 
 // Count active review filters
@@ -124,4 +170,27 @@ export function countActiveReviewFilters(filters: ReviewFiltersState): number {
     filters.neutralStamps.length +
     filters.negativeStamps.length
   );
+}
+
+// Get matching signals for a place (for filter transparency)
+export function getMatchingSignals(
+  placeId: string,
+  stampData: Map<string, PlaceStampData> | undefined,
+  filters: ReviewFiltersState
+): { positive: { id: string; votes: number }[]; neutral: { id: string; votes: number }[]; negative: { id: string; votes: number }[] } {
+  const data = stampData?.get(placeId);
+  
+  const positive = filters.positiveStamps
+    .map(id => ({ id, votes: data?.positiveStamps.get(id) || 0 }))
+    .filter(s => s.votes > 0);
+  
+  const neutral = filters.neutralStamps
+    .map(id => ({ id, votes: data?.neutralStamps.get(id) || 0 }))
+    .filter(s => s.votes > 0);
+  
+  const negative = filters.negativeStamps
+    .map(id => ({ id, votes: data?.negativeStamps.get(id) || 0 }))
+    .filter(s => s.votes > 0);
+
+  return { positive, neutral, negative };
 }

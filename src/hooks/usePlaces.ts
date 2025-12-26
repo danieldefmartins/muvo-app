@@ -11,7 +11,10 @@ export type PlaceCategory =
   | 'Boondocking'
   | 'Business Allowing Overnight'
   | 'Rest Area / Travel Plaza'
-  | 'Fairgrounds / Event Grounds';
+  | 'Fairgrounds / Event Grounds'
+  | 'Dog Park'
+  | 'RV Parking'
+  | 'RV Storage';
 
 export type PlaceFeature =
   | 'Dump Station'
@@ -22,6 +25,7 @@ export type PlaceFeature =
   | 'Laundry'
   | 'Wi-Fi'
   | 'Pet Friendly'
+  | 'Dog Friendly'
   | 'Big Rig Friendly'
   | 'Swimming Pool'
   | 'Hot Tub'
@@ -39,6 +43,9 @@ export const PLACE_CATEGORIES: PlaceCategory[] = [
   'Business Allowing Overnight',
   'Rest Area / Travel Plaza',
   'Fairgrounds / Event Grounds',
+  'Dog Park',
+  'RV Parking',
+  'RV Storage',
 ];
 
 export const PLACE_FEATURES: PlaceFeature[] = [
@@ -50,6 +57,7 @@ export const PLACE_FEATURES: PlaceFeature[] = [
   'Laundry',
   'Wi-Fi',
   'Pet Friendly',
+  'Dog Friendly',
   'Big Rig Friendly',
   'Swimming Pool',
   'Hot Tub',
