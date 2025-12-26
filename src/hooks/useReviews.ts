@@ -66,21 +66,61 @@ export const REVIEW_DIMENSIONS: { id: ReviewDimension; label: string; icon: stri
   { id: 'restrictions', label: 'Restrictions', icon: 'Ban' },
 ];
 
-export function useReviews(placeId: string) {
+export function useReviews(placeId: string, isAdmin?: boolean) {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['reviews', placeId],
+    queryKey: ['reviews', placeId, isAdmin],
     queryFn: async () => {
-      // Use the public_reviews view which excludes note_private for security
-      // This prevents exposing private notes to unauthorized users
-      const { data: reviews, error: reviewsError } = await supabase
-        .from('public_reviews')
-        .select('*')
-        .eq('place_id', placeId)
-        .order('created_at', { ascending: false });
+      let reviews: any[] = [];
+      
+      if (isAdmin) {
+        // Admins can query the reviews table directly (RLS allows this)
+        // This includes note_private for admin visibility
+        const { data, error } = await supabase
+          .from('reviews')
+          .select(`
+            id,
+            place_id,
+            user_id,
+            note_public,
+            note_private,
+            created_at,
+            updated_at,
+            reviewer_medal
+          `)
+          .eq('place_id', placeId)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        // For admin view, we need to fetch profile info separately
+        const userIds = [...new Set((data || []).map((r: any) => r.user_id))];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, trusted_contributor, reviewer_medal')
+          .in('id', userIds);
+        
+        const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+        
+        reviews = (data || []).map((r: any) => ({
+          ...r,
+          user_display_name: profileMap.get(r.user_id)?.display_name,
+          trusted_contributor: profileMap.get(r.user_id)?.trusted_contributor,
+          current_reviewer_medal: profileMap.get(r.user_id)?.reviewer_medal,
+        }));
+      } else {
+        // Use the public_reviews view which excludes note_private for security
+        // This prevents exposing private notes to unauthorized users
+        const { data, error } = await supabase
+          .from('public_reviews')
+          .select('*')
+          .eq('place_id', placeId)
+          .order('created_at', { ascending: false });
 
-      if (reviewsError) throw reviewsError;
+        if (error) throw error;
+        reviews = data || [];
+      }
 
       const { data: signals, error: signalsError } = await supabase
         .from('review_signals')
@@ -89,14 +129,14 @@ export function useReviews(placeId: string) {
 
       if (signalsError) throw signalsError;
 
-      const reviewsWithSignals: Review[] = (reviews || []).map((review: any) => ({
+      const reviewsWithSignals: Review[] = reviews.map((review: any) => ({
         id: review.id,
         place_id: review.place_id,
         user_id: review.user_id,
         note_public: review.note_public,
-        // note_private is not included in the public_reviews view for security
-        // Users can see their own private notes via useMyReview hook
-        note_private: null,
+        // note_private only included for admins (from reviews table)
+        // Non-admins get null (from public_reviews view)
+        note_private: review.note_private || null,
         created_at: review.created_at,
         updated_at: review.updated_at,
         user_display_name: review.user_display_name,

@@ -28,9 +28,10 @@ interface ReviewListProps {
 }
 
 export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
-  const { data: reviews, isLoading } = useReviews(placeId);
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
+  // Pass isAdmin to useReviews so admins can see private notes via RLS-protected query
+  const { data: reviews, isLoading } = useReviews(placeId, isAdmin);
   const deleteReview = useDeleteReview();
   const { toast } = useToast();
   const [filter, setFilter] = useState<'all' | 'trusted'>('all');
