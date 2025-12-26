@@ -18,7 +18,7 @@ import {
   ReviewFiltersState, 
   DEFAULT_REVIEW_FILTERS, 
   usePlaceStampAggregatesAll, 
-  filterPlacesByReviews 
+  rankPlacesByReviews 
 } from '@/hooks/useReviewFilters';
 const MapView = () => {
   const [searchParams] = useSearchParams();
@@ -66,16 +66,18 @@ const MapView = () => {
 
   const [sort, setSort] = useState<SortOption>('recently-updated');
 
-  // Filter places
+  // Filter and rank places
   const filteredPlaces = useMemo(() => {
     if (!places) return [];
 
     let result = [...places];
 
+    // Apply category filter (still hides non-matching)
     if (filters.category) {
       result = result.filter((p) => p.primaryCategory === filters.category);
     }
 
+    // Apply feature filters (still hides non-matching)
     if (filters.features.length > 0) {
       result = result.filter((p) =>
         filters.features.every((f) => p.features.includes(f))
@@ -94,14 +96,27 @@ const MapView = () => {
       result = result.filter((p) => p.openYearRound);
     }
 
-    // Apply review-based filtering
+    // Apply review-based RE-RANKING (not hiding)
     const placeIds = result.map(p => p.id);
-    const filteredIds = filterPlacesByReviews(placeIds, stampData, reviewFilters);
-    const filteredIdSet = new Set(filteredIds);
-    result = result.filter(p => filteredIdSet.has(p.id));
+    const { rankedIds } = rankPlacesByReviews(placeIds, stampData, reviewFilters);
+    
+    // Create a map for quick lookup of rank position
+    const rankMap = new Map(rankedIds.map((id, idx) => [id, idx]));
 
-    // Apply sorting
-    if (sort === 'alphabetical') {
+    // Apply sorting - review filter ranking takes priority when active
+    const hasReviewFilters = 
+      reviewFilters.positiveStamps.length > 0 || 
+      reviewFilters.neutralStamps.length > 0 || 
+      reviewFilters.negativeStamps.length > 0;
+
+    if (hasReviewFilters) {
+      // Sort by review filter ranking
+      result.sort((a, b) => {
+        const rankA = rankMap.get(a.id) ?? Infinity;
+        const rankB = rankMap.get(b.id) ?? Infinity;
+        return rankA - rankB;
+      });
+    } else if (sort === 'alphabetical') {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else {
       result.sort((a, b) => {

@@ -207,7 +207,7 @@ const PlaceDetail = () => {
             <CompactReviewStrip
               placeId={id!}
               placeName={place.name}
-              placeCategory={place.primaryCategory}
+              placeCategory={place.primaryCategory as any}
             />
           </div>
           
@@ -245,7 +245,7 @@ const PlaceDetail = () => {
                 longitude={place.longitude}
                 name={place.name}
                 mapboxToken={mapboxToken}
-                category={place.primaryCategory}
+                category={place.primaryCategory as any}
                 isVerified={place.isVerified}
                 lastUpdated={place.lastUpdated instanceof Date ? place.lastUpdated.toISOString() : place.lastUpdated}
               />

@@ -21,8 +21,9 @@ function getHoursStatus(place: Place): { text: string; isOpen: boolean | null } 
     return { text: 'Open 24/7', isOpen: true };
   }
 
+  // If no hours data, show message per spec
   if (!place.hoursJson) {
-    return { text: 'Hours not provided', isOpen: null };
+    return { text: 'Please check hours of operation', isOpen: null };
   }
 
   const now = new Date();
