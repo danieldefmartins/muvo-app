@@ -12,6 +12,7 @@ import { Loader2, Navigation } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { hapticLight } from '@/lib/haptics';
+import { getCategoryColor, getCategoryIconSVG, getContrastTextColor, MUVO_BRAND } from '@/lib/categoryColors';
 
 interface PlacesMapProps {
   places: Place[];
@@ -255,7 +256,7 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
       const props = feature.properties;
 
       if (props.cluster) {
-        // Cluster marker
+        // Cluster marker - neutral with colored ring
         const count = props.point_count || 0;
         const el = document.createElement('div');
         el.className = 'map-cluster-marker';
@@ -270,12 +271,12 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          background: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
+          background: ${MUVO_BRAND.background};
+          color: ${MUVO_BRAND.textPrimary};
           font-weight: 600;
           font-size: 14px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-          border: 3px solid white;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+          border: 3px solid ${MUVO_BRAND.blue};
           cursor: pointer;
           z-index: 100;
         `;
@@ -299,14 +300,21 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
 
         clusterMarkersRef.current.push(marker);
       } else {
-        // Individual place marker
+        // Individual place marker with CATEGORY COLOR
         const place = props.place!;
         const isSelected = selectedPlaceId === place.id;
         const el = document.createElement('div');
         el.className = 'map-place-marker';
         
+        // Get category-specific color
+        const categoryColor = getCategoryColor(place.primaryCategory);
+        const textColor = getContrastTextColor(categoryColor);
+        
         const pinSize = isSelected ? 44 : 36;
-        const pinColor = isSelected ? 'hsl(var(--accent))' : 'hsl(var(--primary))';
+        const iconSize = isSelected ? 20 : 16;
+        
+        // Selected state: add MUVO Blue glow outline
+        const selectedGlow = isSelected ? `0 0 0 3px ${MUVO_BRAND.blue}, 0 4px 16px rgba(0,0,0,0.35)` : '0 4px 12px rgba(0,0,0,0.3)';
         
         el.style.cssText = `
           width: ${pinSize}px;
@@ -315,20 +323,17 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          background: ${pinColor};
-          box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-          border: 3px solid white;
+          background: ${categoryColor};
+          box-shadow: ${selectedGlow};
+          border: 2px solid white;
           cursor: pointer;
           z-index: ${isSelected ? 110 : 100};
-          transition: transform 0.15s ease;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
         `;
         
-        el.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: ${isSelected ? 22 : 18}px; height: ${isSelected ? 22 : 18}px;">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-        `;
+        // Category-specific icon SVG
+        const iconSvg = getCategoryIconSVG(place.primaryCategory, iconSize, textColor);
+        el.innerHTML = iconSvg;
         
         el.addEventListener('mouseenter', () => {
           if (!isSelected) el.style.transform = 'scale(1.15)';
