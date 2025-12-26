@@ -41,7 +41,7 @@ export default function AdminPhotos() {
   if (isAdminLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Photo Moderation" showBack />
+        <Header showBack />
         <main className="container px-4 py-6 max-w-2xl mx-auto">
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -54,7 +54,7 @@ export default function AdminPhotos() {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background">
-        <Header title="Photo Moderation" showBack />
+        <Header showBack />
         <main className="container px-4 py-6 max-w-2xl mx-auto text-center">
           <AlertTriangle className="w-12 h-12 mx-auto text-destructive mb-4" />
           <h1 className="text-xl font-semibold mb-2">Access Denied</h1>
@@ -71,7 +71,7 @@ export default function AdminPhotos() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Photo Moderation" showBack />
+      <Header showBack />
 
       <main className="container px-4 py-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-2 mb-6">
