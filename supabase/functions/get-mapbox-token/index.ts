@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,11 +13,56 @@ serve(async (req) => {
   }
 
   try {
-    // Mapbox public token is safe to return without auth
-    // It's a publishable key designed for client-side use
+    // Require authentication to protect Mapbox quota
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.log("get-mapbox-token: Missing authorization header");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Verify the user is authenticated
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error("get-mapbox-token: Missing Supabase environment variables");
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      console.log("get-mapbox-token: Invalid user or authentication error", userError?.message);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // User is authenticated, return the Mapbox token
     const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
 
     if (!mapboxToken) {
+      console.error("get-mapbox-token: MAPBOX_PUBLIC_TOKEN not configured");
       return new Response(
         JSON.stringify({ error: "Mapbox token not configured" }),
         {
@@ -26,6 +72,7 @@ serve(async (req) => {
       );
     }
 
+    console.log("get-mapbox-token: Successfully returned token for user", user.id);
     return new Response(
       JSON.stringify({ token: mapboxToken }),
       {
