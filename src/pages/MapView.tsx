@@ -14,7 +14,12 @@ import { AlertCircle, MapPinOff, FilterX, ArrowLeft, Navigation, Loader2 } from 
 import { Button } from '@/components/ui/button';
 import { PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
 import { hapticLight } from '@/lib/haptics';
-
+import { 
+  ReviewFiltersState, 
+  DEFAULT_REVIEW_FILTERS, 
+  usePlaceStampAggregatesAll, 
+  filterPlacesByReviews 
+} from '@/hooks/useReviewFilters';
 const MapView = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -47,6 +52,7 @@ const MapView = () => {
   }, [searchParams]);
   
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
+  const { data: stampData } = usePlaceStampAggregatesAll();
 
   const [filters, setFilters] = useState<PlaceFiltersState>({
     category: null,
@@ -55,6 +61,8 @@ const MapView = () => {
     petFriendly: false,
     bigRigFriendly: false,
   });
+
+  const [reviewFilters, setReviewFilters] = useState<ReviewFiltersState>(DEFAULT_REVIEW_FILTERS);
 
   const [sort, setSort] = useState<SortOption>('recently-updated');
 
@@ -86,6 +94,12 @@ const MapView = () => {
       result = result.filter((p) => p.openYearRound);
     }
 
+    // Apply review-based filtering
+    const placeIds = result.map(p => p.id);
+    const filteredIds = filterPlacesByReviews(placeIds, stampData, reviewFilters);
+    const filteredIdSet = new Set(filteredIds);
+    result = result.filter(p => filteredIdSet.has(p.id));
+
     // Apply sorting
     if (sort === 'alphabetical') {
       result.sort((a, b) => a.name.localeCompare(b.name));
@@ -99,11 +113,12 @@ const MapView = () => {
     }
 
     return result;
-  }, [places, filters, sort]);
+  }, [places, filters, sort, stampData, reviewFilters]);
 
   const isLoading = isLoadingPlaces || isLoadingToken;
   const hasError = placesError || tokenError;
-  const hasActiveFilters = filters.category || filters.features.length > 0 || filters.openYearRound || filters.petFriendly || filters.bigRigFriendly;
+  const hasActiveFilters = filters.category || filters.features.length > 0 || filters.openYearRound || filters.petFriendly || filters.bigRigFriendly || 
+    reviewFilters.positiveStamps.length > 0 || reviewFilters.neutralStamps.length > 0 || reviewFilters.negativeStamps.length > 0;
 
   const clearFilters = useCallback(() => {
     setFilters({
@@ -113,6 +128,7 @@ const MapView = () => {
       petFriendly: false,
       bigRigFriendly: false,
     });
+    setReviewFilters(DEFAULT_REVIEW_FILTERS);
   }, []);
 
   // Handle search selections
@@ -283,6 +299,8 @@ const MapView = () => {
             filters={filters} 
             onFiltersChange={setFilters}
             filteredCount={filteredPlaces.length}
+            reviewFilters={reviewFilters}
+            onReviewFiltersChange={setReviewFilters}
           />
         </div>
       </div>

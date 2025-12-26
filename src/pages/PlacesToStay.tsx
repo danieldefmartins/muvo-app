@@ -9,12 +9,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Map, List, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { 
+  ReviewFiltersState, 
+  DEFAULT_REVIEW_FILTERS, 
+  usePlaceStampAggregatesAll, 
+  filterPlacesByReviews 
+} from '@/hooks/useReviewFilters';
 
 type ViewMode = 'list' | 'map';
 
 const PlacesToStay = () => {
   const { data: places, isLoading, error } = usePlaces();
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
+  const { data: stampData } = usePlaceStampAggregatesAll();
   const mapRef = useRef<PlacesMapRef>(null);
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -25,6 +32,7 @@ const PlacesToStay = () => {
     petFriendly: false,
     bigRigFriendly: false,
   });
+  const [reviewFilters, setReviewFilters] = useState<ReviewFiltersState>(DEFAULT_REVIEW_FILTERS);
   const [sort, setSort] = useState<SortOption>('recently-updated');
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [visiblePlaceIds, setVisiblePlaceIds] = useState<string[] | null>(null);
@@ -58,6 +66,12 @@ const PlacesToStay = () => {
       result = result.filter((p) => p.openYearRound);
     }
 
+    // Apply review-based filtering
+    const placeIds = result.map(p => p.id);
+    const filteredIds = filterPlacesByReviews(placeIds, stampData, reviewFilters);
+    const filteredIdSet = new Set(filteredIds);
+    result = result.filter(p => filteredIdSet.has(p.id));
+
     // Apply sorting
     if (sort === 'alphabetical') {
       result.sort((a, b) => a.name.localeCompare(b.name));
@@ -72,7 +86,7 @@ const PlacesToStay = () => {
     }
 
     return result;
-  }, [places, filters, sort]);
+  }, [places, filters, sort, stampData, reviewFilters]);
 
   // Places visible in the current map viewport (for synced list)
   const displayedPlaces = useMemo(() => {
