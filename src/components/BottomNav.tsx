@@ -129,7 +129,10 @@ const VISIBLE_PATHS = [
 
 export function BottomNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isMapInteracting, isScrollingDown } = useFooter();
+  const { user } = useAuth();
+  const [showAddPlace, setShowAddPlace] = useState(false);
   
   const pathname = location.pathname;
   
@@ -157,72 +160,122 @@ export function BottomNav() {
     hapticLight();
   };
 
+  const handleAddClick = () => {
+    hapticLight();
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    setShowAddPlace(true);
+  };
+
   // Compact mode when scrolling down
   const isCompact = isScrollingDown && !isMapPage;
 
+  const renderNavItem = (item: NavItem) => {
+    const isActive = location.pathname === item.path;
+    const Icon = item.icon;
+    
+    return (
+      <Link
+        key={item.path}
+        to={item.path}
+        onClick={handleNavClick}
+        className={cn(
+          'flex flex-col items-center justify-center min-w-[48px] px-2 rounded-xl transition-all duration-200',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+          isActive 
+            ? 'text-primary' 
+            : 'text-muted-foreground hover:text-foreground',
+          isCompact ? 'gap-0 py-1' : 'gap-0.5 py-2'
+        )}
+        style={{ minHeight: '44px' }}
+      >
+        <div className={cn(
+          'relative flex items-center justify-center rounded-full transition-all duration-200',
+          isActive && !isCompact && 'bg-primary/10 px-2 py-1',
+          isActive && isCompact && 'bg-primary/10 px-1.5 py-0.5'
+        )}>
+          <Icon 
+            className={cn(
+              'transition-all duration-200',
+              isCompact ? 'w-5 h-5' : 'w-5 h-5'
+            )}
+            strokeWidth={isActive ? 2.25 : 2}
+          />
+        </div>
+        <span className={cn(
+          'font-medium tracking-tight transition-all duration-200',
+          isActive && 'text-primary',
+          isCompact 
+            ? 'text-[8px] opacity-60' 
+            : 'text-[10px] opacity-100'
+        )}>
+          {item.label}
+        </span>
+      </Link>
+    );
+  };
+
   return (
-    <nav 
-      className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 border-t border-border/50',
-        'transition-all duration-200 ease-out',
-        shouldHideForMapInteraction && 'translate-y-full',
-        isCompact 
-          ? 'bg-background/80 backdrop-blur-sm' 
-          : 'bg-background/95 backdrop-blur-md'
-      )}
-      style={{ 
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-      }}
-    >
-      <div className={cn(
-        'flex items-center justify-around max-w-lg mx-auto px-2 transition-all duration-200',
-        isCompact ? 'h-12' : 'h-16'
-      )}>
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          const Icon = item.icon;
+    <>
+      <nav 
+        className={cn(
+          'fixed bottom-0 left-0 right-0 z-50 border-t border-border/50',
+          'transition-all duration-200 ease-out',
+          shouldHideForMapInteraction && 'translate-y-full',
+          isCompact 
+            ? 'bg-background/80 backdrop-blur-sm' 
+            : 'bg-background/95 backdrop-blur-md'
+        )}
+        style={{ 
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
+      >
+        <div className={cn(
+          'flex items-center justify-around max-w-lg mx-auto px-1 transition-all duration-200',
+          isCompact ? 'h-12' : 'h-16'
+        )}>
+          {/* Left nav items */}
+          {leftNavItems.map(renderNavItem)}
           
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={handleNavClick}
-              className={cn(
-                'flex flex-col items-center justify-center min-w-[56px] px-3 rounded-xl transition-all duration-200',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                isActive 
-                  ? 'text-primary' 
-                  : 'text-muted-foreground hover:text-foreground',
-                isCompact ? 'gap-0 py-1' : 'gap-0.5 py-2'
-              )}
-              style={{ minHeight: '44px' }}
-            >
-              <div className={cn(
-                'relative flex items-center justify-center rounded-full transition-all duration-200',
-                isActive && !isCompact && 'bg-primary/10 px-3 py-1',
-                isActive && isCompact && 'bg-primary/10 px-2 py-0.5'
-              )}>
-                <Icon 
-                  className={cn(
-                    'transition-all duration-200',
-                    isCompact ? 'w-5 h-5' : 'w-6 h-6'
-                  )}
-                  strokeWidth={isActive ? 2.25 : 2}
-                />
-              </div>
-              <span className={cn(
-                'font-medium tracking-tight transition-all duration-200',
-                isActive && 'text-primary',
-                isCompact 
-                  ? 'text-[8px] opacity-60' 
-                  : 'text-[10px] opacity-100'
-              )}>
-                {item.label}
+          {/* Center + button */}
+          <button
+            onClick={handleAddClick}
+            className={cn(
+              'flex flex-col items-center justify-center px-3 rounded-xl transition-all duration-200',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+              'text-primary-foreground',
+              isCompact ? 'gap-0 py-1' : 'gap-0.5 py-2'
+            )}
+            style={{ minHeight: '44px' }}
+          >
+            <div className={cn(
+              'flex items-center justify-center rounded-full bg-primary transition-all duration-200 shadow-lg',
+              isCompact ? 'w-9 h-9' : 'w-11 h-11'
+            )}>
+              <Plus className={cn(
+                'transition-all duration-200',
+                isCompact ? 'w-5 h-5' : 'w-6 h-6'
+              )} strokeWidth={2.5} />
+            </div>
+            {!isCompact && (
+              <span className="text-[10px] font-medium text-primary opacity-0">
+                Add
               </span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+            )}
+          </button>
+          
+          {/* Right nav items */}
+          {rightNavItems.map(renderNavItem)}
+        </div>
+      </nav>
+
+      {/* Add Place Wizard */}
+      <AddPlaceWizard 
+        open={showAddPlace} 
+        onOpenChange={setShowAddPlace} 
+      />
+    </>
   );
 }

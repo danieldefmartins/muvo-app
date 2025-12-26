@@ -4,12 +4,13 @@ import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { MapSearchBar } from '@/components/MapSearchBar';
 import { MapFilterChips } from '@/components/MapFilterChips';
 import { MapBottomSheet } from '@/components/MapBottomSheet';
+import { AddPlaceWizard } from '@/components/place-wizard/AddPlaceWizard';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { useAuth } from '@/hooks/useAuth';
 import { useFooter } from '@/contexts/FooterContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, MapPinOff, FilterX, ArrowLeft, User, LogOut } from 'lucide-react';
+import { AlertCircle, MapPinOff, FilterX, ArrowLeft, User, LogOut, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceFiltersState, SortOption } from '@/components/PlaceFilters';
 
@@ -27,6 +28,7 @@ const MapView = () => {
   const [mapCenter, setMapCenter] = useState<{ lng: number; lat: number } | undefined>(undefined);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
+  const [showAddPlace, setShowAddPlace] = useState(false);
 
   // Parse URL params for initial map position
   const initialCenter = useMemo(() => {
@@ -329,6 +331,22 @@ const MapView = () => {
         </div>
       )}
 
+      {/* Floating Add Place button */}
+      <Button
+        onClick={() => {
+          if (!user) {
+            navigate('/auth');
+            return;
+          }
+          setShowAddPlace(true);
+        }}
+        size="icon"
+        className="fixed right-4 z-40 w-14 h-14 rounded-full shadow-lg"
+        style={{ bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <Plus className="w-6 h-6" />
+      </Button>
+
       {/* Bottom Sheet */}
       {mapboxToken && !isLoading && !hasError && (
         <MapBottomSheet
@@ -339,6 +357,13 @@ const MapView = () => {
           onSheetStateChange={handleSheetStateChange}
         />
       )}
+
+      {/* Add Place Wizard */}
+      <AddPlaceWizard 
+        open={showAddPlace} 
+        onOpenChange={setShowAddPlace}
+        initialLocation={mapCenter}
+      />
     </div>
   );
 };
