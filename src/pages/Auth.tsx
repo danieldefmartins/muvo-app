@@ -7,16 +7,36 @@ import { Mail, Lock, ArrowRight, CheckCircle, User, MapPin, Compass, AtSign } fr
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, TravelerType } from '@/hooks/useAuth';
 import { Header } from '@/components/Header';
 import { UserProfileCard } from '@/components/UserProfileCard';
+import { TermsPrivacyModal } from '@/components/TermsPrivacyModal';
 import { supabase } from '@/integrations/supabase/client';
 
 // Schemas
-const emailPasswordSchema = z.object({
+const signUpSchema = z.object({
+  firstName: z
+    .string()
+    .min(1, 'First name is required')
+    .max(50, 'First name is too long')
+    .regex(/^[A-Za-z'-]+$/, 'Only letters, hyphens, and apostrophes allowed'),
+  lastName: z
+    .string()
+    .min(1, 'Last name is required')
+    .max(50, 'Last name is too long')
+    .regex(/^[A-Za-z'-]+$/, 'Only letters, hyphens, and apostrophes allowed'),
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be 30 characters or less')
+    .regex(/^[a-z0-9]+$/, 'Only lowercase letters and numbers allowed'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  termsAccepted: z.boolean().refine(val => val === true, {
+    message: 'You must agree to the Terms of Service and Privacy Policy',
+  }),
 });
 
 const signInEmailSchema = z.object({
@@ -25,25 +45,15 @@ const signInEmailSchema = z.object({
 });
 
 const profileCompletionSchema = z.object({
-  username: z
-    .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(30, 'Username must be 30 characters or less')
-    .regex(/^[a-z0-9]+$/, 'Only lowercase letters and numbers allowed'),
-  fullName: z
-    .string()
-    .min(3, 'Please enter your full name')
-    .max(100, 'Name is too long')
-    .regex(/^[A-Za-z'-]+(\s+[A-Za-z'-]+)+$/, 'Please enter first and last name (letters only)'),
   travelerType: z.string().optional(),
   homeBase: z.string().max(100, 'Home base is too long').optional(),
 });
 
-type EmailPasswordForm = z.infer<typeof emailPasswordSchema>;
+type SignUpForm = z.infer<typeof signUpSchema>;
 type SignInEmailForm = z.infer<typeof signInEmailSchema>;
 type ProfileCompletionForm = z.infer<typeof profileCompletionSchema>;
 
-type AuthMode = 'signup' | 'signin' | 'check-email' | 'confirmed' | 'complete-profile';
+type AuthMode = 'signup' | 'signin' | 'check-email' | 'confirmed' | 'complete-profile' | 'accept-terms';
 
 const TRAVELER_TYPES: { value: TravelerType; label: string; icon: string }[] = [
   { value: 'rv_full_timer', label: 'RV Full-Timer', icon: '🚐' },
@@ -62,11 +72,13 @@ export default function Auth() {
     profile, 
     loading, 
     needsProfileCompletion,
+    needsTermsAcceptance,
     signInWithEmail,
     signUp,
     signOut,
     checkUsernameAvailable,
     completeProfile,
+    acceptTerms,
     refreshProfile,
   } = useAuth();
   
@@ -76,10 +88,20 @@ export default function Auth() {
   const [selectedTravelerType, setSelectedTravelerType] = useState<TravelerType | null>(null);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
+  const [termsAcceptedForSubmit, setTermsAcceptedForSubmit] = useState(false);
 
-  const signUpForm = useForm<EmailPasswordForm>({
-    resolver: zodResolver(emailPasswordSchema),
-    defaultValues: { email: '', password: '' },
+  const signUpForm = useForm<SignUpForm>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { 
+      firstName: '', 
+      lastName: '', 
+      username: '', 
+      email: '', 
+      password: '',
+      termsAccepted: false,
+    },
   });
 
   const signInForm = useForm<SignInEmailForm>({
@@ -89,11 +111,11 @@ export default function Auth() {
 
   const profileForm = useForm<ProfileCompletionForm>({
     resolver: zodResolver(profileCompletionSchema),
-    defaultValues: { username: '', fullName: '', travelerType: '', homeBase: '' },
+    defaultValues: { travelerType: '', homeBase: '' },
   });
 
   // Watch username for availability check
-  const watchedUsername = profileForm.watch('username');
+  const watchedUsername = signUpForm.watch('username');
 
   useEffect(() => {
     if (watchedUsername && watchedUsername.length >= 3) {
@@ -153,17 +175,36 @@ export default function Auth() {
     handleEmailConfirmation();
   }, [searchParams, toast, refreshProfile]);
 
-  // Switch to profile completion mode if needed
+  // Switch to appropriate mode based on user state
   useEffect(() => {
-    if (!loading && user && profile && needsProfileCompletion) {
-      setMode('complete-profile');
+    if (!loading && user && profile) {
+      if (needsTermsAcceptance) {
+        setMode('accept-terms');
+      } else if (needsProfileCompletion) {
+        setMode('complete-profile');
+      }
     }
-  }, [loading, user, profile, needsProfileCompletion]);
+  }, [loading, user, profile, needsProfileCompletion, needsTermsAcceptance]);
 
-  // Sign up with email
-  async function handleSignUp(data: EmailPasswordForm) {
+  // Sign up with all required fields
+  async function handleSignUp(data: SignUpForm) {
+    if (!usernameAvailable) {
+      toast({
+        title: 'Username unavailable',
+        description: 'Please choose a different username.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    const { error } = await signUp(data.email, data.password);
+    const { error } = await signUp({
+      email: data.email,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      username: data.username,
+    });
     setIsSubmitting(false);
 
     if (error) {
@@ -200,21 +241,41 @@ export default function Auth() {
     navigate('/');
   }
 
-  // Complete profile
-  async function handleProfileCompletion(data: ProfileCompletionForm) {
-    if (!usernameAvailable) {
+  // Accept terms (for existing users who haven't accepted)
+  async function handleAcceptTerms() {
+    if (!termsAcceptedForSubmit) {
       toast({
-        title: 'Username unavailable',
-        description: 'Please choose a different username.',
+        title: 'Terms required',
+        description: 'You must agree to the Terms of Service and Privacy Policy.',
         variant: 'destructive',
       });
       return;
     }
 
     setIsSubmitting(true);
+    const { error } = await acceptTerms();
+    setIsSubmitting(false);
+
+    if (error) {
+      toast({
+        title: 'Failed to save',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Terms accepted',
+      description: 'You can now use all features.',
+    });
+    navigate('/');
+  }
+
+  // Complete optional profile info
+  async function handleProfileCompletion(data: ProfileCompletionForm) {
+    setIsSubmitting(true);
     const { error } = await completeProfile({
-      username: data.username,
-      full_name: data.fullName,
       traveler_type: selectedTravelerType,
       home_base: data.homeBase || null,
     });
@@ -261,15 +322,84 @@ export default function Auth() {
             <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
             <h1 className="font-display text-xl font-semibold mb-2">Email Verified!</h1>
             <p className="text-muted-foreground mb-4">
-              Now let's set up your profile...
+              Your account is ready. Let's customize your experience...
             </p>
+            <Button onClick={() => setMode('complete-profile')}>
+              Continue
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
         </main>
       </div>
     );
   }
 
-  // Profile completion step
+  // Terms acceptance screen (for existing users who need to accept)
+  if (mode === 'accept-terms' && user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container px-4 py-6 max-w-md mx-auto">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h1 className="font-display text-xl font-semibold mb-2">Terms & Privacy</h1>
+            <p className="text-muted-foreground text-sm mb-6">
+              Please review and accept our Terms of Service and Privacy Policy to continue using MUVO.
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="terms-accept"
+                  checked={termsAcceptedForSubmit}
+                  onCheckedChange={(checked) => setTermsAcceptedForSubmit(checked === true)}
+                />
+                <label htmlFor="terms-accept" className="text-sm leading-tight">
+                  I agree to MUVO's{' '}
+                  <button
+                    type="button"
+                    onClick={() => setTermsModalOpen(true)}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Terms of Service
+                  </button>{' '}
+                  and{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPrivacyModalOpen(true)}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Privacy Policy
+                  </button>
+                </label>
+              </div>
+
+              <Button
+                onClick={handleAcceptTerms}
+                className="w-full"
+                disabled={isSubmitting || !termsAcceptedForSubmit}
+              >
+                {isSubmitting ? 'Saving...' : 'Continue'}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </main>
+
+        <TermsPrivacyModal
+          open={termsModalOpen}
+          onClose={() => setTermsModalOpen(false)}
+          type="terms"
+        />
+        <TermsPrivacyModal
+          open={privacyModalOpen}
+          onClose={() => setPrivacyModalOpen(false)}
+          type="privacy"
+        />
+      </div>
+    );
+  }
+
+  // Profile completion step (optional info after signup)
   if (mode === 'complete-profile' && user) {
     return (
       <div className="min-h-screen bg-background">
@@ -278,69 +408,10 @@ export default function Auth() {
           <div className="bg-card border border-border rounded-lg p-6">
             <h1 className="font-display text-xl font-semibold mb-2">Almost there!</h1>
             <p className="text-muted-foreground text-sm mb-6">
-              Tell us a bit about yourself so other travelers can trust your reviews.
+              Tell us a bit more about yourself (optional).
             </p>
 
             <form onSubmit={profileForm.handleSubmit(handleProfileCompletion)} className="space-y-5">
-              {/* Username */}
-              <div>
-                <Label htmlFor="username" className="flex items-center gap-1">
-                  <AtSign className="w-3.5 h-3.5" />
-                  Username <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative mt-1.5">
-                  <Input
-                    id="username"
-                    placeholder="roadlifemike"
-                    className="lowercase"
-                    {...profileForm.register('username')}
-                  />
-                  {checkingUsername && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                      Checking...
-                    </span>
-                  )}
-                  {!checkingUsername && usernameAvailable === true && watchedUsername.length >= 3 && (
-                    <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-success" />
-                  )}
-                  {!checkingUsername && usernameAvailable === false && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-destructive">
-                      Taken
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Lowercase letters and numbers only. This is your public handle.
-                </p>
-                {profileForm.formState.errors.username && (
-                  <p className="text-sm text-destructive mt-1">
-                    {profileForm.formState.errors.username.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Full Name */}
-              <div>
-                <Label htmlFor="fullName" className="flex items-center gap-1">
-                  <User className="w-3.5 h-3.5" />
-                  Full Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="fullName"
-                  placeholder="Mike Johnson"
-                  className="mt-1.5"
-                  {...profileForm.register('fullName')}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Your name will be shown on your reviews.
-                </p>
-                {profileForm.formState.errors.fullName && (
-                  <p className="text-sm text-destructive mt-1">
-                    {profileForm.formState.errors.fullName.message}
-                  </p>
-                )}
-              </div>
-
               {/* Traveler Type */}
               <div>
                 <Label className="flex items-center gap-1 mb-2">
@@ -385,14 +456,24 @@ export default function Auth() {
                 </p>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isSubmitting || usernameAvailable === false}
-              >
-                {isSubmitting ? 'Saving...' : 'Complete Profile'}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => navigate('/')}
+                >
+                  Skip
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Saving...' : 'Save'}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </form>
           </div>
         </main>
@@ -426,7 +507,7 @@ export default function Auth() {
   }
 
   // User is logged in and profile is complete - show profile
-  if (user && profile && profile.profile_completed) {
+  if (user && profile && profile.profile_completed && profile.terms_accepted_at) {
     return (
       <div className="min-h-screen bg-background">
         <Header showBack />
@@ -464,12 +545,6 @@ export default function Auth() {
         </main>
       </div>
     );
-  }
-
-  // User is logged in but profile not complete - should not reach here but fallback
-  if (user && profile && !profile.profile_completed) {
-    setMode('complete-profile');
-    return null;
   }
 
   // Sign in form
@@ -535,21 +610,97 @@ export default function Auth() {
     );
   }
 
-  // Default: Sign up form
+  // Default: Sign up form with all required fields
   return (
     <div className="min-h-screen bg-background">
       <Header showBack />
-      <main className="container px-4 py-8 max-w-md mx-auto">
+      <main className="container px-4 py-6 max-w-md mx-auto">
         <div className="bg-card border border-border rounded-lg p-6">
-          <h1 className="font-display text-xl font-semibold mb-2">Get started</h1>
+          <h1 className="font-display text-xl font-semibold mb-2">Create your account</h1>
           <p className="text-muted-foreground text-sm mb-6">
-            Create an account with your email and password.
+            Join the MUVO community and start contributing.
           </p>
 
           <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
+            {/* Name Row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="firstName">
+                  First Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="firstName"
+                  placeholder="Mike"
+                  className="mt-1"
+                  {...signUpForm.register('firstName')}
+                />
+                {signUpForm.formState.errors.firstName && (
+                  <p className="text-sm text-destructive mt-1">
+                    {signUpForm.formState.errors.firstName.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="lastName">
+                  Last Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="lastName"
+                  placeholder="Johnson"
+                  className="mt-1"
+                  {...signUpForm.register('lastName')}
+                />
+                {signUpForm.formState.errors.lastName && (
+                  <p className="text-sm text-destructive mt-1">
+                    {signUpForm.formState.errors.lastName.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Username */}
             <div>
-              <Label htmlFor="signup-email">Email</Label>
-              <div className="relative">
+              <Label htmlFor="username" className="flex items-center gap-1">
+                <AtSign className="w-3.5 h-3.5" />
+                Username <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative mt-1">
+                <Input
+                  id="username"
+                  placeholder="roadlifemike"
+                  className="lowercase"
+                  {...signUpForm.register('username')}
+                />
+                {checkingUsername && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                    Checking...
+                  </span>
+                )}
+                {!checkingUsername && usernameAvailable === true && watchedUsername.length >= 3 && (
+                  <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-success" />
+                )}
+                {!checkingUsername && usernameAvailable === false && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-destructive">
+                    Taken
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Lowercase letters and numbers only. This is your public handle.
+              </p>
+              {signUpForm.formState.errors.username && (
+                <p className="text-sm text-destructive mt-1">
+                  {signUpForm.formState.errors.username.message}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <Label htmlFor="signup-email">
+                Email <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative mt-1">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="signup-email"
@@ -565,9 +716,13 @@ export default function Auth() {
                 </p>
               )}
             </div>
+
+            {/* Password */}
             <div>
-              <Label htmlFor="signup-password">Password</Label>
-              <div className="relative">
+              <Label htmlFor="signup-password">
+                Password <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative mt-1">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="signup-password"
@@ -577,13 +732,58 @@ export default function Auth() {
                   {...signUpForm.register('password')}
                 />
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                At least 8 characters.
+              </p>
               {signUpForm.formState.errors.password && (
                 <p className="text-sm text-destructive mt-1">
                   {signUpForm.formState.errors.password.message}
                 </p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+
+            {/* Terms & Privacy Checkbox */}
+            <div className="pt-2">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="terms"
+                  checked={signUpForm.watch('termsAccepted')}
+                  onCheckedChange={(checked) => 
+                    signUpForm.setValue('termsAccepted', checked === true, { shouldValidate: true })
+                  }
+                />
+                <label htmlFor="terms" className="text-sm leading-tight">
+                  I agree to MUVO's{' '}
+                  <button
+                    type="button"
+                    onClick={() => setTermsModalOpen(true)}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Terms of Service
+                  </button>{' '}
+                  and{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPrivacyModalOpen(true)}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Privacy Policy
+                  </button>
+                  <span className="text-destructive"> *</span>
+                </label>
+              </div>
+              {signUpForm.formState.errors.termsAccepted && (
+                <p className="text-sm text-destructive mt-2">
+                  {signUpForm.formState.errors.termsAccepted.message}
+                </p>
+              )}
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isSubmitting || usernameAvailable === false}
+            >
               {isSubmitting ? 'Creating account...' : 'Create account'}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -596,6 +796,17 @@ export default function Auth() {
           </div>
         </div>
       </main>
+
+      <TermsPrivacyModal
+        open={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+        type="terms"
+      />
+      <TermsPrivacyModal
+        open={privacyModalOpen}
+        onClose={() => setPrivacyModalOpen(false)}
+        type="privacy"
+      />
     </div>
   );
 }
