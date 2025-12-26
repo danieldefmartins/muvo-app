@@ -77,6 +77,23 @@ export function useAuth() {
       .eq('id', userId)
       .maybeSingle();
 
+    // If profile row doesn't exist yet (common for brand-new signups), create it.
+    if (!error && !data) {
+      const authEmailConfirmedAt = user?.email_confirmed_at ?? session?.user?.email_confirmed_at;
+      await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: user?.email ?? session?.user?.email ?? null,
+          email_verified: Boolean(authEmailConfirmedAt),
+          email_verified_at: authEmailConfirmedAt ? new Date().toISOString() : null,
+        });
+
+      // Try again (once)
+      await fetchProfile(userId, { skipEmailSync: true });
+      return;
+    }
+
     if (error || !data) return;
 
     // If the auth user is already email-confirmed, sync it to profiles so RLS gates (is_verified_user)
@@ -134,25 +151,31 @@ export function useAuth() {
       }
     });
 
-    // If signup successful, update profile with all the data
-    // Note: email signups are auto-confirmed in this project, so we can mark email_verified immediately.
+    // If signup successful, upsert the profile row with all the data.
+    // (Update can fail silently if the profile row hasn't been created yet.)
     if (!error && authData.user) {
       const fullName = `${data.firstName} ${data.lastName}`;
       await supabase
         .from('profiles')
-        .update({
-          first_name: data.firstName,
-          last_name: data.lastName,
-          full_name: fullName,
-          display_name: fullName,
-          username: data.username.toLowerCase(),
-          email: data.email,
-          email_verified: true,
-          email_verified_at: new Date().toISOString(),
-          terms_accepted_at: new Date().toISOString(),
-          profile_completed: true,
-        })
-        .eq('id', authData.user.id);
+        .upsert(
+          {
+            id: authData.user.id,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            full_name: fullName,
+            display_name: fullName,
+            username: data.username.toLowerCase(),
+            email: data.email,
+            email_verified: true,
+            email_verified_at: new Date().toISOString(),
+            terms_accepted_at: new Date().toISOString(),
+            profile_completed: true,
+          },
+          { onConflict: 'id' }
+        );
+
+      // Ensure local state reflects latest profile + trigger-derived fields (is_verified, etc.)
+      await fetchProfile(authData.user.id);
     }
 
     return { data: authData, error };
