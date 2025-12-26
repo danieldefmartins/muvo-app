@@ -59,6 +59,10 @@ export const PLACE_FEATURES: PlaceFeature[] = [
 
 export type PlaceStatus = 'open_accessible' | 'access_questionable' | 'temporarily_closed' | 'restrictions_reported';
 
+export interface PlaceHours {
+  [day: string]: { open: string; close: string; closed?: boolean };
+}
+
 export interface Place {
   id: string;
   name: string;
@@ -77,6 +81,9 @@ export interface Place {
   coverImageUrl: string | null;
   currentStatus: PlaceStatus;
   statusUpdatedAt: Date | null;
+  // Hours fields
+  is24_7: boolean;
+  hoursJson: PlaceHours | null;
   // Computed/derived fields
   distance: number;
   summary: string;
@@ -102,6 +109,8 @@ interface PlaceRow {
   cover_image_url: string | null;
   current_status: PlaceStatus | null;
   status_updated_at: string | null;
+  is_24_7: boolean | null;
+  hours_json: PlaceHours | null;
 }
 
 // Generate a summary sentence based on place data
@@ -168,6 +177,8 @@ function transformPlace(row: PlaceRow): Place {
     coverImageUrl: row.cover_image_url,
     currentStatus: row.current_status || 'open_accessible',
     statusUpdatedAt: row.status_updated_at ? new Date(row.status_updated_at) : null,
+    is24_7: row.is_24_7 ?? false,
+    hoursJson: row.hours_json,
     distance: calculateDistance(row.latitude, row.longitude),
     summary: generateSummary(row),
     isProRecommended: row.is_verified && row.price_level !== '$',

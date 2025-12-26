@@ -147,13 +147,14 @@ export function MapSearchBar({
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
-      {/* Search input - pill style with frosted glass and MUVO icon - taller for better touch */}
+      {/* Search input - pill style with frosted glass and MUVO icon - taller (44px min) for better touch */}
       <div 
         className={cn(
-          'flex items-center gap-3 px-4 h-11 bg-card/[0.92] backdrop-blur-xl rounded-full transition-all duration-200',
+          'flex items-center gap-3 px-5 bg-card/[0.95] backdrop-blur-xl rounded-full transition-all duration-200',
           isFocused ? 'ring-2 ring-primary' : '',
         )}
         style={{ 
+          height: '44px',
           boxShadow: isFocused 
             ? '0 8px 32px -4px rgba(0, 0, 0, 0.25)' 
             : '0 4px 16px -4px rgba(0, 0, 0, 0.15)' 
@@ -169,7 +170,7 @@ export function MapSearchBar({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={handleFocus}
           placeholder="Search places or locations"
-          className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/80 outline-none text-sm"
+          className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/70 outline-none text-[15px]"
         />
         {query ? (
           <button
