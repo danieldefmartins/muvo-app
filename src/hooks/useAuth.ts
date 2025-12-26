@@ -70,16 +70,34 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function fetchProfile(userId: string) {
+  async function fetchProfile(userId: string, options?: { skipEmailSync?: boolean }) {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
 
-    if (!error && data) {
-      setProfile(data as Profile);
+    if (error || !data) return;
+
+    // If the auth user is already email-confirmed, sync it to profiles so RLS gates (is_verified_user)
+    // don't block brand-new users from creating reviews.
+    const authEmailConfirmedAt = user?.email_confirmed_at ?? session?.user?.email_confirmed_at;
+    if (!options?.skipEmailSync && authEmailConfirmedAt && data.email_verified !== true) {
+      await supabase
+        .from('profiles')
+        .update({
+          email: data.email ?? user?.email ?? null,
+          email_verified: true,
+          email_verified_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      // Re-fetch once so we pick up trigger-updated fields like is_verified
+      await fetchProfile(userId, { skipEmailSync: true });
+      return;
     }
+
+    setProfile(data as Profile);
   }
 
   // Check if username is available
@@ -117,6 +135,7 @@ export function useAuth() {
     });
 
     // If signup successful, update profile with all the data
+    // Note: email signups are auto-confirmed in this project, so we can mark email_verified immediately.
     if (!error && authData.user) {
       const fullName = `${data.firstName} ${data.lastName}`;
       await supabase
@@ -128,6 +147,8 @@ export function useAuth() {
           display_name: fullName,
           username: data.username.toLowerCase(),
           email: data.email,
+          email_verified: true,
+          email_verified_at: new Date().toISOString(),
           terms_accepted_at: new Date().toISOString(),
           profile_completed: true,
         })
