@@ -333,8 +333,12 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
         
         // Category-specific icon SVG
         const iconSvg = getCategoryIconSVG(place.primaryCategory, iconSize, textColor);
-        el.innerHTML = iconSvg;
-        
+        // Avoid innerHTML (safer). Parse the trusted SVG string and append it.
+        const parsedDoc = new DOMParser().parseFromString(iconSvg, 'image/svg+xml');
+        const svgEl = parsedDoc.documentElement;
+        svgEl.setAttribute('aria-hidden', 'true');
+        el.appendChild(svgEl);
+
         el.addEventListener('mouseenter', () => {
           if (!isSelected) el.style.transform = 'scale(1.15)';
         });
@@ -437,12 +441,19 @@ export const PlacesMap = forwardRef<PlacesMapRef, PlacesMapProps>(function Place
     // Create user location marker
     const el = document.createElement('div');
     el.className = 'user-location-marker';
-    el.innerHTML = `
-      <div class="relative">
-        <div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>
-        <div class="absolute inset-0 w-4 h-4 bg-blue-500 rounded-full animate-ping opacity-75"></div>
-      </div>
-    `;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'relative';
+
+    const dot = document.createElement('div');
+    dot.className = 'w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg';
+
+    const ping = document.createElement('div');
+    ping.className = 'absolute inset-0 w-4 h-4 bg-blue-500 rounded-full animate-ping opacity-75';
+
+    wrapper.appendChild(dot);
+    wrapper.appendChild(ping);
+    el.appendChild(wrapper);
 
     userMarkerRef.current = new mapboxgl.Marker({ element: el })
       .setLngLat(userLocation)

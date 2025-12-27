@@ -419,7 +419,17 @@ const PlacesMapWithRoute = forwardRef<PlacesMapRef, PlacesMapWithRouteProps>(
             z-index: 100;
             transition: transform 0.15s ease;
           `;
-          el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`;
+          // Avoid innerHTML: parse trusted SVG string and append
+          const svgDoc = new DOMParser().parseFromString(
+            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>`,
+            'image/svg+xml'
+          );
+          const svgEl = svgDoc.documentElement;
+          svgEl.setAttribute('aria-hidden', 'true');
+          el.appendChild(svgEl);
           el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.15)'; });
           el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
           el.addEventListener('click', () => openPopupForPlace(place, lng, lat));
@@ -463,7 +473,20 @@ const PlacesMapWithRoute = forwardRef<PlacesMapRef, PlacesMapWithRouteProps>(
       if (!map.current || !userLocation) return;
       userMarkerRef.current?.remove();
       const el = document.createElement('div');
-      el.innerHTML = `<div class="relative"><div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div><div class="absolute inset-0 w-4 h-4 bg-blue-500 rounded-full animate-ping opacity-75"></div></div>`;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'relative';
+
+      const dot = document.createElement('div');
+      dot.className = 'w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg';
+
+      const ping = document.createElement('div');
+      ping.className = 'absolute inset-0 w-4 h-4 bg-blue-500 rounded-full animate-ping opacity-75';
+
+      wrapper.appendChild(dot);
+      wrapper.appendChild(ping);
+      el.appendChild(wrapper);
+
       userMarkerRef.current = new mapboxgl.Marker({ element: el }).setLngLat(userLocation).addTo(map.current);
     }, [userLocation]);
 
