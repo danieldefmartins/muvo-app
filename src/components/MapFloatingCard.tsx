@@ -5,7 +5,7 @@ import { ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { hapticLight } from '@/lib/haptics';
 import { usePlaceStampAggregates, usePlaceReviewCount } from '@/hooks/useReviews';
-import { useAllStamps, type StampDefinition } from '@/hooks/useStamps';
+import { useAllStamps, getStampLabel, type StampDefinition } from '@/hooks/useStamps';
 import { useMemo } from 'react';
 
 interface MapFloatingCardProps {
@@ -13,15 +13,6 @@ interface MapFloatingCardProps {
   isSelected: boolean;
   onSelect: () => void;
   distance: number;
-}
-
-function getStampIcon(stamps: StampDefinition[] | undefined, stampId: string): React.ComponentType<any> {
-  const stamp = stamps?.find(s => s.id === stampId);
-  if (stamp?.icon) {
-    const IconComponent = (LucideIcons as any)[stamp.icon];
-    if (IconComponent) return IconComponent;
-  }
-  return Sparkles;
 }
 
 // Derive confidence label from review data
@@ -56,37 +47,63 @@ function getConfidenceLabel(reviewCount: number, positiveCount: number, improvem
 
 // Determine micro tag
 function getMicroTag(reviewCount: number): { label: string; icon: React.ComponentType<any> } | null {
-  // Popular if many reviews
   if (reviewCount >= 10) {
     return { label: 'Popular', icon: TrendingUp };
   }
-  
-  // Community favorite threshold
   if (reviewCount >= 5) {
     return { label: 'Favorite', icon: Sparkles };
   }
-  
   return null;
 }
 
+/**
+ * MUVO v1.7 - Map Floating Card
+ * Shows 3-line stacked review display per spec:
+ * - Line 1: TOP 1 Positive (Label ×N)
+ * - Line 2: TOP 1 Neutral (Label ×N) 
+ * - Line 3: TOP 1 Negative (Label ×N) - omit if none
+ */
 export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFloatingCardProps) {
   const navigate = useNavigate();
   const { data: aggregates } = usePlaceStampAggregates(place.id);
   const { data: reviewCount = 0 } = usePlaceReviewCount(place.id);
   const { data: allStamps } = useAllStamps();
 
-  // Get top experience signals (positive stamps only, max 3)
-  const experienceSignals = useMemo(() => {
-    if (!aggregates || aggregates.length === 0) return [];
-    
-    return aggregates
+  // Get top signals for 3-line display
+  const reviewLines = useMemo(() => {
+    if (!aggregates || aggregates.length === 0) {
+      return { positive: null, neutral: null, negative: null };
+    }
+
+    // TOP 1 POSITIVE
+    const positiveData = aggregates
       .filter(a => a.polarity === 'positive')
-      .sort((a, b) => b.total_votes - a.total_votes)
-      .slice(0, 3)
-      .map(stamp => ({
-        id: stamp.stamp_id || stamp.dimension,
-        icon: stamp.stamp_id ? getStampIcon(allStamps, stamp.stamp_id) : Sparkles,
-      }));
+      .sort((a, b) => b.total_votes - a.total_votes)[0];
+
+    // TOP 1 NEUTRAL  
+    const neutralData = aggregates
+      .filter(a => a.polarity === 'neutral')
+      .sort((a, b) => b.total_votes - a.total_votes)[0];
+
+    // TOP 1 NEGATIVE
+    const negativeData = aggregates
+      .filter(a => a.polarity === 'improvement')
+      .sort((a, b) => b.total_votes - a.total_votes)[0];
+
+    return {
+      positive: positiveData ? {
+        label: positiveData.stamp_id ? getStampLabel(allStamps, positiveData.stamp_id) : positiveData.dimension,
+        votes: positiveData.total_votes,
+      } : null,
+      neutral: neutralData ? {
+        label: neutralData.stamp_id ? getStampLabel(allStamps, neutralData.stamp_id) : neutralData.dimension,
+        votes: neutralData.total_votes,
+      } : null,
+      negative: negativeData ? {
+        label: negativeData.stamp_id ? getStampLabel(allStamps, negativeData.stamp_id) : negativeData.dimension,
+        votes: negativeData.total_votes,
+      } : null,
+    };
   }, [aggregates, allStamps]);
 
   // Get confidence label
@@ -98,6 +115,8 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
 
   // Get micro tag
   const microTag = useMemo(() => getMicroTag(reviewCount), [reviewCount]);
+
+  const hasAnyReviews = reviewLines.positive || reviewLines.neutral || reviewLines.negative;
 
   const handleClick = () => {
     hapticLight();
@@ -124,48 +143,55 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
       <div className="p-4">
         {/* Row 1: Name + Verification + Micro Tag */}
         <div className="flex items-center gap-2 mb-2">
-          <h3 className="text-place-name text-foreground line-clamp-1 flex-1">
+          <h3 className="font-bold text-[17px] leading-tight text-foreground line-clamp-1 flex-1">
             {place.name}
           </h3>
           {place.isVerified && (
             <ShieldCheck className="w-5 h-5 text-accent flex-shrink-0" />
           )}
           {microTag && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-chip flex-shrink-0">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-[13px] font-medium flex-shrink-0">
               <microTag.icon className="w-3.5 h-3.5" />
               {microTag.label}
             </div>
           )}
         </div>
 
-        {/* Row 2: Experience Signals */}
-        {experienceSignals.length > 0 && (
-          <div className="flex items-center gap-2 mb-2">
-            {experienceSignals.map((signal, idx) => {
-              const IconComponent = signal.icon;
-              return (
-                <div
-                  key={signal.id + idx}
-                  className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center"
-                >
-                  <IconComponent className="w-4 h-4 text-primary" strokeWidth={2.5} />
-                </div>
-              );
-            })}
+        {/* MUVO v1.7: 3-line stacked review display */}
+        {hasAnyReviews && (
+          <div className="flex flex-col gap-1 mb-2.5">
+            {/* Line 1: Positive */}
+            {reviewLines.positive && (
+              <div className="text-[15px] font-semibold text-primary">
+                {reviewLines.positive.label} <span className="font-bold">×{reviewLines.positive.votes}</span>
+              </div>
+            )}
+            {/* Line 2: Neutral */}
+            {reviewLines.neutral && (
+              <div className="text-[14px] font-medium text-amber-600 dark:text-amber-400">
+                {reviewLines.neutral.label} <span className="font-bold">×{reviewLines.neutral.votes}</span>
+              </div>
+            )}
+            {/* Line 3: Negative - only if exists */}
+            {reviewLines.negative && (
+              <div className="text-[14px] font-medium text-red-500 dark:text-red-400">
+                {reviewLines.negative.label} <span className="font-bold">×{reviewLines.negative.votes}</span>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Row 3: Distance + Price */}
-        <div className="flex items-center gap-2 text-secondary text-muted-foreground mb-2">
+        {/* Row: Distance + Price */}
+        <div className="flex items-center gap-2 text-[14px] text-muted-foreground mb-2">
           <span>{distance.toFixed(1)} mi</span>
           <span className="text-muted-foreground/40">·</span>
-          <span className="font-medium">{place.priceLevel}</span>
+          <span className="font-semibold">{place.priceLevel}</span>
         </div>
 
-        {/* Row 4: Confidence Label */}
+        {/* Row: Confidence Label */}
         <div className="flex items-center justify-between">
           <span className={cn(
-            'text-chip font-medium',
+            'text-[13px] font-medium',
             confidenceInfo.variant === 'positive' && 'text-emerald-600 dark:text-emerald-400',
             confidenceInfo.variant === 'neutral' && 'text-muted-foreground',
             confidenceInfo.variant === 'caution' && 'text-amber-600 dark:text-amber-400'

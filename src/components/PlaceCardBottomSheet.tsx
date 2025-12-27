@@ -65,36 +65,36 @@ export function PlaceCardBottomSheet({
         </div>
       )}
 
-      <div className={cn('pr-14', isPeek ? 'p-4' : 'p-3.5')}>
-        {/* A) PLACE NAME - Largest text, bold */}
+      <div className={cn('pr-14', isPeek ? 'p-4' : 'p-4')}>
+        {/* A) PLACE NAME - Larger, bold per v1.7 */}
         <h3 
-          className="font-bold text-foreground line-clamp-2 mb-1"
-          style={{ fontSize: '18px', lineHeight: '22px' }}
+          className="font-bold text-foreground line-clamp-2 mb-1.5"
+          style={{ fontSize: '19px', lineHeight: '24px' }}
         >
           {place.name}
         </h3>
 
         {/* B) MUVO SCORE LINE - Bold, prominent */}
         {scoreShown !== null && scoreShown !== undefined && (
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-2.5">
             <span 
               className="font-bold text-primary"
-              style={{ fontSize: '16px' }}
+              style={{ fontSize: '17px' }}
             >
               MUVO {Math.round(scoreShown)}
             </span>
           </div>
         )}
 
-        {/* C) REVIEW SUMMARY LINE - Three rows */}
-        <div className="mb-2.5">
+        {/* C) REVIEW SUMMARY LINE - Three rows per v1.7 */}
+        <div className="mb-3">
           <MuvoReviewLine placeId={place.id} />
         </div>
 
-        {/* D) METADATA LINE - Category + Distance */}
+        {/* D) METADATA LINE - Category + Distance - larger per v1.7 */}
         <div 
           className="flex items-center justify-between text-muted-foreground"
-          style={{ fontSize: '13px', lineHeight: '16px' }}
+          style={{ fontSize: '14px', lineHeight: '18px' }}
         >
           <div className="flex items-center gap-2">
             <span className="font-medium">{getCategoryLabel(place.primaryCategory)}</span>
@@ -102,11 +102,6 @@ export function PlaceCardBottomSheet({
             <span>{distance.toFixed(1)} mi</span>
             <span className="text-muted-foreground/40">·</span>
             <span className="font-semibold">{place.priceLevel}</span>
-          </div>
-
-          {/* E) EXTERNAL RATINGS - Bottom right, small, informational */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-            {/* Placeholder for external ratings when available */}
           </div>
         </div>
       </div>
