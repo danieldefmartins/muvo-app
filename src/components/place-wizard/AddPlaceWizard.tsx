@@ -112,6 +112,7 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
     // Basic Info
     name: '',
     primaryCategoryId: '',
+    additionalCategoryIds: [] as string[],
     secondaryTags: [] as string[],
     shortSummary: '',
     
@@ -121,8 +122,9 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
     openYearRound: true,
     accessNotes: '',
     
-    // Photos (placeholder for future)
-    photoUrls: [] as string[],
+    // Photos
+    photoFiles: [] as File[],
+    photoPreviews: [] as string[],
     
     // Confirmation
     confirmed: false,
@@ -288,23 +290,31 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
     setIsSubmitting(true);
 
     try {
+      // Prepare raw_data without File objects (can't be serialized)
+      const rawData = {
+        ...formData,
+        photoFiles: undefined, // Remove File objects
+        photoPreviews: undefined, // Remove blob URLs
+        photoCount: formData.photoFiles.length,
+        submittedBy: user.id,
+        submittedAt: new Date().toISOString(),
+      };
+
       // Submit to import_queue for admin review
       const { error } = await supabase
         .from('import_queue')
         .insert({
-          source: 'user_submission',
+          source: 'user_submission' as const,
           name: formData.name.trim(),
           latitude: formData.latitude,
           longitude: formData.longitude,
           suggested_primary_category: formData.primaryCategoryId || null,
           suggested_tags: formData.secondaryTags,
-          raw_data: {
-            ...formData,
-            submittedBy: user.id,
-            submittedAt: new Date().toISOString(),
-          },
-          status: 'pending',
+          raw_data: rawData,
+          status: 'pending' as const,
         });
+
+      if (error) throw error;
 
       if (error) throw error;
 
@@ -325,6 +335,8 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
     setCurrentStep(1);
     setSubmitSuccess(false);
     setNearbyWarning([]);
+    // Clean up photo previews
+    formData.photoPreviews.forEach(url => URL.revokeObjectURL(url));
     setFormData({
       latitude: initialLocation?.lat || 39.8283,
       longitude: initialLocation?.lng || -98.5795,
@@ -334,13 +346,15 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
       country: 'USA',
       name: '',
       primaryCategoryId: '',
+      additionalCategoryIds: [],
       secondaryTags: [],
       shortSummary: '',
       features: [],
       accessType: 'public',
       openYearRound: true,
       accessNotes: '',
-      photoUrls: [],
+      photoFiles: [],
+      photoPreviews: [],
       confirmed: false,
     });
     onOpenChange(false);
@@ -373,6 +387,64 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
       updateField('secondaryTags', [...current, tagId]);
     }
   };
+
+  // Toggle additional category
+  const toggleAdditionalCategory = (catId: string) => {
+    const current = formData.additionalCategoryIds;
+    if (current.includes(catId)) {
+      updateField('additionalCategoryIds', current.filter(c => c !== catId));
+    } else if (current.length < 4) {
+      updateField('additionalCategoryIds', [...current, catId]);
+    }
+  };
+
+  // Handle primary category change
+  const handlePrimaryCategoryChange = (value: string) => {
+    updateField('primaryCategoryId', value);
+    // Remove from additional if it was selected there
+    if (formData.additionalCategoryIds.includes(value)) {
+      updateField('additionalCategoryIds', formData.additionalCategoryIds.filter(c => c !== value));
+    }
+  };
+
+  // Get available additional categories (exclude primary)
+  const availableAdditionalCategories = primaryCategories?.filter(
+    cat => cat.id !== formData.primaryCategoryId
+  );
+
+  // Photo handling
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (let i = 0; i < files.length && formData.photoFiles.length + newFiles.length < 5; i++) {
+      const file = files[i];
+      if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
+        newFiles.push(file);
+        newPreviews.push(URL.createObjectURL(file));
+      }
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      photoFiles: [...prev.photoFiles, ...newFiles],
+      photoPreviews: [...prev.photoPreviews, ...newPreviews],
+    }));
+  };
+
+  const removePhoto = (index: number) => {
+    URL.revokeObjectURL(formData.photoPreviews[index]);
+    setFormData(prev => ({
+      ...prev,
+      photoFiles: prev.photoFiles.filter((_, i) => i !== index),
+      photoPreviews: prev.photoPreviews.filter((_, i) => i !== index),
+    }));
+  };
+
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   // Get category label
   const getCategoryLabel = (id: string) => {
@@ -508,7 +580,7 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
                 <Label>Primary Category *</Label>
                 <Select 
                   value={formData.primaryCategoryId} 
-                  onValueChange={(value) => updateField('primaryCategoryId', value)}
+                  onValueChange={handlePrimaryCategoryChange}
                 >
                   <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Select a category" />
@@ -530,8 +602,49 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
                 </Select>
               </div>
 
+              {/* Additional Categories */}
+              {formData.primaryCategoryId && (
+                <div className="space-y-2">
+                  <Label>Additional Categories (optional, up to 4)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Add more categories that describe what this place is.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableAdditionalCategories?.map((cat) => {
+                      const isSelected = formData.additionalCategoryIds.includes(cat.id);
+                      const isDisabled = !isSelected && formData.additionalCategoryIds.length >= 4;
+                      
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => toggleAdditionalCategory(cat.id)}
+                          disabled={isDisabled}
+                          className={cn(
+                            'px-3 py-1.5 rounded-full text-sm transition-colors',
+                            isSelected 
+                              ? 'bg-primary text-primary-foreground' 
+                              : isDisabled
+                              ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                              : 'bg-muted hover:bg-muted/80'
+                          )}
+                        >
+                          {cat.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.additionalCategoryIds.length}/4 selected
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>Secondary Tags (optional, up to 3)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Tags describe features or conditions.
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {secondaryCategories?.slice(0, 12).map((tag) => {
                     const isSelected = formData.secondaryTags.includes(tag.id);
@@ -650,20 +763,61 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
           {/* Step 4: Photos */}
           {currentStep === 4 && (
             <div className="p-4 space-y-6">
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
-                  <Camera className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="font-semibold mb-2">Add Photos</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotoSelect}
+                className="hidden"
+              />
+              
+              <div>
+                <Label className="mb-2 block">Add Photos (optional, up to 5)</Label>
+                <p className="text-xs text-muted-foreground mb-4">
                   Photos help other travelers know what to expect.
                 </p>
-                <Button variant="outline" disabled>
-                  Coming Soon
-                </Button>
+                
+                {formData.photoPreviews.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {formData.photoPreviews.map((preview, index) => (
+                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                        <img
+                          src={preview}
+                          alt={`Photo ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(index)}
+                          className="absolute top-1 right-1 p-1 bg-background/80 rounded-full hover:bg-background"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {formData.photoFiles.length < 5 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => photoInputRef.current?.click()}
+                    className="w-full py-8"
+                  >
+                    <Camera className="w-5 h-5 mr-2" />
+                    {formData.photoFiles.length === 0 ? 'Add Photos' : 'Add More Photos'}
+                  </Button>
+                )}
+                
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  {formData.photoFiles.length}/5 photos added
+                </p>
               </div>
-              <p className="text-xs text-center text-muted-foreground">
-                Photo upload will be available soon. You can skip this step for now.
+              
+              <p className="text-xs text-muted-foreground">
+                Photos will be reviewed before appearing on the place listing. You can skip this step and add photos later.
               </p>
             </div>
           )}
@@ -683,6 +837,18 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
                     <span className="text-muted-foreground">Category</span>
                     <span className="font-medium">{getCategoryLabel(formData.primaryCategoryId) || '—'}</span>
                   </div>
+                  {formData.additionalCategoryIds.length > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Additional Categories</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {formData.additionalCategoryIds.map(catId => (
+                          <Badge key={catId} variant="outline" className="text-xs">
+                            {getCategoryLabel(catId)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Location</span>
                     <span className="font-medium text-right">
@@ -696,6 +862,12 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
                     <span className="text-muted-foreground">Access</span>
                     <span className="font-medium capitalize">{formData.accessType.replace('_', ' ')}</span>
                   </div>
+                  {formData.photoFiles.length > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Photos</span>
+                      <span className="font-medium">{formData.photoFiles.length} added</span>
+                    </div>
+                  )}
                   {formData.features.length > 0 && (
                     <div>
                       <span className="text-muted-foreground">Features</span>
