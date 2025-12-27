@@ -33,7 +33,10 @@ import { ReviewsPreview } from '@/components/ReviewsPreview';
 import { MuvoReviewExpanded } from '@/components/MuvoReviewExpanded';
 import { MuvoReviewHowItWorks } from '@/components/MuvoReviewHowItWorks';
 import { MuvoMedalBadge } from '@/components/MuvoMedalBadge';
-import { PlaceEntrances, extractEntrances, Entrance } from '@/components/PlaceEntrances';
+import { PlaceEntrances } from '@/components/PlaceEntrances';
+import { AddEntranceForm } from '@/components/AddEntranceForm';
+import { extractEntrancesWithRVData, useAddEntrance } from '@/hooks/useEntrances';
+import { EntranceData } from '@/types/entrance';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -56,22 +59,24 @@ const PlaceDetail = () => {
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showLogistics, setShowLogistics] = useState(false);
+  const [showAddEntrance, setShowAddEntrance] = useState(false);
   const queryClient = useQueryClient();
+  const addEntranceMutation = useAddEntrance(id || '');
 
   // Fetch raw place data to extract entrances
-  const [entrances, setEntrances] = useState<Entrance[]>([]);
+  const [entrances, setEntrances] = useState<EntranceData[]>([]);
   
   useMemo(() => {
     if (!id) return;
     
     supabase
       .from('places')
-      .select('entrance_1_name, entrance_1_latitude, entrance_1_longitude, entrance_1_road, entrance_1_notes, entrance_1_is_primary, entrance_2_name, entrance_2_latitude, entrance_2_longitude, entrance_2_road, entrance_2_notes, entrance_2_is_primary, entrance_3_name, entrance_3_latitude, entrance_3_longitude, entrance_3_road, entrance_3_notes, entrance_3_is_primary, entrance_4_name, entrance_4_latitude, entrance_4_longitude, entrance_4_road, entrance_4_notes, entrance_4_is_primary, entrance_5_name, entrance_5_latitude, entrance_5_longitude, entrance_5_road, entrance_5_notes, entrance_5_is_primary, entrance_6_name, entrance_6_latitude, entrance_6_longitude, entrance_6_road, entrance_6_notes, entrance_6_is_primary')
+      .select('*')
       .eq('id', id)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
-          const extracted = extractEntrances(data as Record<string, unknown>);
+          const extracted = extractEntrancesWithRVData(data as unknown as Record<string, unknown>);
           setEntrances(extracted);
         }
       });
@@ -256,9 +261,36 @@ const PlaceDetail = () => {
           </div>
         </section>
 
-        {/* Entrances Section (only if entrances exist) */}
-        {entrances.length > 0 && (
-          <PlaceEntrances entrances={entrances} placeName={place.name} />
+        {/* Entrances Section */}
+        {showAddEntrance ? (
+          <section className="animate-fade-in bg-card border border-border rounded-xl p-4">
+            <AddEntranceForm
+              placeLatitude={place.latitude}
+              placeLongitude={place.longitude}
+              onSubmit={(entrance) => {
+                addEntranceMutation.mutate(entrance, {
+                  onSuccess: () => {
+                    setShowAddEntrance(false);
+                    // Refetch entrances
+                    supabase.from('places').select('*').eq('id', id!).maybeSingle().then(({ data }) => {
+                      if (data) setEntrances(extractEntrancesWithRVData(data as unknown as Record<string, unknown>));
+                    });
+                  }
+                });
+              }}
+              onCancel={() => setShowAddEntrance(false)}
+              isSubmitting={addEntranceMutation.isPending}
+            />
+          </section>
+        ) : (
+          (entrances.length > 0 || (user && isVerified)) && (
+            <PlaceEntrances 
+              entrances={entrances} 
+              placeName={place.name}
+              canAddEntrance={!!user && isVerified}
+              onAddEntrance={() => setShowAddEntrance(true)}
+            />
+          )
         )}
 
         {/* 4. Current Conditions (Weather + Status combined) */}
