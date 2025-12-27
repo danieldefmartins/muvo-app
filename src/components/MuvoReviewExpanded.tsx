@@ -11,13 +11,19 @@ interface MuvoReviewExpandedProps {
 }
 
 /**
- * Full Place Page - Reviews Section
- * Default visible:
- * - Top 5 Positive
- * - Top 3 Neutral
- * - Top 2 Negative
+ * MUVO v1.8.1 - Full Place Page Reviews Section (LOCKED)
  * 
- * Expandable to show all
+ * STRICT 3-SECTION STRUCTURE (ORDER LOCKED):
+ * 1. POSITIVE (What stood out) - Top 5 default
+ * 2. NEUTRAL (How the place feels) - Top 3 default
+ * 3. NEGATIVE (What didn't go well) - Top 2 default
+ * 
+ * VISIBILITY RULES:
+ * - Sections ALWAYS appear in this order (Positive → Neutral → Negative)
+ * - Sections NEVER overlap or reorder
+ * - Each section visually separated
+ * - Tap counts (×N) ALWAYS visible next to each label
+ * - "Expand / See all" option for each section
  */
 export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedProps) {
   const { data: aggregates, isLoading } = usePlaceStampAggregates(placeId);
@@ -85,18 +91,19 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
     );
   }
 
+  // Default visible counts per v1.8.1: Top 5 Positive, Top 3 Neutral, Top 2 Negative
   const visiblePositive = showAllPositive ? categorizedSignals.positive : categorizedSignals.positive.slice(0, 5);
   const visibleNeutral = showAllNeutral ? categorizedSignals.neutral : categorizedSignals.neutral.slice(0, 3);
   const visibleNegative = showAllNegative ? categorizedSignals.negative : categorizedSignals.negative.slice(0, 2);
 
   return (
     <div className={cn("space-y-6", className)}>
-      {/* Positive Section */}
+      {/* SECTION 1: POSITIVE - What stood out (always first) */}
       {categorizedSignals.positive.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
             <ThumbsUp className="w-5 h-5 text-primary" />
-            <h4 className="font-semibold text-foreground text-base">What people like</h4>
+            <h4 className="font-semibold text-foreground text-base">What stood out</h4>
           </div>
           <div className="flex flex-wrap gap-2.5">
             {visiblePositive.map(signal => (
@@ -118,14 +125,14 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
               {showAllPositive ? (
                 <>Show less <ChevronUp className="w-3.5 h-3.5 ml-1" /></>
               ) : (
-                <>Show all {categorizedSignals.positive.length} positives <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
+                <>See all {categorizedSignals.positive.length} <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
               )}
             </Button>
           )}
         </div>
       )}
 
-      {/* Neutral Section - How the place feels */}
+      {/* SECTION 2: NEUTRAL - How the place feels (always second) */}
       {categorizedSignals.neutral.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -153,14 +160,14 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
               {showAllNeutral ? (
                 <>Show less <ChevronUp className="w-3.5 h-3.5 ml-1" /></>
               ) : (
-                <>Show all {categorizedSignals.neutral.length} neutral <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
+                <>See all {categorizedSignals.neutral.length} <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
               )}
             </Button>
           )}
         </div>
       )}
 
-      {/* Negative Section */}
+      {/* SECTION 3: NEGATIVE - What didn't go well (always third) */}
       {categorizedSignals.negative.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -187,7 +194,7 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
               {showAllNegative ? (
                 <>Show less <ChevronUp className="w-3.5 h-3.5 ml-1" /></>
               ) : (
-                <>Show all {categorizedSignals.negative.length} negatives <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
+                <>See all {categorizedSignals.negative.length} <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
               )}
             </Button>
           )}

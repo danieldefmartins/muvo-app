@@ -9,13 +9,18 @@ interface PlaceCardReviewLinesProps {
 }
 
 /**
- * MUVO v1.7 - Place Card Review Display
- * Shows EXACTLY 3 stacked lines:
- * - Line 1: TOP 1 Positive (e.g., "Great Food ×42")
- * - Line 2: TOP 1 Neutral (e.g., "Rustic ×18")  
- * - Line 3: TOP 1 Negative (e.g., "Long Wait ×6") - omit if none
+ * MUVO v1.8.1 - Place Card Review Display (LOCKED)
  * 
- * Tap counts (×N) ALWAYS visible, NEVER replaced by medals.
+ * STRICT 3-LINE STRUCTURE:
+ * - Line 1: POSITIVE (What stood out) - TOP 1 item
+ * - Line 2: NEUTRAL (How the place feels) - TOP 1 item  
+ * - Line 3: NEGATIVE (What didn't go well) - TOP 1 item (ONLY if exists)
+ * 
+ * VISIBILITY RULES:
+ * - Tap counts (×N) ALWAYS visible
+ * - Lines NEVER collapse into each other
+ * - Lines NEVER reorder
+ * - If no data: hide content but preserve order
  */
 export function PlaceCardReviewLines({ placeId, className }: PlaceCardReviewLinesProps) {
   const { data: aggregates } = usePlaceStampAggregates(placeId);
@@ -63,21 +68,21 @@ export function PlaceCardReviewLines({ placeId, className }: PlaceCardReviewLine
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      {/* LINE 1: POSITIVE - White text on card overlay */}
+      {/* LINE 1: POSITIVE - Always first position */}
       {reviewLines.positive && (
         <div className="text-[15px] leading-tight font-semibold text-white drop-shadow-md">
           {reviewLines.positive.label} <span className="font-bold">×{reviewLines.positive.votes}</span>
         </div>
       )}
 
-      {/* LINE 2: NEUTRAL - Slightly dimmer */}
+      {/* LINE 2: NEUTRAL - Always second position (when positive exists or when it's the top item) */}
       {reviewLines.neutral && (
         <div className="text-[14px] leading-tight font-medium text-white/80 drop-shadow-md">
           {reviewLines.neutral.label} <span className="font-bold">×{reviewLines.neutral.votes}</span>
         </div>
       )}
 
-      {/* LINE 3: NEGATIVE - Only show if exists, red tint */}
+      {/* LINE 3: NEGATIVE - Always third position, only shown if exists */}
       {reviewLines.negative && (
         <div className="text-[14px] leading-tight font-medium text-red-300 drop-shadow-md">
           {reviewLines.negative.label} <span className="font-bold">×{reviewLines.negative.votes}</span>
