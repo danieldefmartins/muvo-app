@@ -607,7 +607,7 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
                   <SelectTrigger className="h-12">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[9999]">
                     <SelectItem value="public">Public</SelectItem>
                     <SelectItem value="private">Private</SelectItem>
                     <SelectItem value="permit_required">Permit Required</SelectItem>
