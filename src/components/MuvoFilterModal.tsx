@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Filter, X, ThumbsUp, Sparkles, Ban, Award, TrendingUp } from 'lucide-react';
+import { Filter, X, ThumbsUp, Sparkles, Ban, Award, TrendingUp, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -14,6 +14,7 @@ import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { useAllStamps, StampDefinition } from '@/hooks/useStamps';
 import { MuvoMedalLevel } from '@/hooks/useMuvoScore';
+import { useMembershipsList, useUserMemberships } from '@/hooks/useMemberships';
 
 export interface MuvoFiltersState {
   // Section 1: What Stood Out (Positive)
@@ -26,6 +27,9 @@ export interface MuvoFiltersState {
   medalLevels: MuvoMedalLevel[];
   // Section 5: MUVO Score minimum
   minMuvoScore: number | null;
+  // Section 6: Membership filter (v1.8)
+  membershipFilter: 'all' | 'included_only';
+  selectedMemberships: string[];
 }
 
 export const DEFAULT_MUVO_FILTERS: MuvoFiltersState = {
@@ -34,6 +38,8 @@ export const DEFAULT_MUVO_FILTERS: MuvoFiltersState = {
   negativeStamps: [],
   medalLevels: [],
   minMuvoScore: null,
+  membershipFilter: 'all',
+  selectedMemberships: [],
 };
 
 interface MuvoFilterModalProps {

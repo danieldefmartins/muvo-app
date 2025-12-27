@@ -5,9 +5,10 @@ import { PlaceFilters, PlaceFiltersState, SortOption } from '@/components/PlaceF
 import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
+import { useUserMemberships, useAllPlaceMemberships, getPlaceMembershipMatches } from '@/hooks/useMemberships';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Map as MapIcon, List, AlertCircle } from 'lucide-react';
+import { Map as MapIcon, List, AlertCircle, Ticket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
   ReviewFiltersState, 
@@ -22,6 +23,8 @@ const PlacesToStay = () => {
   const { data: places, isLoading, error } = usePlaces();
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
   const { data: stampData } = usePlaceStampAggregatesAll();
+  const { data: userMemberships } = useUserMemberships();
+  const { data: placeMembershipMap } = useAllPlaceMemberships();
   const mapRef = useRef<PlacesMapRef>(null);
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -36,6 +39,13 @@ const PlacesToStay = () => {
   const [sort, setSort] = useState<SortOption>('recently-updated');
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [visiblePlaceIds, setVisiblePlaceIds] = useState<string[] | null>(null);
+  
+  // User membership IDs for prioritization
+  const userMembershipIds = useMemo(() => 
+    new Set(userMemberships?.map(um => um.membership_id) || []),
+    [userMemberships]
+  );
+  const hasUserMemberships = userMembershipIds.size > 0;
 
   // Filter and sort places
   const filteredAndSortedPlaces = useMemo(() => {
@@ -93,8 +103,16 @@ const PlacesToStay = () => {
     } else if (sort === 'alphabetical') {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else {
-      // Recently updated - pro recommended first, then by date
+      // Recently updated - membership matches first, then pro recommended, then by date
       result.sort((a, b) => {
+        // Membership prioritization (v1.8): places included in user's memberships come first
+        if (hasUserMemberships && placeMembershipMap) {
+          const aMatches = getPlaceMembershipMatches(a.id, userMembershipIds, placeMembershipMap);
+          const bMatches = getPlaceMembershipMatches(b.id, userMembershipIds, placeMembershipMap);
+          if (aMatches.length > 0 && bMatches.length === 0) return -1;
+          if (bMatches.length > 0 && aMatches.length === 0) return 1;
+        }
+        
         if (a.isProRecommended !== b.isProRecommended) {
           return a.isProRecommended ? -1 : 1;
         }
@@ -103,7 +121,7 @@ const PlacesToStay = () => {
     }
 
     return result;
-  }, [places, filters, sort, stampData, reviewFilters]);
+  }, [places, filters, sort, stampData, reviewFilters, hasUserMemberships, userMembershipIds, placeMembershipMap]);
 
   // Places visible in the current map viewport (for synced list)
   const displayedPlaces = useMemo(() => {
@@ -185,12 +203,19 @@ const PlacesToStay = () => {
 
           {/* Results count - only show in list view */}
           {viewMode === 'list' && (
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col gap-1.5 mb-3">
               <p className="text-sm text-muted-foreground">
                 {isLoading
                   ? 'Loading...'
                   : `${filteredAndSortedPlaces.length} places near you`}
               </p>
+              {/* v1.8: Membership prioritization message */}
+              {hasUserMemberships && !isLoading && (
+                <p className="text-xs text-primary/80 flex items-center gap-1">
+                  <Ticket className="w-3 h-3" />
+                  Results prioritized based on your selected memberships.
+                </p>
+              )}
             </div>
           )}
         </div>

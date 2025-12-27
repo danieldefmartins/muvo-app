@@ -8,6 +8,9 @@ export interface ReviewFiltersState {
   negativeStamps: string[];  // Avoid places with - penalize places with these
   medalLevels: MuvoMedalLevel[];  // Filter by medal level
   minMuvoScore: number | null;    // Minimum MUVO score
+  // v1.8 Membership filters
+  membershipFilter: 'all' | 'included_only';
+  selectedMemberships: string[];
 }
 
 export const DEFAULT_REVIEW_FILTERS: ReviewFiltersState = {
@@ -16,6 +19,8 @@ export const DEFAULT_REVIEW_FILTERS: ReviewFiltersState = {
   negativeStamps: [],
   medalLevels: [],
   minMuvoScore: null,
+  membershipFilter: 'all',
+  selectedMemberships: [],
 };
 
 export interface PlaceStampData {
