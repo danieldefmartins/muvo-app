@@ -68,7 +68,7 @@ export function StepBasicInfo({ formData, updateField }: StepBasicInfoProps) {
           onPrimaryChange={(categoryId) => updateField('primaryCategoryId', categoryId)}
           onAdditionalChange={(categoryIds) => updateField('additionalCategoryIds', categoryIds)}
           onCustomTextChange={(text) => updateField('customCategoryText', text)}
-          maxAdditional={4}
+          maxAdditional={5}
         />
       </div>
 
