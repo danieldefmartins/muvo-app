@@ -1,10 +1,9 @@
-import { Map, Check, Compass, TrendingUp, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { Check, Compass, TrendingUp, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { HomeSearchBar } from '@/components/HomeSearchBar';
 import { usePlaces } from '@/hooks/usePlaces';
-import { PlaceStampBadges } from '@/components/PlaceStampBadges';
+import { PlaceCard } from '@/components/PlaceCard';
 import {
   Carousel,
   CarouselContent,
@@ -164,39 +163,8 @@ const Index = () => {
             >
               <CarouselContent className="-ml-3">
                 {trendingPlaces.map((place) => (
-                  <CarouselItem key={place.id} className="pl-3 basis-[70%] sm:basis-[45%]">
-                    <Link to={`/place/${place.id}`} className="block group">
-                      <div className="rounded-xl overflow-hidden bg-card border border-border shadow-card hover:shadow-card-hover transition-all duration-200">
-                        <div className="aspect-[4/3] bg-muted relative overflow-hidden">
-                          {place.coverImageUrl ? (
-                            <img 
-                              src={place.coverImageUrl} 
-                              alt={place.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-accent/20 to-accent/5">
-                              <Map className="w-8 h-8 text-accent/40" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-3.5">
-                          <h3 className="text-place-name text-foreground group-hover:text-accent transition-colors line-clamp-1">
-                            {place.name}
-                          </h3>
-                          <p className="text-secondary text-muted-foreground mt-1 mb-2">
-                            {place.primaryCategory}
-                          </p>
-                          <PlaceStampBadges 
-                            placeId={place.id} 
-                            variant="compact" 
-                            maxGood={2} 
-                            maxBad={0}
-                            showReviewCount={false}
-                          />
-                        </div>
-                      </div>
-                    </Link>
+                  <CarouselItem key={place.id} className="pl-3 basis-[90%] sm:basis-[85%]">
+                    <PlaceCard place={place} />
                   </CarouselItem>
                 ))}
               </CarouselContent>
