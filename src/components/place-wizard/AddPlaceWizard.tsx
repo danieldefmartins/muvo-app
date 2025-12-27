@@ -135,61 +135,67 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
 
   // Initialize map for location step
   useEffect(() => {
-    if (!open || !mapboxToken || !mapContainer.current || currentStep !== 1) return;
+    if (!open || !mapboxToken || currentStep !== 1) return;
 
-    mapboxgl.accessToken = mapboxToken;
+    // Small delay to ensure the container is mounted after Sheet animation
+    const initTimer = setTimeout(() => {
+      if (!mapContainer.current) return;
+      
+      mapboxgl.accessToken = mapboxToken;
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/outdoors-v12',
-      center: [formData.longitude, formData.latitude],
-      zoom: 10,
-    });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/outdoors-v12',
+        center: [formData.longitude, formData.latitude],
+        zoom: 10,
+      });
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    marker.current = new mapboxgl.Marker({
-      draggable: true,
-      color: '#10b981',
-    })
-      .setLngLat([formData.longitude, formData.latitude])
-      .addTo(map.current);
+      marker.current = new mapboxgl.Marker({
+        draggable: true,
+        color: '#10b981',
+      })
+        .setLngLat([formData.longitude, formData.latitude])
+        .addTo(map.current);
 
-    marker.current.on('dragend', () => {
-      const lngLat = marker.current?.getLngLat();
-      if (lngLat) {
-        updateField('latitude', lngLat.lat);
-        updateField('longitude', lngLat.lng);
-        reverseGeocode(lngLat.lat, lngLat.lng);
-      }
-    });
-
-    map.current.on('click', (e) => {
-      const { lng, lat } = e.lngLat;
-      marker.current?.setLngLat([lng, lat]);
-      updateField('latitude', lat);
-      updateField('longitude', lng);
-      reverseGeocode(lat, lng);
-    });
-
-    // Try to get user's location
-    if (navigator.geolocation && !initialLocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          map.current?.flyTo({ center: [longitude, latitude], zoom: 12 });
-          marker.current?.setLngLat([longitude, latitude]);
-          updateField('latitude', latitude);
-          updateField('longitude', longitude);
-          reverseGeocode(latitude, longitude);
-        },
-        () => {
-          // Geolocation denied - keep default
+      marker.current.on('dragend', () => {
+        const lngLat = marker.current?.getLngLat();
+        if (lngLat) {
+          updateField('latitude', lngLat.lat);
+          updateField('longitude', lngLat.lng);
+          reverseGeocode(lngLat.lat, lngLat.lng);
         }
-      );
-    }
+      });
+
+      map.current.on('click', (e) => {
+        const { lng, lat } = e.lngLat;
+        marker.current?.setLngLat([lng, lat]);
+        updateField('latitude', lat);
+        updateField('longitude', lng);
+        reverseGeocode(lat, lng);
+      });
+
+      // Try to get user's location
+      if (navigator.geolocation && !initialLocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            map.current?.flyTo({ center: [longitude, latitude], zoom: 12 });
+            marker.current?.setLngLat([longitude, latitude]);
+            updateField('latitude', latitude);
+            updateField('longitude', longitude);
+            reverseGeocode(latitude, longitude);
+          },
+          () => {
+            // Geolocation denied - keep default
+          }
+        );
+      }
+    }, 100);
 
     return () => {
+      clearTimeout(initTimer);
       map.current?.remove();
     };
   }, [open, mapboxToken, currentStep]);
