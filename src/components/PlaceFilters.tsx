@@ -7,6 +7,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import {
@@ -112,9 +113,9 @@ export function PlaceFilters({
                 </Button>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <SheetDescription className="text-sm text-muted-foreground">
               Showing {filteredCount} of {totalCount} places
-            </p>
+            </SheetDescription>
           </SheetHeader>
 
           <ScrollArea className="flex-1 pr-4 -mr-4">
