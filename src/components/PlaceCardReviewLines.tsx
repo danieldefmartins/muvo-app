@@ -68,24 +68,30 @@ export function PlaceCardReviewLines({ placeId, className }: PlaceCardReviewLine
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      {/* LINE 1: POSITIVE - Always first position */}
+      {/* LINE 1: POSITIVE - Blue shaded background */}
       {reviewLines.positive && (
-        <div className="text-[15px] leading-tight font-semibold text-white drop-shadow-md">
-          {reviewLines.positive.label} <span className="font-bold">×{reviewLines.positive.votes}</span>
+        <div className="bg-blue-500/30 backdrop-blur-sm rounded px-2 py-0.5 truncate max-w-full">
+          <span className="text-[13px] leading-tight font-semibold text-white drop-shadow-md truncate">
+            {reviewLines.positive.label} <span className="font-bold">×{reviewLines.positive.votes}</span>
+          </span>
         </div>
       )}
 
-      {/* LINE 2: NEUTRAL - Always second position (when positive exists or when it's the top item) */}
+      {/* LINE 2: NEUTRAL - Gray shaded background */}
       {reviewLines.neutral && (
-        <div className="text-[14px] leading-tight font-medium text-white/80 drop-shadow-md">
-          {reviewLines.neutral.label} <span className="font-bold">×{reviewLines.neutral.votes}</span>
+        <div className="bg-gray-500/30 backdrop-blur-sm rounded px-2 py-0.5 truncate max-w-full">
+          <span className="text-[12px] leading-tight font-medium text-white/90 drop-shadow-md truncate">
+            {reviewLines.neutral.label} <span className="font-bold">×{reviewLines.neutral.votes}</span>
+          </span>
         </div>
       )}
 
-      {/* LINE 3: NEGATIVE - Always third position, only shown if exists */}
+      {/* LINE 3: NEGATIVE - Red shaded background, only shown if exists */}
       {reviewLines.negative && (
-        <div className="text-[14px] leading-tight font-medium text-red-300 drop-shadow-md">
-          {reviewLines.negative.label} <span className="font-bold">×{reviewLines.negative.votes}</span>
+        <div className="bg-red-500/30 backdrop-blur-sm rounded px-2 py-0.5 truncate max-w-full">
+          <span className="text-[12px] leading-tight font-medium text-white drop-shadow-md truncate">
+            {reviewLines.negative.label} <span className="font-bold">×{reviewLines.negative.votes}</span>
+          </span>
         </div>
       )}
     </div>
