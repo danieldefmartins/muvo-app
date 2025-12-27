@@ -12,6 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Map, List, AlertCircle, Search, X, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { 
+  ReviewFiltersState, 
+  DEFAULT_REVIEW_FILTERS, 
+  usePlaceStampAggregatesAll, 
+  rankPlacesByReviews 
+} from '@/hooks/useReviewFilters';
 
 type ViewMode = 'list' | 'map';
 
@@ -29,19 +35,21 @@ const SearchResults = () => {
     petFriendly: false,
     bigRigFriendly: false,
   });
+  const [reviewFilters, setReviewFilters] = useState<ReviewFiltersState>(DEFAULT_REVIEW_FILTERS);
   const [sort, setSort] = useState<SortOption>('recently-updated');
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [visiblePlaceIds, setVisiblePlaceIds] = useState<string[] | null>(null);
 
   const { data: places, isLoading, error } = usePlaces();
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
+  const { data: stampData } = usePlaceStampAggregatesAll();
   const mapRef = useRef<PlacesMapRef>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Search filter
   const searchedPlaces = useSearchPlaces(places, searchQuery);
 
-  // Apply additional filters and sort
+  // Apply additional filters, review filters, and sort
   const filteredAndSortedPlaces = useMemo(() => {
     let result = [...searchedPlaces];
 
@@ -68,8 +76,22 @@ const SearchResults = () => {
       result = result.filter((p) => p.openYearRound);
     }
 
+    // Apply review-based filtering and ranking
+    const placeIds = result.map(p => p.id);
+    const { rankedIds } = rankPlacesByReviews(placeIds, stampData, reviewFilters);
+    const rankedIdSet = new Set(rankedIds);
+    result = result.filter(p => rankedIdSet.has(p.id));
+    const rankMap = new Map(rankedIds.map((id, idx) => [id, idx]));
+
     // Apply sorting
-    if (sort === 'alphabetical') {
+    const hasReviewFilters = 
+      reviewFilters.positiveStamps.length > 0 || 
+      reviewFilters.neutralStamps.length > 0 || 
+      reviewFilters.negativeStamps.length > 0;
+
+    if (hasReviewFilters) {
+      result.sort((a, b) => (rankMap.get(a.id) ?? Infinity) - (rankMap.get(b.id) ?? Infinity));
+    } else if (sort === 'alphabetical') {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else {
       result.sort((a, b) => {
@@ -81,7 +103,7 @@ const SearchResults = () => {
     }
 
     return result;
-  }, [searchedPlaces, filters, sort]);
+  }, [searchedPlaces, filters, sort, stampData, reviewFilters]);
 
   // Places visible in the current map viewport
   const displayedPlaces = useMemo(() => {
@@ -185,6 +207,8 @@ const SearchResults = () => {
                 onSortChange={setSort}
                 totalCount={searchedPlaces.length}
                 filteredCount={filteredAndSortedPlaces.length}
+                reviewFilters={reviewFilters}
+                onReviewFiltersChange={setReviewFilters}
               />
             </div>
           </div>
