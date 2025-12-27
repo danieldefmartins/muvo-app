@@ -15,11 +15,12 @@ interface ReviewItem {
 
 /**
  * Three-line stacked review display for place cards:
- * Line 1: Positive (blue accent)
- * Line 2: Neutral (gold/gray accent)
- * Line 3: Negative (red accent)
+ * ROW 1: Positive (blue accent) - only positive polarity stamps
+ * ROW 2: Neutral (amber/gold accent) - only neutral polarity stamps  
+ * ROW 3: Negative (red accent) - only improvement polarity stamps
  * 
- * Each line shows up to 2 top items with ×N counts
+ * Each row shows up to 2 top items with ×N counts
+ * Categories are NEVER mixed between rows
  */
 export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
   const { data: aggregates } = usePlaceStampAggregates(placeId);
@@ -30,7 +31,7 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
       return { positive: [], neutral: [], negative: [] };
     }
 
-    // Get top 2 positive
+    // ROW 1: Get top 2 POSITIVE stamps only (polarity === 'positive')
     const positiveItems: ReviewItem[] = aggregates
       .filter(a => a.polarity === 'positive')
       .sort((a, b) => b.total_votes - a.total_votes)
@@ -40,7 +41,8 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
         votes: a.total_votes,
       }));
 
-    // Get top 2 neutral
+    // ROW 2: Get top 2 NEUTRAL stamps only (polarity === 'neutral')
+    // These are "It feels" style tags - never quality judgments
     const neutralItems: ReviewItem[] = aggregates
       .filter(a => a.polarity === 'neutral')
       .sort((a, b) => b.total_votes - a.total_votes)
@@ -50,7 +52,7 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
         votes: a.total_votes,
       }));
 
-    // Get top 2 negative/improvement
+    // ROW 3: Get top 2 NEGATIVE stamps only (polarity === 'improvement')
     const negativeItems: ReviewItem[] = aggregates
       .filter(a => a.polarity === 'improvement')
       .sort((a, b) => b.total_votes - a.total_votes)
@@ -77,40 +79,40 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
   };
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {/* Positive Line */}
+    <div className={cn("flex flex-col gap-2", className)}>
+      {/* ROW 1: POSITIVE - Blue tint */}
       <div 
-        className="px-2 py-1 rounded-md bg-primary/8 text-primary font-semibold"
+        className="px-2.5 py-1.5 rounded-md bg-primary/10 text-primary font-semibold"
         style={{ fontSize: '13px', lineHeight: '18px' }}
       >
         {reviewLines.positive.length > 0 ? (
           formatItems(reviewLines.positive)
         ) : (
-          <span className="opacity-70">Be the first to tap what this place is like →</span>
+          <span className="opacity-60 font-normal">Be the first to tap what this place is like →</span>
         )}
       </div>
 
-      {/* Neutral Line */}
+      {/* ROW 2: NEUTRAL - Amber/Gold tint (style/vibe only) */}
       <div 
-        className="px-2 py-1 rounded-md bg-amber-500/8 text-amber-700 dark:text-amber-400 font-semibold"
+        className="px-2.5 py-1.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold"
         style={{ fontSize: '13px', lineHeight: '18px' }}
       >
         {reviewLines.neutral.length > 0 ? (
           formatItems(reviewLines.neutral)
         ) : (
-          <span className="opacity-70">Add how this place feels →</span>
+          <span className="opacity-60 font-normal">Add how this place feels →</span>
         )}
       </div>
 
-      {/* Negative Line */}
+      {/* ROW 3: NEGATIVE - Red tint */}
       <div 
-        className="px-2 py-1 rounded-md bg-red-500/8 text-red-600 dark:text-red-400 font-semibold"
+        className="px-2.5 py-1.5 rounded-md bg-red-500/10 text-red-600 dark:text-red-400 font-semibold"
         style={{ fontSize: '13px', lineHeight: '18px' }}
       >
         {reviewLines.negative.length > 0 ? (
           formatItems(reviewLines.negative)
         ) : (
-          <span className="opacity-70">No negative taps reported</span>
+          <span className="opacity-60 font-normal">No negative taps reported</span>
         )}
       </div>
     </div>
