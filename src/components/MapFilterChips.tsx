@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -230,7 +231,9 @@ export function MapFilterChips({
                   )}
                 </div>
                 {filteredCount !== undefined && (
-                  <p className="text-sm text-muted-foreground">{filteredCount} places found</p>
+                  <SheetDescription className="text-sm text-muted-foreground">
+                    {filteredCount} places found
+                  </SheetDescription>
                 )}
               </SheetHeader>
 
