@@ -199,7 +199,6 @@ export function useMyReview(placeId: string) {
 }
 
 // Fetch aggregated stamp data from the database (not calculated on frontend)
-// Applies noise filter: ignore stamps with fewer than 2 total votes
 // Ranking: total_votes (primary), review_count (tie-breaker)
 export function usePlaceStampAggregates(placeId: string) {
   return useQuery({
@@ -209,7 +208,7 @@ export function usePlaceStampAggregates(placeId: string) {
         .from('place_stamp_aggregates')
         .select('dimension, polarity, total_votes, review_count, avg_intensity, stamp_id')
         .eq('place_id', placeId)
-        .gte('total_votes', 2) // Noise filter: ignore stamps with < 2 votes
+        .gte('total_votes', 1) // Show all stamps with at least 1 vote
         .order('total_votes', { ascending: false });
 
       if (error) throw error;
