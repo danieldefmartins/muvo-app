@@ -404,16 +404,19 @@ export function MapFilterChips({
                   <div>
                     <h3 className="text-sm font-medium text-foreground mb-3">Category</h3>
                     <Select
-                      value={filters.category || ''}
+                      value={filters.category ?? '__all__'}
                       onValueChange={(v) =>
-                        onFiltersChange({ ...filters, category: (v || null) as PlaceCategory | null })
+                        onFiltersChange({
+                          ...filters,
+                          category: v === '__all__' ? null : (v as PlaceCategory),
+                        })
                       }
                     >
                       <SelectTrigger className="w-full bg-card border-border">
                         <SelectValue placeholder="All categories" />
                       </SelectTrigger>
                       <SelectContent className="bg-popover border-border z-[100] max-h-60">
-                        <SelectItem value="">All categories</SelectItem>
+                        <SelectItem value="__all__">All categories</SelectItem>
                         {PLACE_CATEGORIES.map((cat) => (
                           <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                         ))}
