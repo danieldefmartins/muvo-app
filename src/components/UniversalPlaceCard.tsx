@@ -1,10 +1,20 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Globe, Instagram, Share2, ThumbsUp, Star, AlertTriangle } from 'lucide-react';
+import { MapPin, Phone, Globe, Instagram, Share2, ThumbsUp, Star, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Place } from '@/hooks/usePlaces';
 import { usePlaceStampAggregates } from '@/hooks/useReviews';
 import { useAllStamps, getStampLabel } from '@/hooks/useStamps';
 import { cn } from '@/lib/utils';
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+
+// Demo photos for testing swipe functionality
+const DEMO_PHOTOS = [
+  '/demo/rv-park-scenic.jpg',
+  '/demo/forest-campground.jpg',
+  '/demo/lakeside-camp.jpg',
+  '/demo/desert-campground.jpg',
+  '/demo/national-park-camp.jpg',
+];
 
 interface UniversalPlaceCardProps {
   place: Place;
@@ -21,6 +31,45 @@ interface UniversalPlaceCardProps {
 export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCardProps) {
   const { data: aggregates } = usePlaceStampAggregates(place.id);
   const { data: allStamps } = useAllStamps();
+  
+  // Photo carousel - use place cover image + demo photos for testing
+  const photos = useMemo(() => {
+    const placePhotos = place.coverImageUrl ? [place.coverImageUrl] : [];
+    // Add demo photos for testing swipe functionality
+    return [...placePhotos, ...DEMO_PHOTOS].slice(0, 5);
+  }, [place.coverImageUrl]);
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: true,
+    dragFree: false,
+  });
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCurrentSlide(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  // Subscribe to carousel events
+  useMemo(() => {
+    if (!emblaApi) return;
+    emblaApi.on('select', onSelect);
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const scrollPrev = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    emblaApi?.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    emblaApi?.scrollNext();
+  }, [emblaApi]);
 
   const reviewLines = useMemo(() => {
     if (!aggregates || aggregates.length === 0) {
@@ -108,14 +157,60 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
       style={style}
     >
       <div className="flex p-4 gap-4">
-        {/* LEFT: Photo - fixed width, rounded */}
-        <div className="flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40 rounded-xl overflow-hidden bg-muted">
-          {place.coverImageUrl ? (
-            <img
-              src={place.coverImageUrl}
-              alt={place.name}
-              className="w-full h-full object-cover"
-            />
+        {/* LEFT: Swipeable Photo Carousel */}
+        <div className="flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40 rounded-xl overflow-hidden bg-muted relative group">
+          {photos.length > 0 ? (
+            <>
+              <div className="overflow-hidden h-full" ref={emblaRef}>
+                <div className="flex h-full">
+                  {photos.map((photo, index) => (
+                    <div key={index} className="flex-[0_0_100%] min-w-0 h-full">
+                      <img
+                        src={photo}
+                        alt={`${place.name} - Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Navigation arrows - show on hover */}
+              {photos.length > 1 && (
+                <>
+                  <button
+                    onClick={scrollPrev}
+                    className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-white" />
+                  </button>
+                  <button
+                    onClick={scrollNext}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight className="w-4 h-4 text-white" />
+                  </button>
+                </>
+              )}
+              
+              {/* Dots indicator */}
+              {photos.length > 1 && (
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+                  {photos.map((_, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        'w-1.5 h-1.5 rounded-full transition-colors',
+                        index === currentSlide ? 'bg-white' : 'bg-white/50'
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
               <MapPin className="w-8 h-8 text-muted-foreground/50" />
