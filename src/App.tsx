@@ -17,6 +17,7 @@ import AdminPhotos from "./pages/AdminPhotos";
 import AdminUsers from "./pages/AdminUsers";
 import AdminPlaceSubmissions from "./pages/AdminPlaceSubmissions";
 import ImportPlaces from "./pages/ImportPlaces";
+import BulkImport from "./pages/BulkImport";
 import AdminDataEnrichment from "./pages/AdminDataEnrichment";
 import Auth from "./pages/Auth";
 import MapView from "./pages/MapView";
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/place-submissions" element={<AdminPlaceSubmissions />} />
               <Route path="/admin/import" element={<ImportPlaces />} />
+              <Route path="/admin/bulk-import" element={<BulkImport />} />
               <Route path="/admin/data-enrichment" element={<AdminDataEnrichment />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile/:username" element={<UserProfile />} />

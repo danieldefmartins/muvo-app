@@ -52,6 +52,77 @@ export type Database = {
           },
         ]
       }
+      entrances: {
+        Row: {
+          created_at: string
+          entrance_external_id: string | null
+          entrance_name: string
+          entrance_notes: string | null
+          grade: string | null
+          id: string
+          is_primary: boolean | null
+          latitude: number
+          longitude: number
+          low_clearance_warning: boolean | null
+          max_rv_height_ft: number | null
+          max_rv_length_ft: number | null
+          place_id: string
+          road_type: string | null
+          seasonal_access: string | null
+          seasonal_notes: string | null
+          tight_turns: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entrance_external_id?: string | null
+          entrance_name: string
+          entrance_notes?: string | null
+          grade?: string | null
+          id?: string
+          is_primary?: boolean | null
+          latitude: number
+          longitude: number
+          low_clearance_warning?: boolean | null
+          max_rv_height_ft?: number | null
+          max_rv_length_ft?: number | null
+          place_id: string
+          road_type?: string | null
+          seasonal_access?: string | null
+          seasonal_notes?: string | null
+          tight_turns?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entrance_external_id?: string | null
+          entrance_name?: string
+          entrance_notes?: string | null
+          grade?: string | null
+          id?: string
+          is_primary?: boolean | null
+          latitude?: number
+          longitude?: number
+          low_clearance_warning?: boolean | null
+          max_rv_height_ft?: number | null
+          max_rv_length_ft?: number | null
+          place_id?: string
+          road_type?: string | null
+          seasonal_access?: string | null
+          seasonal_notes?: string | null
+          tight_turns?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entrances_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       external_place_references: {
         Row: {
           created_at: string
@@ -923,6 +994,7 @@ export type Database = {
           phone: string | null
           picnic_tables: Database["public"]["Enums"]["yes_no_unknown"] | null
           pin_accuracy: Database["public"]["Enums"]["pin_accuracy"] | null
+          place_external_id: string | null
           playground: Database["public"]["Enums"]["yes_no_unknown"] | null
           pool_heating: Database["public"]["Enums"]["pool_heating"] | null
           pool_open_year_round:
@@ -1143,6 +1215,7 @@ export type Database = {
           phone?: string | null
           picnic_tables?: Database["public"]["Enums"]["yes_no_unknown"] | null
           pin_accuracy?: Database["public"]["Enums"]["pin_accuracy"] | null
+          place_external_id?: string | null
           playground?: Database["public"]["Enums"]["yes_no_unknown"] | null
           pool_heating?: Database["public"]["Enums"]["pool_heating"] | null
           pool_open_year_round?:
@@ -1363,6 +1436,7 @@ export type Database = {
           phone?: string | null
           picnic_tables?: Database["public"]["Enums"]["yes_no_unknown"] | null
           pin_accuracy?: Database["public"]["Enums"]["pin_accuracy"] | null
+          place_external_id?: string | null
           playground?: Database["public"]["Enums"]["yes_no_unknown"] | null
           pool_heating?: Database["public"]["Enums"]["pool_heating"] | null
           pool_open_year_round?:
