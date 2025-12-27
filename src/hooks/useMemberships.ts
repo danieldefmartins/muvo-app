@@ -116,6 +116,51 @@ export function usePlaceMemberships(placeId: string | undefined) {
   });
 }
 
+// Fetch all place memberships for batch sorting/filtering
+export function useAllPlaceMemberships() {
+  return useQuery({
+    queryKey: ['all-place-memberships'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('place_memberships')
+        .select('place_id, membership_id');
+
+      if (error) throw error;
+      
+      // Create a map of place_id -> set of membership_ids
+      const placeMembershipMap = new Map<string, Set<string>>();
+      for (const pm of data || []) {
+        if (!placeMembershipMap.has(pm.place_id)) {
+          placeMembershipMap.set(pm.place_id, new Set());
+        }
+        placeMembershipMap.get(pm.place_id)!.add(pm.membership_id);
+      }
+      
+      return placeMembershipMap;
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+}
+
+// Check if a place matches any of the user's memberships (batch version)
+export function getPlaceMembershipMatches(
+  placeId: string,
+  userMembershipIds: Set<string>,
+  placeMembershipMap: Map<string, Set<string>> | undefined
+): string[] {
+  if (!placeMembershipMap) return [];
+  const placeMemberships = placeMembershipMap.get(placeId);
+  if (!placeMemberships) return [];
+  
+  const matches: string[] = [];
+  for (const membershipId of placeMemberships) {
+    if (userMembershipIds.has(membershipId)) {
+      matches.push(membershipId);
+    }
+  }
+  return matches;
+}
+
 // Check if a place matches any of the user's memberships
 export function useUserPlaceMembershipMatch(placeId: string | undefined) {
   const { data: userMemberships } = useUserMemberships();

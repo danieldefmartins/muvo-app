@@ -7,10 +7,11 @@ import { PlacesMap, PlacesMapRef } from '@/components/PlacesMap';
 import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useSearchPlaces } from '@/hooks/useSearch';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
+import { useUserMemberships, useAllPlaceMemberships, getPlaceMembershipMatches } from '@/hooks/useMemberships';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Map as MapIcon, List, AlertCircle, Search, X, ArrowLeft } from 'lucide-react';
+import { Map as MapIcon, List, AlertCircle, Search, X, ArrowLeft, Ticket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
   ReviewFiltersState, 
@@ -43,8 +44,17 @@ const SearchResults = () => {
   const { data: places, isLoading, error } = usePlaces();
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
   const { data: stampData } = usePlaceStampAggregatesAll();
+  const { data: userMemberships } = useUserMemberships();
+  const { data: placeMembershipMap } = useAllPlaceMemberships();
   const mapRef = useRef<PlacesMapRef>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // User membership IDs for prioritization
+  const userMembershipIds = useMemo(() => 
+    new Set(userMemberships?.map(um => um.membership_id) || []),
+    [userMemberships]
+  );
+  const hasUserMemberships = userMembershipIds.size > 0;
 
   // Search filter
   const searchedPlaces = useSearchPlaces(places, searchQuery);
@@ -94,7 +104,16 @@ const SearchResults = () => {
     } else if (sort === 'alphabetical') {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else {
+      // Recently updated - membership matches first, then pro recommended, then by date
       result.sort((a, b) => {
+        // Membership prioritization (v1.8): places included in user's memberships come first
+        if (hasUserMemberships && placeMembershipMap) {
+          const aMatches = getPlaceMembershipMatches(a.id, userMembershipIds, placeMembershipMap);
+          const bMatches = getPlaceMembershipMatches(b.id, userMembershipIds, placeMembershipMap);
+          if (aMatches.length > 0 && bMatches.length === 0) return -1;
+          if (bMatches.length > 0 && aMatches.length === 0) return 1;
+        }
+        
         if (a.isProRecommended !== b.isProRecommended) {
           return a.isProRecommended ? -1 : 1;
         }
@@ -103,7 +122,7 @@ const SearchResults = () => {
     }
 
     return result;
-  }, [searchedPlaces, filters, sort, stampData, reviewFilters]);
+  }, [searchedPlaces, filters, sort, stampData, reviewFilters, hasUserMemberships, userMembershipIds, placeMembershipMap]);
 
   // Places visible in the current map viewport
   const displayedPlaces = useMemo(() => {
@@ -215,7 +234,7 @@ const SearchResults = () => {
 
           {/* Results count */}
           {viewMode === 'list' && (
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col gap-1.5 mb-3">
               <p className="text-sm text-muted-foreground">
                 {isLoading
                   ? 'Searching...'
@@ -223,6 +242,13 @@ const SearchResults = () => {
                     ? `${filteredAndSortedPlaces.length} results for "${searchQuery}"`
                     : `${filteredAndSortedPlaces.length} places`}
               </p>
+              {/* v1.8: Membership prioritization message */}
+              {hasUserMemberships && !isLoading && (
+                <p className="text-xs text-primary/80 flex items-center gap-1">
+                  <Ticket className="w-3 h-3" />
+                  Results prioritized based on your selected memberships.
+                </p>
+              )}
             </div>
           )}
         </div>

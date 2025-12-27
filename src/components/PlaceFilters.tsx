@@ -64,6 +64,8 @@ export function PlaceFilters({
     negativeStamps: reviewFilters.negativeStamps,
     medalLevels: reviewFilters.medalLevels,
     minMuvoScore: reviewFilters.minMuvoScore,
+    membershipFilter: reviewFilters.membershipFilter,
+    selectedMemberships: reviewFilters.selectedMemberships,
   };
 
   const handleMuvoFiltersChange = (newFilters: MuvoFiltersState) => {
@@ -74,6 +76,8 @@ export function PlaceFilters({
         negativeStamps: newFilters.negativeStamps,
         medalLevels: newFilters.medalLevels,
         minMuvoScore: newFilters.minMuvoScore,
+        membershipFilter: newFilters.membershipFilter,
+        selectedMemberships: newFilters.selectedMemberships,
       });
     }
   };
