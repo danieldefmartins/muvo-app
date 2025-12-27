@@ -76,6 +76,18 @@ const PlacesToStay = () => {
       result = result.filter((p) => p.openYearRound);
     }
 
+    // v1.8: Apply membership filter if enabled
+    if (reviewFilters.membershipFilter === 'included_only' && hasUserMemberships && placeMembershipMap) {
+      const filterMembershipIds = reviewFilters.selectedMemberships.length > 0
+        ? new Set(reviewFilters.selectedMemberships)
+        : userMembershipIds;
+      
+      result = result.filter((p) => {
+        const matches = getPlaceMembershipMatches(p.id, filterMembershipIds, placeMembershipMap);
+        return matches.length > 0;
+      });
+    }
+
     // Apply review-based filtering and ranking
     const placeIds = result.map(p => p.id);
     const { rankedIds } = rankPlacesByReviews(placeIds, stampData, reviewFilters);

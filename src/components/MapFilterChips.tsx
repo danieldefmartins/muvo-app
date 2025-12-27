@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Ticket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { hapticLight } from '@/lib/haptics';
 import { PlaceFiltersState } from '@/components/PlaceFilters';
 import { PlaceCategory, PlaceFeature } from '@/hooks/usePlaces';
 import { ReviewFiltersState, DEFAULT_REVIEW_FILTERS, countActiveReviewFilters } from '@/hooks/useReviewFilters';
 import { MuvoFilterModal, MuvoFilterButton, DEFAULT_MUVO_FILTERS, MuvoFiltersState } from '@/components/MuvoFilterModal';
+import { useUserMemberships } from '@/hooks/useMemberships';
 
 interface QuickChip {
   id: string;
@@ -103,7 +105,8 @@ export function MapFilterChips({
   onReviewFiltersChange,
 }: MapFilterChipsProps) {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
-
+  const { data: userMemberships } = useUserMemberships();
+  const hasUserMemberships = (userMemberships?.length || 0) > 0;
   const activeFilterCount =
     (filters.category ? 1 : 0) +
     filters.features.length +
@@ -152,6 +155,34 @@ export function MapFilterChips({
             }}
             variant="compact"
           />
+
+          {/* My Memberships quick chip - only shown if user has memberships */}
+          {hasUserMemberships && (
+            <button
+              type="button"
+              onClick={() => {
+                hapticLight();
+                if (onReviewFiltersChange) {
+                  onReviewFiltersChange({
+                    ...reviewFilters,
+                    membershipFilter: reviewFilters.membershipFilter === 'included_only' ? 'all' : 'included_only',
+                  });
+                }
+              }}
+              className={cn(
+                'flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-sm whitespace-nowrap',
+                'bg-card/[0.88] backdrop-blur-xl transition-all duration-200',
+                'active:scale-[0.95] touch-manipulation',
+                reviewFilters.membershipFilter === 'included_only'
+                  ? 'ring-2 ring-primary text-primary font-semibold'
+                  : 'text-foreground font-medium'
+              )}
+              style={{ boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.12)' }}
+            >
+              <Ticket className="w-4 h-4" />
+              <span>My Memberships</span>
+            </button>
+          )}
 
           {/* Quick filter chips */}
           {QUICK_CHIPS.map((chip) => {

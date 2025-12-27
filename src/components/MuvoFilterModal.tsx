@@ -137,12 +137,26 @@ export function MuvoFilterModal({
     [allStamps]
   );
 
+  // Fetch memberships data
+  const { data: allMemberships } = useMembershipsList();
+  const { data: userMemberships } = useUserMemberships();
+  const hasUserMemberships = (userMemberships?.length || 0) > 0;
+
   const activeFilterCount = 
     filters.positiveStamps.length + 
     filters.neutralStamps.length + 
     filters.negativeStamps.length +
     filters.medalLevels.length +
-    (filters.minMuvoScore !== null ? 1 : 0);
+    (filters.minMuvoScore !== null ? 1 : 0) +
+    (filters.membershipFilter === 'included_only' ? 1 : 0) +
+    filters.selectedMemberships.length;
+
+  const toggleMembership = (membershipId: string) => {
+    const updated = filters.selectedMemberships.includes(membershipId)
+      ? filters.selectedMemberships.filter(id => id !== membershipId)
+      : [...filters.selectedMemberships, membershipId];
+    onFiltersChange({ ...filters, selectedMemberships: updated });
+  };
 
   const toggleStamp = (stampId: string, type: 'positive' | 'neutral' | 'negative') => {
     const key = type === 'positive' ? 'positiveStamps' : type === 'neutral' ? 'neutralStamps' : 'negativeStamps';
@@ -374,6 +388,84 @@ export function MuvoFilterModal({
               </div>
             </section>
 
+            {/* SECTION 6: MEMBERSHIP FILTER */}
+            {hasUserMemberships && (
+              <>
+                <Separator />
+                <section>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Ticket className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-foreground">My Memberships</h3>
+                      <p className="text-xs text-muted-foreground">Show places included in your memberships</p>
+                    </div>
+                  </div>
+
+                  {/* Toggle for filtering by memberships */}
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onFiltersChange({ 
+                          ...filters, 
+                          membershipFilter: filters.membershipFilter === 'all' ? 'included_only' : 'all' 
+                        })}
+                        className={cn(
+                          'px-4 py-2.5 rounded-xl text-sm font-medium transition-all',
+                          'touch-manipulation active:scale-95',
+                          filters.membershipFilter === 'included_only'
+                            ? 'bg-primary/15 text-primary ring-2 ring-primary/30'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        )}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Ticket className="w-4 h-4" />
+                          Show only included places
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Specific membership selection */}
+                    {filters.membershipFilter === 'included_only' && userMemberships && userMemberships.length > 1 && allMemberships && (
+                      <div className="mt-3">
+                        <p className="text-xs text-muted-foreground mb-2">Filter by specific memberships:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {userMemberships.map((um) => {
+                            const membership = allMemberships.find(m => m.id === um.membership_id);
+                            if (!membership) return null;
+                            const isActive = filters.selectedMemberships.includes(um.membership_id);
+                            return (
+                              <button
+                                key={um.membership_id}
+                                type="button"
+                                onClick={() => toggleMembership(um.membership_id)}
+                                className={cn(
+                                  'px-3 py-2 rounded-xl text-sm font-medium transition-all',
+                                  'touch-manipulation active:scale-95',
+                                  isActive
+                                    ? 'bg-primary/15 text-primary ring-2 ring-primary/30'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                )}
+                              >
+                                {membership.icon && <span className="mr-1.5">{membership.icon}</span>}
+                                {membership.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
+                      Membership data is based on community reports — availability may vary.
+                    </p>
+                  </div>
+                </section>
+              </>
+            )}
+
           </div>
         </ScrollArea>
 
@@ -404,7 +496,9 @@ export function MuvoFilterButton({ filters, onClick, variant = 'default' }: Muvo
     filters.neutralStamps.length + 
     filters.negativeStamps.length +
     filters.medalLevels.length +
-    (filters.minMuvoScore !== null ? 1 : 0);
+    (filters.minMuvoScore !== null ? 1 : 0) +
+    (filters.membershipFilter === 'included_only' ? 1 : 0) +
+    filters.selectedMemberships.length;
 
   if (variant === 'compact') {
     return (
@@ -452,6 +546,8 @@ export function countMuvoFilters(filters: MuvoFiltersState): number {
     filters.neutralStamps.length + 
     filters.negativeStamps.length +
     filters.medalLevels.length +
-    (filters.minMuvoScore !== null ? 1 : 0)
+    (filters.minMuvoScore !== null ? 1 : 0) +
+    (filters.membershipFilter === 'included_only' ? 1 : 0) +
+    filters.selectedMemberships.length
   );
 }
