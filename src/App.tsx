@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TrustedCongratsModal } from "@/components/TrustedCongratsModal";
 import { BottomNav } from "@/components/BottomNav";
 import { FooterProvider } from "@/contexts/FooterContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import PlacesToStay from "./pages/PlacesToStay";
 import PlaceDetail from "./pages/PlaceDetail";
@@ -32,32 +33,34 @@ const App = () => (
       <Toaster />
       <Sonner />
       <TrustedCongratsModal />
-      <BrowserRouter>
-        <FooterProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/places" element={<PlacesToStay />} />
-            <Route path="/place/:id" element={<PlaceDetail />} />
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/map" element={<MapView />} />
-            <Route path="/route" element={<RoutePlanning />} />
-            <Route path="/saved" element={<SavedPlaces />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/admin/suggestions" element={<AdminSuggestions />} />
-            <Route path="/admin/photos" element={<AdminPhotos />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/place-submissions" element={<AdminPlaceSubmissions />} />
-            <Route path="/admin/import" element={<ImportPlaces />} />
-            <Route path="/admin/data-enrichment" element={<AdminDataEnrichment />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/profile/:username" element={<UserProfile />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          {/* Global Fixed Bottom Navigation */}
-          <BottomNav />
-        </FooterProvider>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <FooterProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/places" element={<PlacesToStay />} />
+              <Route path="/place/:id" element={<PlaceDetail />} />
+              <Route path="/search" element={<SearchResults />} />
+              <Route path="/map" element={<MapView />} />
+              <Route path="/route" element={<RoutePlanning />} />
+              <Route path="/saved" element={<SavedPlaces />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/admin/suggestions" element={<AdminSuggestions />} />
+              <Route path="/admin/photos" element={<AdminPhotos />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/place-submissions" element={<AdminPlaceSubmissions />} />
+              <Route path="/admin/import" element={<ImportPlaces />} />
+              <Route path="/admin/data-enrichment" element={<AdminDataEnrichment />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/profile/:username" element={<UserProfile />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            {/* Global Fixed Bottom Navigation */}
+            <BottomNav />
+          </FooterProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
     </TooltipProvider>
   </QueryClientProvider>
 );
