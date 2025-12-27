@@ -11,9 +11,59 @@ import {
   PLACES_COLUMN_ALIASES,
   ENTRANCES_COLUMN_ALIASES,
   VALID_CATEGORIES,
-  VALID_PRICE_LEVELS,
+  VALID_SOURCE_PLATFORMS,
 } from '@/types/twoTabImport';
 import { supabase } from '@/integrations/supabase/client';
+
+// Generate template XLSX with both sheets
+export function generateTemplateXLSX() {
+  const wb = XLSX.utils.book_new();
+  
+  // Places sheet with headers
+  const placesHeaders = PLACES_FIELDS.map(f => f.label);
+  const placesSheet = XLSX.utils.aoa_to_sheet([placesHeaders]);
+  XLSX.utils.book_append_sheet(wb, placesSheet, 'Places');
+  
+  // Entrances sheet with headers
+  const entrancesHeaders = ENTRANCES_FIELDS.map(f => f.label);
+  const entrancesSheet = XLSX.utils.aoa_to_sheet([entrancesHeaders]);
+  XLSX.utils.book_append_sheet(wb, entrancesSheet, 'Entrances');
+  
+  // Generate and download
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'muvo_bulk_import_template.xlsx';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Generate CSV for a single tab
+export function generatePlacesCSV() {
+  const headers = PLACES_FIELDS.map(f => f.label);
+  const csvContent = headers.join(',') + '\n';
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'muvo_places_template.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function generateEntrancesCSV() {
+  const headers = ENTRANCES_FIELDS.map(f => f.label);
+  const csvContent = headers.join(',') + '\n';
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'muvo_entrances_template.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export function useTwoTabImport() {
   const [state, setState] = useState<TwoTabImportState>(DEFAULT_TWO_TAB_STATE);
@@ -144,13 +194,10 @@ export function useTwoTabImport() {
         return null;
       case 'category':
         return VALID_CATEGORIES.find(c => c.toLowerCase() === value.toLowerCase()) || 'RV Campground';
-      case 'price':
-        if (['free', '0'].includes(value.toLowerCase())) return 'Free';
-        if (['1', '$'].includes(value)) return '$';
-        if (['2', '$$'].includes(value)) return '$$';
-        if (['3', '$$$'].includes(value)) return '$$$';
-        if (['4', '$$$$'].includes(value)) return '$$$$';
-        return '$$';
+      case 'source':
+        const normalizedSource = value.toLowerCase().replace(/\s+/g, '_');
+        const matchedSource = VALID_SOURCE_PLATFORMS.find(s => s === normalizedSource);
+        return matchedSource || 'csv_import';
       case 'enum':
         if (enumValues?.includes(value.toLowerCase())) return value.toLowerCase();
         return null;
@@ -184,7 +231,9 @@ export function useTwoTabImport() {
 
       // Validate required fields
       if (!mappedData.place_external_id) errors.push('Missing place_external_id');
-      if (!mappedData.name) errors.push('Missing name');
+      if (!mappedData.name) errors.push('Missing place_name');
+      if (!mappedData.primary_category) errors.push('Missing primary_category');
+      if (!mappedData.country) errors.push('Missing country');
       
       const lat = mappedData.latitude;
       const lng = mappedData.longitude;
@@ -340,19 +389,17 @@ export function useTwoTabImport() {
           latitude: d.latitude,
           longitude: d.longitude,
           primary_category: d.primary_category || 'RV Campground',
-          price_level: d.price_level || '$$',
-          description: d.description || null,
-          short_summary: d.short_summary || null,
-          address_line1: d.address_line1 || null,
-          address_line2: d.address_line2 || null,
+          address: d.address || null,
           city: d.city || null,
           state: d.state || null,
           postal_code: d.postal_code || null,
           county: d.county || null,
           country: d.country || 'USA',
           phone: d.phone || null,
-          email: d.email || null,
           website: d.website || null,
+          hours_json: d.hours_json ? { text: d.hours_json } : null,
+          is_verified: d.is_verified || false,
+          import_source: d.import_source || 'csv_import',
         };
 
         const { error } = await supabase.from('places').insert(insertData as any);
@@ -375,19 +422,17 @@ export function useTwoTabImport() {
         if (d.latitude != null) updateData.latitude = d.latitude;
         if (d.longitude != null) updateData.longitude = d.longitude;
         if (d.primary_category) updateData.primary_category = d.primary_category;
-        if (d.price_level) updateData.price_level = d.price_level;
-        if (d.description) updateData.description = d.description;
-        if (d.short_summary) updateData.short_summary = d.short_summary;
-        if (d.address_line1) updateData.address_line1 = d.address_line1;
-        if (d.address_line2) updateData.address_line2 = d.address_line2;
+        if (d.address) updateData.address = d.address;
         if (d.city) updateData.city = d.city;
         if (d.state) updateData.state = d.state;
         if (d.postal_code) updateData.postal_code = d.postal_code;
         if (d.county) updateData.county = d.county;
         if (d.country) updateData.country = d.country;
         if (d.phone) updateData.phone = d.phone;
-        if (d.email) updateData.email = d.email;
         if (d.website) updateData.website = d.website;
+        if (d.hours_json) updateData.hours_json = { text: d.hours_json };
+        if (d.is_verified !== null) updateData.is_verified = d.is_verified;
+        if (d.import_source) updateData.import_source = d.import_source;
 
         const { error } = await supabase
           .from('places')

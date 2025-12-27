@@ -9,7 +9,8 @@ import {
   AlertCircle,
   MapPin,
   Building2,
-  ArrowRight
+  ArrowRight,
+  Download
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsAdmin } from '@/hooks/useAdmin';
-import { useTwoTabImport } from '@/hooks/useTwoTabImport';
+import { useTwoTabImport, generateTemplateXLSX, generatePlacesCSV, generateEntrancesCSV } from '@/hooks/useTwoTabImport';
 import { PLACES_FIELDS, ENTRANCES_FIELDS } from '@/types/twoTabImport';
 
 export default function BulkImport() {
@@ -127,6 +128,28 @@ export default function BulkImport() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Template Downloads */}
+              <div className="mb-6 p-4 bg-secondary/50 rounded-lg">
+                <h4 className="font-medium mb-3 flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Download Templates
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" onClick={generateTemplateXLSX}>
+                    <FileSpreadsheet className="w-4 h-4 mr-1" />
+                    XLSX Template (Both Tabs)
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={generatePlacesCSV}>
+                    <Building2 className="w-4 h-4 mr-1" />
+                    Places CSV
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={generateEntrancesCSV}>
+                    <MapPin className="w-4 h-4 mr-1" />
+                    Entrances CSV
+                  </Button>
+                </div>
+              </div>
+
               <div
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
@@ -153,30 +176,37 @@ export default function BulkImport() {
               </div>
 
               <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
-                <h4 className="font-medium mb-2">Expected Format:</h4>
+                <h4 className="font-medium mb-2">Required Columns:</h4>
                 <div className="grid md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="font-medium text-primary flex items-center gap-1">
                       <Building2 className="w-4 h-4" /> Sheet 1: Places
                     </p>
                     <ul className="mt-1 space-y-0.5 text-muted-foreground">
-                      <li>• place_external_id (required, unique)</li>
-                      <li>• name, latitude, longitude</li>
-                      <li>• category, price_level, description...</li>
+                      <li>• place_external_id <span className="text-destructive">*</span></li>
+                      <li>• place_name <span className="text-destructive">*</span></li>
+                      <li>• primary_category <span className="text-destructive">*</span></li>
+                      <li>• latitude, longitude <span className="text-destructive">*</span></li>
+                      <li>• country <span className="text-destructive">*</span></li>
+                      <li className="text-xs mt-1">Optional: formatted_address, city, state_province, postal_code, county, phone, website, hours_text, is_verified, source_platform</li>
                     </ul>
                   </div>
                   <div>
                     <p className="font-medium text-primary flex items-center gap-1">
-                      <MapPin className="w-4 h-4" /> Sheet 2: Entrances
+                      <MapPin className="w-4 h-4" /> Sheet 2: Entrances (optional)
                     </p>
                     <ul className="mt-1 space-y-0.5 text-muted-foreground">
-                      <li>• place_external_id (links to place)</li>
-                      <li>• entrance_external_id (unique)</li>
-                      <li>• entrance_name, latitude, longitude</li>
-                      <li>• RV fields: max_length, road_type...</li>
+                      <li>• place_external_id <span className="text-destructive">*</span></li>
+                      <li>• entrance_external_id <span className="text-destructive">*</span></li>
+                      <li>• entrance_name <span className="text-destructive">*</span></li>
+                      <li>• latitude, longitude <span className="text-destructive">*</span></li>
+                      <li className="text-xs mt-1">Optional: max_rv_length_ft, max_rv_height_ft, road_type, grade, tight_turns, low_clearance_warning, seasonal_access, seasonal_notes, entrance_notes</li>
                     </ul>
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  <span className="text-destructive">*</span> = Required. If hours are unknown, leave blank. Display will show "Please check hours of operation."
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -199,7 +229,7 @@ export default function BulkImport() {
                 {PLACES_FIELDS.map(field => (
                   <div key={field.key} className="flex items-center gap-3">
                     <Label className="w-40 text-sm">
-                      {field.label}
+                      {field.displayName}
                       {field.required && <span className="text-destructive ml-1">*</span>}
                     </Label>
                     <Select
@@ -253,7 +283,7 @@ export default function BulkImport() {
                   {ENTRANCES_FIELDS.map(field => (
                     <div key={field.key} className="flex items-center gap-3">
                       <Label className="w-48 text-sm">
-                        {field.label}
+                        {field.displayName}
                         {field.required && <span className="text-destructive ml-1">*</span>}
                       </Label>
                       <Select
