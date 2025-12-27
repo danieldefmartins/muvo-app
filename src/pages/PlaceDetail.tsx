@@ -30,7 +30,7 @@ import { PlacePhotoGallery } from '@/components/PlacePhotoGallery';
 import { PhotoUploadForm } from '@/components/PhotoUploadForm';
 import { CompactReviewStrip } from '@/components/CompactReviewStrip';
 import { ReviewsPreview } from '@/components/ReviewsPreview';
-import { MuvoReviewExpanded } from '@/components/MuvoReviewExpanded';
+import { MuvoReviewSimple } from '@/components/MuvoReviewSimple';
 import { MuvoReviewHowItWorks } from '@/components/MuvoReviewHowItWorks';
 import { MuvoMedalBadge } from '@/components/MuvoMedalBadge';
 import { PlaceEntrances } from '@/components/PlaceEntrances';
@@ -217,8 +217,8 @@ const PlaceDetail = () => {
             </div>
           )}
           
-          {/* MUVO Review Expanded - Top 5 Positive, Top 3 Neutral, Top 2 Negative */}
-          <MuvoReviewExpanded placeId={id!} />
+          {/* MUVO v1.8.1 Simplified 3-Line Review Display */}
+          <MuvoReviewSimple placeId={id!} />
           
           {/* Compact Review Strip for adding/editing reviews */}
           <div className="mt-4 pt-4 border-t border-border">
