@@ -93,18 +93,29 @@ export function PlaceMiniMap({
       setMapLoaded(true);
     });
 
-    // Add marker with pulse animation
+    // Add marker with pulse animation (avoid innerHTML)
     const el = document.createElement('div');
     el.className = 'place-mini-map-marker';
-    el.innerHTML = `
-      <div class="marker-pulse-ring"></div>
-      <div class="marker-pin">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-      </div>
-    `;
+
+    const pulseRing = document.createElement('div');
+    pulseRing.className = 'marker-pulse-ring';
+
+    const pin = document.createElement('div');
+    pin.className = 'marker-pin';
+
+    const svgDoc = new DOMParser().parseFromString(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+         <circle cx="12" cy="10" r="3"/>
+       </svg>`,
+      'image/svg+xml'
+    );
+    const svgEl = svgDoc.documentElement;
+    svgEl.setAttribute('aria-hidden', 'true');
+
+    pin.appendChild(svgEl);
+    el.appendChild(pulseRing);
+    el.appendChild(pin);
 
     new mapboxgl.Marker({ element: el })
       .setLngLat([longitude, latitude])
