@@ -51,6 +51,11 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
       .filter((a) => a.polarity === 'positive')
       .slice(0, maxGood);
 
+    // Neutral stamps - always show between positive and negative
+    const neutralStamps = sortedAggregates
+      .filter((a) => a.polarity === 'neutral')
+      .slice(0, 1); // Show top 1 neutral on cards
+
     // HIDE negative/improvement stamps on list cards (variant != 'default')
     // Only show on full detail page (default variant) when there's enough positive signal
     const showImprovementStamps = variant === 'default' && positiveStamps.length >= 2;
@@ -58,7 +63,7 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
       ? sortedAggregates.filter((a) => a.polarity === 'improvement').slice(0, maxBad)
       : [];
 
-    if (positiveStamps.length === 0 && improvementStamps.length === 0) return null;
+    if (positiveStamps.length === 0 && neutralStamps.length === 0 && improvementStamps.length === 0) return null;
 
     const isOverlay = variant === 'overlay';
     const isCompact = variant === 'compact';
@@ -106,7 +111,40 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
                   <span className="text-sm font-medium">{label}</span>
                   {intensity > 1 && <span className="text-sm font-bold">×{intensity}</span>}
                 </>
+        )}
+
+        {/* Neutral stamps - style/vibe indicators */}
+        {neutralStamps.map((stamp) => {
+          const label = stamp.stamp_id ? getStampLabel(allStamps, stamp.stamp_id) : stamp.dimension;
+          const intensity = Math.round(stamp.avg_intensity || 1);
+          const IconComponent = stamp.stamp_id ? getStampIcon(allStamps, stamp.stamp_id) : CheckCircle;
+
+          return (
+            <div
+              key={stamp.stamp_id || `${stamp.dimension}-neutral`}
+              className={cn(
+                'flex items-center gap-1 rounded-full font-semibold',
+                isOverlay
+                  ? 'bg-stone-500/70 text-white px-2 py-0.5 backdrop-blur-sm'
+                  : isCompact
+                    ? 'bg-stone-500/15 text-stone-600 dark:text-stone-400 px-2.5 py-1.5 shadow-sm border border-stone-500/20'
+                    : 'bg-stone-500/10 text-stone-600 dark:text-stone-400 px-2.5 py-1',
               )}
+              title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
+            >
+              <IconComponent
+                className={cn('flex-shrink-0', isCompact ? 'w-5 h-5' : 'w-4 h-4')}
+                strokeWidth={2.5}
+              />
+              {!isCompact && (
+                <>
+                  <span className="text-sm font-medium">{label}</span>
+                  {intensity > 1 && <span className="text-sm font-bold">×{intensity}</span>}
+                </>
+              )}
+            </div>
+          );
+        })}
             </div>
           );
         })}

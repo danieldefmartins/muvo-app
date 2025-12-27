@@ -129,14 +129,15 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
       {categorizedSignals.neutral.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2.5">
-            <Sparkles className="w-4 h-4 text-blue-500" />
+            <Sparkles className="w-4 h-4 text-stone-500" />
             <h4 className="font-semibold text-foreground text-sm">How this place feels</h4>
+            <span className="text-xs text-muted-foreground">(style, not quality)</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {visibleNeutral.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20"
+                className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-stone-500/10 text-stone-600 dark:text-stone-400 border border-stone-500/20"
               >
                 {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
               </span>

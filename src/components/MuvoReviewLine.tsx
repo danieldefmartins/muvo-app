@@ -109,10 +109,10 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
         <span className="text-muted-foreground/30 mx-0.5">|</span>
       )}
 
-      {/* Neutral segment - subtle blue tint */}
+      {/* Neutral segment - muted gold/stone tint */}
       {reviewSegments.neutral && (
         <span 
-          className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-700 dark:text-blue-400"
+          className="inline-flex items-center px-2 py-0.5 rounded-md bg-stone-500/10 text-stone-600 dark:text-stone-400"
         >
           {reviewSegments.neutral.label} ×{reviewSegments.neutral.votes}
         </span>
