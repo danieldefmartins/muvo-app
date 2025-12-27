@@ -4,6 +4,8 @@ import { Place, PlaceFeature } from '@/hooks/usePlaces';
 import { FavoriteButton } from './FavoriteButton';
 import { WeatherBadge } from './WeatherBadge';
 import { PlaceCardReviewLines } from './PlaceCardReviewLines';
+import { MembershipIncludedBadge } from './MembershipIncludedBadge';
+import { useUserPlaceMembershipMatch } from '@/hooks/useMemberships';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from './ui/aspect-ratio';
 
@@ -48,6 +50,7 @@ function getFeatureIcons(features: PlaceFeature[], max = 3) {
 
 export function PlaceCard({ place, className, style }: PlaceCardProps) {
   const featureIcons = getFeatureIcons(place.features);
+  const { matches, hasMatch } = useUserPlaceMembershipMatch(place.id);
 
   return (
     <Link
@@ -78,7 +81,7 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
           {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-          {/* Top-left: Category + Weather */}
+          {/* Top-left: Category + Weather + Membership */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
             <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[13px] font-medium bg-background/95 text-foreground backdrop-blur-sm shadow-sm">
               {place.primaryCategory}
@@ -89,6 +92,13 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
               variant="compact"
               className="shadow-sm"
             />
+            {hasMatch && (
+              <MembershipIncludedBadge 
+                membershipName={matches[0]?.membership?.name}
+                matchCount={matches.length}
+                variant="compact"
+              />
+            )}
           </div>
 
           {/* Top-right: Favorite */}

@@ -3,16 +3,18 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, ArrowRight, CheckCircle, User, MapPin, Compass, AtSign } from 'lucide-react';
+import { Mail, Lock, ArrowRight, CheckCircle, User, MapPin, Compass, AtSign, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, TravelerType } from '@/hooks/useAuth';
 import { Header } from '@/components/Header';
 import { UserProfileCard } from '@/components/UserProfileCard';
 import { TermsPrivacyModal } from '@/components/TermsPrivacyModal';
+import { MembershipSelector } from '@/components/MembershipSelector';
 import { supabase } from '@/integrations/supabase/client';
 
 // Schemas
@@ -552,21 +554,37 @@ export default function Auth() {
   // User is logged in and profile is complete - show profile
   if (user && profile && profile.profile_completed && profile.terms_accepted_at) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-24">
         <Header showBack />
-        <main className="container px-4 py-8 max-w-md mx-auto">
+        <main className="container px-4 py-6 max-w-md mx-auto space-y-4">
           <UserProfileCard profile={profile} />
           
           {/* Show verification status */}
           {!profile.is_verified && (
-            <div className="mt-4 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+            <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
               <p className="text-sm text-warning">
                 ⚠️ Please verify your email to contribute. Check your inbox for the verification link.
               </p>
             </div>
           )}
+
+          {/* Memberships Section */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Ticket className="w-4 h-4" />
+                My Memberships
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Select memberships you have to see included parks
+              </p>
+            </CardHeader>
+            <CardContent>
+              <MembershipSelector compact />
+            </CardContent>
+          </Card>
           
-          <div className="mt-4 space-y-2">
+          <div className="space-y-2">
             <Button 
               variant="outline" 
               className="w-full"

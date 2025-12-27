@@ -284,6 +284,39 @@ export type Database = {
           },
         ]
       }
+      memberships: {
+        Row: {
+          affiliate_url: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number
+          website_url: string | null
+        }
+        Insert: {
+          affiliate_url?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id: string
+          name: string
+          sort_order?: number
+          website_url?: string | null
+        }
+        Update: {
+          affiliate_url?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -520,6 +553,57 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "place_drafts_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      place_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          is_verified: boolean
+          membership_id: string
+          notes: string | null
+          place_id: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          membership_id: string
+          notes?: string | null
+          place_id: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          membership_id?: string
+          notes?: string | null
+          place_id?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_memberships_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_memberships_place_id_fkey"
             columns: ["place_id"]
             isOneToOne: false
             referencedRelation: "places"
@@ -1557,6 +1641,7 @@ export type Database = {
           is_pro: boolean
           is_verified: boolean
           last_name: string | null
+          membership_prompt_shown: boolean
           phone_number: string | null
           phone_verified: boolean
           phone_verified_at: string | null
@@ -1590,6 +1675,7 @@ export type Database = {
           is_pro?: boolean
           is_verified?: boolean
           last_name?: string | null
+          membership_prompt_shown?: boolean
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
@@ -1623,6 +1709,7 @@ export type Database = {
           is_pro?: boolean
           is_verified?: boolean
           last_name?: string | null
+          membership_prompt_shown?: boolean
           phone_number?: string | null
           phone_verified?: boolean
           phone_verified_at?: string | null
@@ -1816,6 +1903,35 @@ export type Database = {
           sort_order?: number
         }
         Relationships: []
+      }
+      user_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          membership_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          membership_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          membership_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_memberships_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -2094,6 +2210,14 @@ export type Database = {
         | "rejected"
         | "merged"
         | "needs_review"
+      membership_type:
+        | "thousand_trails"
+        | "harvest_hosts"
+        | "boondockers_welcome"
+        | "koa"
+        | "passport_america"
+        | "good_sam"
+        | "state_regional_pass"
       muvo_medal_level: "none" | "bronze" | "silver" | "gold" | "platinum"
       noise_level: "quiet" | "moderate" | "loud" | "unknown"
       notification_type:
@@ -2358,6 +2482,15 @@ export const Constants = {
         "rejected",
         "merged",
         "needs_review",
+      ],
+      membership_type: [
+        "thousand_trails",
+        "harvest_hosts",
+        "boondockers_welcome",
+        "koa",
+        "passport_america",
+        "good_sam",
+        "state_regional_pass",
       ],
       muvo_medal_level: ["none", "bronze", "silver", "gold", "platinum"],
       noise_level: ["quiet", "moderate", "loud", "unknown"],
