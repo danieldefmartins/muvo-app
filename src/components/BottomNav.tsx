@@ -139,7 +139,7 @@ export function BottomNav() {
   const shouldHideForPath = HIDDEN_PATHS.some(path => pathname.startsWith(path));
   
   // Check if current path is a visible path or a place detail page
-  const isVisiblePath = VISIBLE_PATHS.includes(pathname) || pathname.startsWith('/place/');
+  const isVisiblePath = VISIBLE_PATHS.includes(pathname) || pathname.startsWith('/place/') || pathname.startsWith('/profile/');
   
   // Hide footer on hidden paths
   if (shouldHideForPath) {

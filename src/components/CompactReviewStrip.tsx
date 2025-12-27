@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { ReviewHelper } from './ReviewHelper';
 import { ReviewPopup } from './ReviewPopup';
@@ -24,6 +25,7 @@ export function CompactReviewStrip({
   placeName,
   placeCategory,
 }: CompactReviewStripProps) {
+  const navigate = useNavigate();
   const { user, isVerified, loading, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { data: reviews, isLoading } = useReviews(placeId);
@@ -141,8 +143,8 @@ export function CompactReviewStrip({
           notePrivate,
         })
       );
-      // Redirect to auth page
-      window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
+      // Redirect to auth page using navigate (SPA-friendly)
+      navigate('/auth?redirect=' + encodeURIComponent(window.location.pathname));
       return;
     }
 
