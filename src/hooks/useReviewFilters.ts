@@ -234,7 +234,9 @@ export function countActiveReviewFilters(filters: ReviewFiltersState): number {
     filters.neutralStamps.length +
     filters.negativeStamps.length +
     filters.medalLevels.length +
-    (filters.minMuvoScore !== null ? 1 : 0)
+    (filters.minMuvoScore !== null ? 1 : 0) +
+    (filters.membershipFilter === 'included_only' ? 1 : 0) +
+    filters.selectedMemberships.length
   );
 }
 

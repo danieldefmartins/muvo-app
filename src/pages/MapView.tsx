@@ -9,6 +9,7 @@ import { usePlaces, Place } from '@/hooks/usePlaces';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { useAuth } from '@/hooks/useAuth';
 import { useFooter } from '@/contexts/FooterContext';
+import { useUserMemberships, useAllPlaceMemberships, getPlaceMembershipMatches } from '@/hooks/useMemberships';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, MapPinOff, FilterX, ArrowLeft, Navigation, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,15 @@ const MapView = () => {
   
   const { data: mapboxToken, isLoading: isLoadingToken, error: tokenError } = useMapboxToken();
   const { data: stampData } = usePlaceStampAggregatesAll();
+  const { data: userMemberships } = useUserMemberships();
+  const { data: placeMembershipMap } = useAllPlaceMemberships();
+  
+  // User membership IDs for filtering
+  const userMembershipIds = useMemo(() => 
+    new Set(userMemberships?.map(um => um.membership_id) || []),
+    [userMemberships]
+  );
+  const hasUserMemberships = userMembershipIds.size > 0;
 
   const [filters, setFilters] = useState<PlaceFiltersState>({
     category: null,
@@ -96,6 +106,18 @@ const MapView = () => {
       result = result.filter((p) => p.openYearRound);
     }
 
+    // v1.8: Apply membership filter if enabled
+    if (reviewFilters.membershipFilter === 'included_only' && hasUserMemberships && placeMembershipMap) {
+      const filterMembershipIds = reviewFilters.selectedMemberships.length > 0
+        ? new Set(reviewFilters.selectedMemberships)
+        : userMembershipIds;
+      
+      result = result.filter((p) => {
+        const matches = getPlaceMembershipMatches(p.id, filterMembershipIds, placeMembershipMap);
+        return matches.length > 0;
+      });
+    }
+
     // Apply review-based filtering and re-ranking
     // - Positive/Neutral: boost ranking
     // - Negative: EXCLUDE places with those signals
@@ -134,12 +156,13 @@ const MapView = () => {
     }
 
     return result;
-  }, [places, filters, sort, stampData, reviewFilters]);
+  }, [places, filters, sort, stampData, reviewFilters, hasUserMemberships, userMembershipIds, placeMembershipMap]);
 
   const isLoading = isLoadingPlaces || isLoadingToken;
   const hasError = placesError || tokenError;
   const hasActiveFilters = filters.category || filters.features.length > 0 || filters.openYearRound || filters.petFriendly || filters.bigRigFriendly || 
-    reviewFilters.positiveStamps.length > 0 || reviewFilters.neutralStamps.length > 0 || reviewFilters.negativeStamps.length > 0;
+    reviewFilters.positiveStamps.length > 0 || reviewFilters.neutralStamps.length > 0 || reviewFilters.negativeStamps.length > 0 ||
+    reviewFilters.membershipFilter === 'included_only';
 
   const clearFilters = useCallback(() => {
     setFilters({
