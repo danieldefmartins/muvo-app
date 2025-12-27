@@ -507,7 +507,7 @@ export function AddPlaceWizard({ open, onOpenChange, initialLocation, editPlaceI
                   <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
+                  <SelectContent className="max-h-[300px] z-[9999]">
                     {Object.entries(groupedCategories).map(([group, cats]) => (
                       <SelectGroup key={group}>
                         <SelectLabel className="text-xs uppercase tracking-wider">
