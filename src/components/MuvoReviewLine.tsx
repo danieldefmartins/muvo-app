@@ -31,17 +31,17 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
       return { positive: [], neutral: [], negative: [] };
     }
 
-    // ROW 1: Get top 2 POSITIVE stamps only (polarity === 'positive')
+    // ROW 1: Get top 3 POSITIVE stamps (polarity === 'positive')
     const positiveItems: ReviewItem[] = aggregates
       .filter(a => a.polarity === 'positive')
       .sort((a, b) => b.total_votes - a.total_votes)
-      .slice(0, 2)
+      .slice(0, 3)
       .map(a => ({
         label: a.stamp_id ? getStampLabel(allStamps, a.stamp_id) : a.dimension,
         votes: a.total_votes,
       }));
 
-    // ROW 2: Get top 2 NEUTRAL stamps only (polarity === 'neutral')
+    // ROW 2: Get top 2 NEUTRAL stamps (polarity === 'neutral')
     // These are "It feels" style tags - never quality judgments
     const neutralItems: ReviewItem[] = aggregates
       .filter(a => a.polarity === 'neutral')
@@ -52,11 +52,11 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
         votes: a.total_votes,
       }));
 
-    // ROW 3: Get top 2 NEGATIVE stamps only (polarity === 'improvement')
+    // ROW 3: Get top 1 NEGATIVE stamp (polarity === 'improvement')
     const negativeItems: ReviewItem[] = aggregates
       .filter(a => a.polarity === 'improvement')
       .sort((a, b) => b.total_votes - a.total_votes)
-      .slice(0, 2)
+      .slice(0, 1)
       .map(a => ({
         label: a.stamp_id ? getStampLabel(allStamps, a.stamp_id) : a.dimension,
         votes: a.total_votes,
