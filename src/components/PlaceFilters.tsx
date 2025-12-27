@@ -93,7 +93,7 @@ export function PlaceFilters({
       {/* Filters sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5 h-9">
+          <Button type="button" variant="outline" size="sm" className="gap-1.5 h-9">
             <Filter className="w-3.5 h-3.5" />
             Filters
             {activeFilterCount > 0 && (

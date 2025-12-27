@@ -199,6 +199,7 @@ export function MapFilterChips({
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <button
+                type="button"
                 className={cn(
                   'flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-chip',
                   'bg-card/[0.88] backdrop-blur-xl transition-all duration-200',
