@@ -1,4 +1,4 @@
-import { Map, Check } from 'lucide-react';
+import { Map, Check, Compass, TrendingUp, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/Header';
@@ -203,6 +203,58 @@ const Index = () => {
             </Carousel>
           </section>
         )}
+
+        {/* Helpful Travel Insight (Blog Light) - Single rotating topic */}
+        <section className="mb-10">
+          <h2 className="font-display text-page-title text-foreground mb-4">
+            Travel insight
+          </h2>
+          <div className="rounded-xl bg-card border border-border p-5 shadow-card">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                <Compass className="w-6 h-6 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-place-name text-foreground mb-1.5 line-clamp-2">
+                  Best routes for first-time full-timers
+                </h3>
+                <p className="text-secondary text-muted-foreground line-clamp-2 mb-3">
+                  Discover beginner-friendly routes with reliable campgrounds, services, and scenic stops along the way.
+                </p>
+                <button className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent/80 transition-colors">
+                  Read more
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* New RV Trends & Insights - Single informational card */}
+        <section className="mb-10">
+          <h2 className="font-display text-page-title text-foreground mb-4">
+            RV trends & insights
+          </h2>
+          <div className="rounded-xl bg-card border border-border p-5 shadow-card">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-place-name text-foreground mb-1.5 line-clamp-2">
+                  Why Class B vans are dominating 2025
+                </h3>
+                <p className="text-secondary text-muted-foreground line-clamp-2 mb-3">
+                  Compact, fuel-efficient, and easier to park—camper vans are becoming the go-to for weekend adventurers and remote workers.
+                </p>
+                <button className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent/80 transition-colors">
+                  Explore trend
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Footer */}
         <footer className="text-center pt-8 border-t border-border">
