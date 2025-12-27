@@ -7,6 +7,7 @@ import { TrustedCongratsModal } from "@/components/TrustedCongratsModal";
 import { BottomNav } from "@/components/BottomNav";
 import { FooterProvider } from "@/contexts/FooterContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AdminRoute } from "@/components/AdminRoute";
 import Index from "./pages/Index";
 import PlacesToStay from "./pages/PlacesToStay";
 import PlaceDetail from "./pages/PlaceDetail";
@@ -46,13 +47,64 @@ const App = () => (
               <Route path="/route" element={<RoutePlanning />} />
               <Route path="/saved" element={<SavedPlaces />} />
               <Route path="/notifications" element={<Notifications />} />
-              <Route path="/admin/suggestions" element={<AdminSuggestions />} />
-              <Route path="/admin/photos" element={<AdminPhotos />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/place-submissions" element={<AdminPlaceSubmissions />} />
-              <Route path="/admin/import" element={<ImportPlaces />} />
-              <Route path="/admin/bulk-import" element={<BulkImport />} />
-              <Route path="/admin/data-enrichment" element={<AdminDataEnrichment />} />
+
+              <Route
+                path="/admin/suggestions"
+                element={
+                  <AdminRoute>
+                    <AdminSuggestions />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/photos"
+                element={
+                  <AdminRoute>
+                    <AdminPhotos />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <AdminRoute>
+                    <AdminUsers />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/place-submissions"
+                element={
+                  <AdminRoute>
+                    <AdminPlaceSubmissions />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/import"
+                element={
+                  <AdminRoute>
+                    <ImportPlaces />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/bulk-import"
+                element={
+                  <AdminRoute>
+                    <BulkImport />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/data-enrichment"
+                element={
+                  <AdminRoute>
+                    <AdminDataEnrichment />
+                  </AdminRoute>
+                }
+              />
+
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile/:username" element={<UserProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -68,3 +120,4 @@ const App = () => (
 );
 
 export default App;
+

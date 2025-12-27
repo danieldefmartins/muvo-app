@@ -1,9 +1,39 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+function buildCorsHeaders(req: Request) {
+  const allowed = Deno.env.get("MAPBOX_ALLOWED_ORIGINS") ?? "";
+  const allowList = allowed
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const origin = req.headers.get("origin");
+
+  // Default behavior remains permissive to avoid breaking existing clients.
+  // If MAPBOX_ALLOWED_ORIGINS is set, we restrict CORS to that allowlist.
+  const allowOrigin =
+    allowList.length > 0
+      ? origin && allowList.includes(origin)
+        ? origin
+        : ""
+      : "*";
+
+  const base: Record<string, string> = {
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+  };
+
+  if (allowOrigin) {
+    return {
+      ...base,
+      "Access-Control-Allow-Origin": allowOrigin,
+      Vary: "Origin",
+    };
+  }
+
+  return base;
+}
 
 // NOTE: Mapbox public tokens are meant to be used client-side.
 // This function exists to keep the token out of the repository and allow rotation.
@@ -42,6 +72,8 @@ function isRateLimited(ip: string): boolean {
 }
 
 serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
