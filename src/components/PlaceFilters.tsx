@@ -242,6 +242,7 @@ export function PlaceFilters({
                 ? filters.category.substring(0, 15) + '...'
                 : filters.category}
               <button
+                type="button"
                 onClick={() => onFiltersChange({ ...filters, category: null })}
                 className="ml-0.5 p-0.5 hover:bg-muted rounded"
               >
@@ -253,6 +254,7 @@ export function PlaceFilters({
             <Badge variant="secondary" className="shrink-0 gap-1 pr-1">
               Pet Friendly
               <button
+                type="button"
                 onClick={() => onFiltersChange({ ...filters, petFriendly: false })}
                 className="ml-0.5 p-0.5 hover:bg-muted rounded"
               >
@@ -264,6 +266,7 @@ export function PlaceFilters({
             <Badge variant="secondary" className="shrink-0 gap-1 pr-1">
               Big Rig
               <button
+                type="button"
                 onClick={() => onFiltersChange({ ...filters, bigRigFriendly: false })}
                 className="ml-0.5 p-0.5 hover:bg-muted rounded"
               >

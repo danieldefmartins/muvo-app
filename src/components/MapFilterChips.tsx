@@ -256,6 +256,7 @@ export function MapFilterChips({
                           const isActive = reviewFilters.positiveStamps.includes(stamp.id);
                           return (
                             <button
+                              type="button"
                               key={stamp.id}
                               onClick={() => toggleReviewStamp(stamp.id, 'positive')}
                               className={cn(
@@ -292,6 +293,7 @@ export function MapFilterChips({
                             const isActive = reviewFilters.neutralStamps.includes(stamp.id);
                             return (
                               <button
+                                type="button"
                                 key={stamp.id}
                                 onClick={() => toggleReviewStamp(stamp.id, 'neutral')}
                                 className={cn(
@@ -332,6 +334,7 @@ export function MapFilterChips({
                             const isActive = reviewFilters.negativeStamps.includes(stamp.id);
                             return (
                               <button
+                                type="button"
                                 key={stamp.id}
                                 onClick={() => toggleReviewStamp(stamp.id, 'negative')}
                                 className={cn(
@@ -468,6 +471,7 @@ export function MapFilterChips({
             const isActive = chip.isActive(filters);
             return (
               <button
+                type="button"
                 key={chip.id}
                 onClick={() => {
                   hapticLight();
@@ -492,6 +496,7 @@ export function MapFilterChips({
           {/* Clear all button - only show if filters active */}
           {totalActiveFilters > 0 && (
             <button
+              type="button"
               onClick={() => {
                 hapticLight();
                 clearFilters();
