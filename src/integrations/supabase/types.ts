@@ -785,42 +785,90 @@ export type Database = {
           electric: Database["public"]["Enums"]["electric_type"] | null
           elevation_ft: number | null
           email: string | null
+          entrance_1_grade: string | null
           entrance_1_is_primary: boolean | null
           entrance_1_latitude: number | null
           entrance_1_longitude: number | null
+          entrance_1_low_clearance: boolean | null
+          entrance_1_max_rv_height_ft: number | null
+          entrance_1_max_rv_length_ft: number | null
           entrance_1_name: string | null
           entrance_1_notes: string | null
           entrance_1_road: string | null
+          entrance_1_road_type: string | null
+          entrance_1_seasonal_access: string | null
+          entrance_1_seasonal_notes: string | null
+          entrance_1_tight_turns: boolean | null
+          entrance_2_grade: string | null
           entrance_2_is_primary: boolean | null
           entrance_2_latitude: number | null
           entrance_2_longitude: number | null
+          entrance_2_low_clearance: boolean | null
+          entrance_2_max_rv_height_ft: number | null
+          entrance_2_max_rv_length_ft: number | null
           entrance_2_name: string | null
           entrance_2_notes: string | null
           entrance_2_road: string | null
+          entrance_2_road_type: string | null
+          entrance_2_seasonal_access: string | null
+          entrance_2_seasonal_notes: string | null
+          entrance_2_tight_turns: boolean | null
+          entrance_3_grade: string | null
           entrance_3_is_primary: boolean | null
           entrance_3_latitude: number | null
           entrance_3_longitude: number | null
+          entrance_3_low_clearance: boolean | null
+          entrance_3_max_rv_height_ft: number | null
+          entrance_3_max_rv_length_ft: number | null
           entrance_3_name: string | null
           entrance_3_notes: string | null
           entrance_3_road: string | null
+          entrance_3_road_type: string | null
+          entrance_3_seasonal_access: string | null
+          entrance_3_seasonal_notes: string | null
+          entrance_3_tight_turns: boolean | null
+          entrance_4_grade: string | null
           entrance_4_is_primary: boolean | null
           entrance_4_latitude: number | null
           entrance_4_longitude: number | null
+          entrance_4_low_clearance: boolean | null
+          entrance_4_max_rv_height_ft: number | null
+          entrance_4_max_rv_length_ft: number | null
           entrance_4_name: string | null
           entrance_4_notes: string | null
           entrance_4_road: string | null
+          entrance_4_road_type: string | null
+          entrance_4_seasonal_access: string | null
+          entrance_4_seasonal_notes: string | null
+          entrance_4_tight_turns: boolean | null
+          entrance_5_grade: string | null
           entrance_5_is_primary: boolean | null
           entrance_5_latitude: number | null
           entrance_5_longitude: number | null
+          entrance_5_low_clearance: boolean | null
+          entrance_5_max_rv_height_ft: number | null
+          entrance_5_max_rv_length_ft: number | null
           entrance_5_name: string | null
           entrance_5_notes: string | null
           entrance_5_road: string | null
+          entrance_5_road_type: string | null
+          entrance_5_seasonal_access: string | null
+          entrance_5_seasonal_notes: string | null
+          entrance_5_tight_turns: boolean | null
+          entrance_6_grade: string | null
           entrance_6_is_primary: boolean | null
           entrance_6_latitude: number | null
           entrance_6_longitude: number | null
+          entrance_6_low_clearance: boolean | null
+          entrance_6_max_rv_height_ft: number | null
+          entrance_6_max_rv_length_ft: number | null
           entrance_6_name: string | null
           entrance_6_notes: string | null
           entrance_6_road: string | null
+          entrance_6_road_type: string | null
+          entrance_6_seasonal_access: string | null
+          entrance_6_seasonal_notes: string | null
+          entrance_6_tight_turns: boolean | null
           entrance_latitude: number | null
           entrance_longitude: number | null
           external_refs_json: Json | null
@@ -955,42 +1003,90 @@ export type Database = {
           electric?: Database["public"]["Enums"]["electric_type"] | null
           elevation_ft?: number | null
           email?: string | null
+          entrance_1_grade?: string | null
           entrance_1_is_primary?: boolean | null
           entrance_1_latitude?: number | null
           entrance_1_longitude?: number | null
+          entrance_1_low_clearance?: boolean | null
+          entrance_1_max_rv_height_ft?: number | null
+          entrance_1_max_rv_length_ft?: number | null
           entrance_1_name?: string | null
           entrance_1_notes?: string | null
           entrance_1_road?: string | null
+          entrance_1_road_type?: string | null
+          entrance_1_seasonal_access?: string | null
+          entrance_1_seasonal_notes?: string | null
+          entrance_1_tight_turns?: boolean | null
+          entrance_2_grade?: string | null
           entrance_2_is_primary?: boolean | null
           entrance_2_latitude?: number | null
           entrance_2_longitude?: number | null
+          entrance_2_low_clearance?: boolean | null
+          entrance_2_max_rv_height_ft?: number | null
+          entrance_2_max_rv_length_ft?: number | null
           entrance_2_name?: string | null
           entrance_2_notes?: string | null
           entrance_2_road?: string | null
+          entrance_2_road_type?: string | null
+          entrance_2_seasonal_access?: string | null
+          entrance_2_seasonal_notes?: string | null
+          entrance_2_tight_turns?: boolean | null
+          entrance_3_grade?: string | null
           entrance_3_is_primary?: boolean | null
           entrance_3_latitude?: number | null
           entrance_3_longitude?: number | null
+          entrance_3_low_clearance?: boolean | null
+          entrance_3_max_rv_height_ft?: number | null
+          entrance_3_max_rv_length_ft?: number | null
           entrance_3_name?: string | null
           entrance_3_notes?: string | null
           entrance_3_road?: string | null
+          entrance_3_road_type?: string | null
+          entrance_3_seasonal_access?: string | null
+          entrance_3_seasonal_notes?: string | null
+          entrance_3_tight_turns?: boolean | null
+          entrance_4_grade?: string | null
           entrance_4_is_primary?: boolean | null
           entrance_4_latitude?: number | null
           entrance_4_longitude?: number | null
+          entrance_4_low_clearance?: boolean | null
+          entrance_4_max_rv_height_ft?: number | null
+          entrance_4_max_rv_length_ft?: number | null
           entrance_4_name?: string | null
           entrance_4_notes?: string | null
           entrance_4_road?: string | null
+          entrance_4_road_type?: string | null
+          entrance_4_seasonal_access?: string | null
+          entrance_4_seasonal_notes?: string | null
+          entrance_4_tight_turns?: boolean | null
+          entrance_5_grade?: string | null
           entrance_5_is_primary?: boolean | null
           entrance_5_latitude?: number | null
           entrance_5_longitude?: number | null
+          entrance_5_low_clearance?: boolean | null
+          entrance_5_max_rv_height_ft?: number | null
+          entrance_5_max_rv_length_ft?: number | null
           entrance_5_name?: string | null
           entrance_5_notes?: string | null
           entrance_5_road?: string | null
+          entrance_5_road_type?: string | null
+          entrance_5_seasonal_access?: string | null
+          entrance_5_seasonal_notes?: string | null
+          entrance_5_tight_turns?: boolean | null
+          entrance_6_grade?: string | null
           entrance_6_is_primary?: boolean | null
           entrance_6_latitude?: number | null
           entrance_6_longitude?: number | null
+          entrance_6_low_clearance?: boolean | null
+          entrance_6_max_rv_height_ft?: number | null
+          entrance_6_max_rv_length_ft?: number | null
           entrance_6_name?: string | null
           entrance_6_notes?: string | null
           entrance_6_road?: string | null
+          entrance_6_road_type?: string | null
+          entrance_6_seasonal_access?: string | null
+          entrance_6_seasonal_notes?: string | null
+          entrance_6_tight_turns?: boolean | null
           entrance_latitude?: number | null
           entrance_longitude?: number | null
           external_refs_json?: Json | null
@@ -1127,42 +1223,90 @@ export type Database = {
           electric?: Database["public"]["Enums"]["electric_type"] | null
           elevation_ft?: number | null
           email?: string | null
+          entrance_1_grade?: string | null
           entrance_1_is_primary?: boolean | null
           entrance_1_latitude?: number | null
           entrance_1_longitude?: number | null
+          entrance_1_low_clearance?: boolean | null
+          entrance_1_max_rv_height_ft?: number | null
+          entrance_1_max_rv_length_ft?: number | null
           entrance_1_name?: string | null
           entrance_1_notes?: string | null
           entrance_1_road?: string | null
+          entrance_1_road_type?: string | null
+          entrance_1_seasonal_access?: string | null
+          entrance_1_seasonal_notes?: string | null
+          entrance_1_tight_turns?: boolean | null
+          entrance_2_grade?: string | null
           entrance_2_is_primary?: boolean | null
           entrance_2_latitude?: number | null
           entrance_2_longitude?: number | null
+          entrance_2_low_clearance?: boolean | null
+          entrance_2_max_rv_height_ft?: number | null
+          entrance_2_max_rv_length_ft?: number | null
           entrance_2_name?: string | null
           entrance_2_notes?: string | null
           entrance_2_road?: string | null
+          entrance_2_road_type?: string | null
+          entrance_2_seasonal_access?: string | null
+          entrance_2_seasonal_notes?: string | null
+          entrance_2_tight_turns?: boolean | null
+          entrance_3_grade?: string | null
           entrance_3_is_primary?: boolean | null
           entrance_3_latitude?: number | null
           entrance_3_longitude?: number | null
+          entrance_3_low_clearance?: boolean | null
+          entrance_3_max_rv_height_ft?: number | null
+          entrance_3_max_rv_length_ft?: number | null
           entrance_3_name?: string | null
           entrance_3_notes?: string | null
           entrance_3_road?: string | null
+          entrance_3_road_type?: string | null
+          entrance_3_seasonal_access?: string | null
+          entrance_3_seasonal_notes?: string | null
+          entrance_3_tight_turns?: boolean | null
+          entrance_4_grade?: string | null
           entrance_4_is_primary?: boolean | null
           entrance_4_latitude?: number | null
           entrance_4_longitude?: number | null
+          entrance_4_low_clearance?: boolean | null
+          entrance_4_max_rv_height_ft?: number | null
+          entrance_4_max_rv_length_ft?: number | null
           entrance_4_name?: string | null
           entrance_4_notes?: string | null
           entrance_4_road?: string | null
+          entrance_4_road_type?: string | null
+          entrance_4_seasonal_access?: string | null
+          entrance_4_seasonal_notes?: string | null
+          entrance_4_tight_turns?: boolean | null
+          entrance_5_grade?: string | null
           entrance_5_is_primary?: boolean | null
           entrance_5_latitude?: number | null
           entrance_5_longitude?: number | null
+          entrance_5_low_clearance?: boolean | null
+          entrance_5_max_rv_height_ft?: number | null
+          entrance_5_max_rv_length_ft?: number | null
           entrance_5_name?: string | null
           entrance_5_notes?: string | null
           entrance_5_road?: string | null
+          entrance_5_road_type?: string | null
+          entrance_5_seasonal_access?: string | null
+          entrance_5_seasonal_notes?: string | null
+          entrance_5_tight_turns?: boolean | null
+          entrance_6_grade?: string | null
           entrance_6_is_primary?: boolean | null
           entrance_6_latitude?: number | null
           entrance_6_longitude?: number | null
+          entrance_6_low_clearance?: boolean | null
+          entrance_6_max_rv_height_ft?: number | null
+          entrance_6_max_rv_length_ft?: number | null
           entrance_6_name?: string | null
           entrance_6_notes?: string | null
           entrance_6_road?: string | null
+          entrance_6_road_type?: string | null
+          entrance_6_seasonal_access?: string | null
+          entrance_6_seasonal_notes?: string | null
+          entrance_6_tight_turns?: boolean | null
           entrance_latitude?: number | null
           entrance_longitude?: number | null
           external_refs_json?: Json | null
