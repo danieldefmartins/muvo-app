@@ -102,7 +102,6 @@ const leftNavItems: NavItem[] = [
 
 const rightNavItems: NavItem[] = [
   { icon: SavedIcon, label: 'Saved', path: '/saved' },
-  { icon: ProfileIcon, label: 'Profile', path: '/auth' },
 ];
 
 // Paths where footer should always be hidden (forms, auth, creation flows)
@@ -131,7 +130,7 @@ export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isMapInteracting, isScrollingDown } = useFooter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [showAddPlace, setShowAddPlace] = useState(false);
   
   const pathname = location.pathname;
@@ -268,6 +267,13 @@ export function BottomNav() {
           
           {/* Right nav items */}
           {rightNavItems.map(renderNavItem)}
+          
+          {/* Profile nav item - dynamic based on auth state */}
+          {renderNavItem({
+            icon: ProfileIcon,
+            label: 'Profile',
+            path: user && profile?.username ? `/profile/${profile.username}` : '/auth'
+          })}
         </div>
       </nav>
 
