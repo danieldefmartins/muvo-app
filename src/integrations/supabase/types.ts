@@ -974,13 +974,20 @@ export type Database = {
           max_height_ft: number | null
           max_rv_length_ft: number | null
           medal_awarded_at: string | null
+          muvo_confidence: number | null
           muvo_medal_level: Database["public"]["Enums"]["muvo_medal_level"]
+          muvo_negative_ratio: number | null
           muvo_score: number | null
+          muvo_score_raw: number | null
+          muvo_score_shown: number | null
+          muvo_total_points: number | null
           name: string
           needs_review: boolean
           neg_label_counts: Json | null
+          neg_taps_decayed: number | null
           neg_taps_total: number
           neg_types_count: number
+          neutral_taps_total: number | null
           nightly_rate_max: number | null
           nightly_rate_min: number | null
           no_formal_address: boolean | null
@@ -1195,13 +1202,20 @@ export type Database = {
           max_height_ft?: number | null
           max_rv_length_ft?: number | null
           medal_awarded_at?: string | null
+          muvo_confidence?: number | null
           muvo_medal_level?: Database["public"]["Enums"]["muvo_medal_level"]
+          muvo_negative_ratio?: number | null
           muvo_score?: number | null
+          muvo_score_raw?: number | null
+          muvo_score_shown?: number | null
+          muvo_total_points?: number | null
           name: string
           needs_review?: boolean
           neg_label_counts?: Json | null
+          neg_taps_decayed?: number | null
           neg_taps_total?: number
           neg_types_count?: number
+          neutral_taps_total?: number | null
           nightly_rate_max?: number | null
           nightly_rate_min?: number | null
           no_formal_address?: boolean | null
@@ -1416,13 +1430,20 @@ export type Database = {
           max_height_ft?: number | null
           max_rv_length_ft?: number | null
           medal_awarded_at?: string | null
+          muvo_confidence?: number | null
           muvo_medal_level?: Database["public"]["Enums"]["muvo_medal_level"]
+          muvo_negative_ratio?: number | null
           muvo_score?: number | null
+          muvo_score_raw?: number | null
+          muvo_score_shown?: number | null
+          muvo_total_points?: number | null
           name?: string
           needs_review?: boolean
           neg_label_counts?: Json | null
+          neg_taps_decayed?: number | null
           neg_taps_total?: number
           neg_types_count?: number
+          neutral_taps_total?: number | null
           nightly_rate_max?: number | null
           nightly_rate_min?: number | null
           no_formal_address?: boolean | null
@@ -1910,6 +1931,14 @@ export type Database = {
         }
         Returns: number
       }
+      calculate_muvo_score_v1: {
+        Args: { p_neg_taps_decayed: number; p_pos_taps: number }
+        Returns: {
+          confidence: number
+          score_raw: number
+          score_shown: number
+        }[]
+      }
       calculate_reviewer_medal: {
         Args: { user_id_param: string }
         Returns: Database["public"]["Enums"]["reviewer_medal"]
@@ -1927,6 +1956,15 @@ export type Database = {
           p_days_since_first: number
           p_qual_taps: number
           p_repeat_neg_ratio: number
+        }
+        Returns: Database["public"]["Enums"]["muvo_medal_level"]
+      }
+      determine_medal_level_v1: {
+        Args: {
+          p_has_recurring_negative: boolean
+          p_negative_ratio: number
+          p_score_shown: number
+          p_total_points: number
         }
         Returns: Database["public"]["Enums"]["muvo_medal_level"]
       }

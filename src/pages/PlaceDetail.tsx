@@ -40,7 +40,7 @@ import { EntranceData } from '@/types/entrance';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
-import { useMuvoScore, hasEnoughTapsForScore, getConfidenceBuildingText } from '@/hooks/useMuvoScore';
+import { useMuvoScore } from '@/hooks/useMuvoScore';
 import { PlaceMiniMap, PlaceMiniMapPlaceholder } from '@/components/PlaceMiniMap';
 import { NavigateButton } from '@/components/NavigateButton';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -176,30 +176,42 @@ const PlaceDetail = () => {
             <MuvoReviewHowItWorks />
           </div>
           
-          {/* MUVO Confidence Score display - show only on Place Detail page, after threshold met */}
+          {/* MUVO Score Engine v1.0 display */}
           {muvoData && (
             <div className="mb-4">
-              {hasEnoughTapsForScore(muvoData.qual_taps_total, place.primaryCategory) && muvoData.muvo_score !== null ? (
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+              {muvoData.muvo_score_shown !== null ? (
+                <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                   {/* Medal badge - only if earned */}
                   {muvoData.muvo_medal_level !== 'none' && (
                     <MuvoMedalBadge 
                       level={muvoData.muvo_medal_level} 
+                      score={muvoData.muvo_score_shown}
                       size="lg"
+                      showScore
                     />
                   )}
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      Confidence: {Math.round(muvoData.muvo_score)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Based on {muvoData.qual_taps_total} community taps
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-primary">
+                        MUVO {Math.round(muvoData.muvo_score_shown)}
+                      </span>
+                      {muvoData.muvo_confidence < 1 && (
+                        <span className="text-xs text-muted-foreground">
+                          (building confidence)
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Based on {muvoData.muvo_total_points} community taps
+                      {muvoData.neutral_taps_total > 0 && (
+                        <span> + {muvoData.neutral_taps_total} neutral</span>
+                      )}
                     </p>
                   </div>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground italic">
-                  {getConfidenceBuildingText(muvoData.qual_taps_total, place.primaryCategory)}
+                  No reviews yet. Be the first to tap!
                 </p>
               )}
             </div>

@@ -25,8 +25,10 @@ export function PlaceCardBottomSheet({
   // Use the server-computed MUVO score data
   const { data: muvoData } = useMuvoScore(place.id);
   
-  // Medal level comes from server (database trigger computed)
+  // Score Engine v1.0 outputs
+  const scoreShown = muvoData?.muvo_score_shown;
   const medalLevel = muvoData?.muvo_medal_level ?? null;
+  const hasMedal = medalLevel && medalLevel !== 'none';
 
   const handleClick = () => {
     hapticLight();
@@ -51,28 +53,45 @@ export function PlaceCardBottomSheet({
           : '0 4px 16px -4px rgba(0, 0, 0, 0.1), 0 2px 6px -2px rgba(0, 0, 0, 0.04)'
       }}
     >
-      {/* Medal Badge - Top Right Corner */}
-      {medalLevel && (
+      {/* Medal Badge with Score - Top Right Corner */}
+      {hasMedal && (
         <div className="absolute top-3 right-3 z-10">
-          <MuvoMedalBadge level={medalLevel} size="sm" />
+          <MuvoMedalBadge 
+            level={medalLevel} 
+            score={scoreShown} 
+            size="md" 
+            showScore 
+          />
         </div>
       )}
 
-      <div className={cn('pr-12', isPeek ? 'p-4' : 'p-3.5')}>
+      <div className={cn('pr-14', isPeek ? 'p-4' : 'p-3.5')}>
         {/* A) PLACE NAME - Largest text, bold */}
         <h3 
-          className="font-bold text-foreground line-clamp-2 mb-2"
+          className="font-bold text-foreground line-clamp-2 mb-1"
           style={{ fontSize: '18px', lineHeight: '22px' }}
         >
           {place.name}
         </h3>
 
-        {/* B) REVIEW SUMMARY LINE - Second biggest and boldest */}
+        {/* B) MUVO SCORE LINE - Bold, prominent */}
+        {scoreShown !== null && scoreShown !== undefined && (
+          <div className="flex items-center gap-2 mb-2">
+            <span 
+              className="font-bold text-primary"
+              style={{ fontSize: '16px' }}
+            >
+              MUVO {Math.round(scoreShown)}
+            </span>
+          </div>
+        )}
+
+        {/* C) REVIEW SUMMARY LINE - Three rows */}
         <div className="mb-2.5">
           <MuvoReviewLine placeId={place.id} />
         </div>
 
-        {/* C) METADATA LINE - Category + Distance */}
+        {/* D) METADATA LINE - Category + Distance */}
         <div 
           className="flex items-center justify-between text-muted-foreground"
           style={{ fontSize: '13px', lineHeight: '16px' }}

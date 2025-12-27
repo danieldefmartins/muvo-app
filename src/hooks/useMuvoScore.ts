@@ -4,23 +4,35 @@ import { supabase } from '@/integrations/supabase/client';
 export type MuvoMedalLevel = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum';
 
 export interface MuvoScoreData {
+  // Tap totals
   pos_taps_total: number;
   neg_taps_total: number;
-  qual_taps_total: number;
-  neg_label_counts: Record<string, number>;
-  top_neg_taps: number;
-  repeat_neg_ratio: number;
-  neg_types_count: number;
-  first_muvo_tap_at: string | null;
-  active_weeks_count: number;
+  neutral_taps_total: number;
+  qual_taps_total: number; // P + N_raw (for medal thresholds)
+  muvo_total_points: number;
+  
+  // Score Engine v1.0 outputs
+  muvo_score_raw: number | null;
+  muvo_score_shown: number | null;
+  muvo_confidence: number;
+  muvo_negative_ratio: number;
+  neg_taps_decayed: number;
+  
+  // Legacy compatibility
   muvo_score: number | null;
+  
+  // Medal
   muvo_medal_level: MuvoMedalLevel;
   medal_awarded_at: string | null;
+  
+  // Metadata
+  first_muvo_tap_at: string | null;
+  active_weeks_count: number;
 }
 
 /**
  * Fetch MUVO score and medal data for a place
- * This data is computed server-side via triggers on review_signals
+ * Score Engine v1.0: score_shown with confidence shrink, time-decay negatives
  */
 export function useMuvoScore(placeId: string | undefined) {
   return useQuery({
@@ -33,16 +45,19 @@ export function useMuvoScore(placeId: string | undefined) {
         .select(`
           pos_taps_total,
           neg_taps_total,
+          neutral_taps_total,
           qual_taps_total,
-          neg_label_counts,
-          top_neg_taps,
-          repeat_neg_ratio,
-          neg_types_count,
-          first_muvo_tap_at,
-          active_weeks_count,
+          muvo_total_points,
+          muvo_score_raw,
+          muvo_score_shown,
+          muvo_confidence,
+          muvo_negative_ratio,
+          neg_taps_decayed,
           muvo_score,
           muvo_medal_level,
-          medal_awarded_at
+          medal_awarded_at,
+          first_muvo_tap_at,
+          active_weeks_count
         `)
         .eq('id', placeId)
         .single();
@@ -53,16 +68,19 @@ export function useMuvoScore(placeId: string | undefined) {
       return {
         pos_taps_total: data.pos_taps_total ?? 0,
         neg_taps_total: data.neg_taps_total ?? 0,
+        neutral_taps_total: data.neutral_taps_total ?? 0,
         qual_taps_total: data.qual_taps_total ?? 0,
-        neg_label_counts: (data.neg_label_counts as Record<string, number>) ?? {},
-        top_neg_taps: data.top_neg_taps ?? 0,
-        repeat_neg_ratio: Number(data.repeat_neg_ratio) ?? 0,
-        neg_types_count: data.neg_types_count ?? 0,
-        first_muvo_tap_at: data.first_muvo_tap_at,
-        active_weeks_count: data.active_weeks_count ?? 0,
+        muvo_total_points: data.muvo_total_points ?? 0,
+        muvo_score_raw: data.muvo_score_raw ? Number(data.muvo_score_raw) : null,
+        muvo_score_shown: data.muvo_score_shown ? Number(data.muvo_score_shown) : null,
+        muvo_confidence: Number(data.muvo_confidence) ?? 0,
+        muvo_negative_ratio: Number(data.muvo_negative_ratio) ?? 0,
+        neg_taps_decayed: Number(data.neg_taps_decayed) ?? 0,
         muvo_score: data.muvo_score ? Number(data.muvo_score) : null,
         muvo_medal_level: (data.muvo_medal_level as MuvoMedalLevel) ?? 'none',
         medal_awarded_at: data.medal_awarded_at,
+        first_muvo_tap_at: data.first_muvo_tap_at,
+        active_weeks_count: data.active_weeks_count ?? 0,
       };
     },
     enabled: !!placeId,
