@@ -5,6 +5,7 @@ export interface PlaceFormData {
   name: string;
   primaryCategoryId: string;
   additionalCategoryIds: string[]; // Up to 4 additional categories
+  customCategoryText: string; // For "Other" category - user-defined text
   secondaryTags: string[];
   shortSummary: string;
   
@@ -116,6 +117,7 @@ export const DEFAULT_PLACE_FORM_DATA: PlaceFormData = {
   name: '',
   primaryCategoryId: '',
   additionalCategoryIds: [],
+  customCategoryText: '',
   secondaryTags: [],
   shortSummary: '',
   

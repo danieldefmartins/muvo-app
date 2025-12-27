@@ -135,6 +135,7 @@ export type Database = {
       import_queue: {
         Row: {
           created_at: string
+          custom_category_text: string | null
           duplicate_confidence: number | null
           external_id: string | null
           id: string
@@ -155,6 +156,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_category_text?: string | null
           duplicate_confidence?: number | null
           external_id?: string | null
           id?: string
@@ -175,6 +177,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_category_text?: string | null
           duplicate_confidence?: number | null
           external_id?: string | null
           id?: string
@@ -769,6 +772,7 @@ export type Database = {
           created_at: string
           created_by_user_id: string | null
           current_status: Database["public"]["Enums"]["place_status"] | null
+          custom_category_text: string | null
           data_quality_score: number | null
           delivery_notes: string | null
           description: string | null
@@ -938,6 +942,7 @@ export type Database = {
           created_at?: string
           created_by_user_id?: string | null
           current_status?: Database["public"]["Enums"]["place_status"] | null
+          custom_category_text?: string | null
           data_quality_score?: number | null
           delivery_notes?: string | null
           description?: string | null
@@ -1109,6 +1114,7 @@ export type Database = {
           created_at?: string
           created_by_user_id?: string | null
           current_status?: Database["public"]["Enums"]["place_status"] | null
+          custom_category_text?: string | null
           data_quality_score?: number | null
           delivery_notes?: string | null
           description?: string | null
