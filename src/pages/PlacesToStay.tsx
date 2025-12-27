@@ -177,6 +177,8 @@ const PlacesToStay = () => {
                 onSortChange={setSort}
                 totalCount={places?.length || 0}
                 filteredCount={filteredAndSortedPlaces.length}
+                reviewFilters={reviewFilters}
+                onReviewFiltersChange={setReviewFilters}
               />
             </div>
           </div>

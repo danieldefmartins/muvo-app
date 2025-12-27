@@ -1,16 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { MuvoMedalLevel } from '@/hooks/useMuvoScore';
 
 export interface ReviewFiltersState {
   positiveStamps: string[];  // What people liked - boost places with these
   neutralStamps: string[];   // Place feels like - boost places with these
   negativeStamps: string[];  // Avoid places with - penalize places with these
+  medalLevels: MuvoMedalLevel[];  // Filter by medal level
+  minMuvoScore: number | null;    // Minimum MUVO score
 }
 
 export const DEFAULT_REVIEW_FILTERS: ReviewFiltersState = {
   positiveStamps: [],
   neutralStamps: [],
   negativeStamps: [],
+  medalLevels: [],
+  minMuvoScore: null,
 };
 
 export interface PlaceStampData {
@@ -129,18 +134,29 @@ export function scorePlacesByReviews(
   return scores;
 }
 
-// Filter and rank places by review signals
-// - Positive/Neutral: boost ranking (show matching places first)
-// - Negative: EXCLUDE places that have those signals (hidden)
+// Medal level hierarchy for filtering
+const MEDAL_HIERARCHY: Record<MuvoMedalLevel, number> = {
+  'none': 0,
+  'bronze': 1,
+  'silver': 2,
+  'gold': 3,
+  'platinum': 4,
+};
+
+// Filter and rank places by review signals, medals, and score
 export function rankPlacesByReviews(
   placeIds: string[],
   stampData: Map<string, PlaceStampData> | undefined,
-  filters: ReviewFiltersState
+  filters: ReviewFiltersState,
+  placeMedalLevels?: Map<string, MuvoMedalLevel>,
+  placeMuvoScores?: Map<string, number | null>
 ): { rankedIds: string[]; scores: Map<string, PlaceFilterScore>; excludedCount: number } {
   const hasActiveFilters = 
     filters.positiveStamps.length > 0 || 
     filters.neutralStamps.length > 0 || 
-    filters.negativeStamps.length > 0;
+    filters.negativeStamps.length > 0 ||
+    filters.medalLevels.length > 0 ||
+    filters.minMuvoScore !== null;
 
   const scores = scorePlacesByReviews(placeIds, stampData, filters);
 
@@ -148,14 +164,34 @@ export function rankPlacesByReviews(
     return { rankedIds: placeIds, scores, excludedCount: 0 };
   }
 
-  // Filter out places with excluded negatives
   let excludedCount = 0;
   const filteredIds = placeIds.filter((id) => {
     const placeScore = scores.get(id);
+    
+    // Check if excluded by negative stamps
     if (placeScore?.hasExcludedNegative) {
       excludedCount++;
       return false;
     }
+
+    // Check medal level filter
+    if (filters.medalLevels.length > 0 && placeMedalLevels) {
+      const placeMedal = placeMedalLevels.get(id) || 'none';
+      if (!filters.medalLevels.includes(placeMedal)) {
+        excludedCount++;
+        return false;
+      }
+    }
+
+    // Check minimum MUVO score filter
+    if (filters.minMuvoScore !== null && placeMuvoScores) {
+      const placeScore = placeMuvoScores.get(id);
+      if (placeScore === null || placeScore === undefined || placeScore < filters.minMuvoScore) {
+        excludedCount++;
+        return false;
+      }
+    }
+
     return true;
   });
 
@@ -191,7 +227,9 @@ export function countActiveReviewFilters(filters: ReviewFiltersState): number {
   return (
     filters.positiveStamps.length +
     filters.neutralStamps.length +
-    filters.negativeStamps.length
+    filters.negativeStamps.length +
+    filters.medalLevels.length +
+    (filters.minMuvoScore !== null ? 1 : 0)
   );
 }
 
