@@ -62,12 +62,12 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-20">
       <Header />
 
-      {/* Hero Section - Full viewport height with rotating images */}
+      {/* Hero Section - Full viewport height accounting for header (56px) and bottom nav (64px + safe area) */}
       <section 
         className="relative w-full overflow-hidden"
         style={{ 
-          height: 'calc(100dvh - 56px)',
-          minHeight: 'calc(100vh - 56px)',
+          height: 'calc(100dvh - 56px - 64px - env(safe-area-inset-bottom, 0px))',
+          minHeight: 'calc(100vh - 56px - 64px - env(safe-area-inset-bottom, 0px))',
         }}
       >
         {/* Rotating Hero Images */}
@@ -96,8 +96,8 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Slide Indicators */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+        {/* Slide Indicators - positioned above the bottom nav area */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
           {heroImages.map((_, index) => (
             <button
               key={index}
