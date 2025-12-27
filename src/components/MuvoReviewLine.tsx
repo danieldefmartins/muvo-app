@@ -14,14 +14,19 @@ interface ReviewItem {
 }
 
 /**
- * MUVO v1.7 - Three-line stacked review display for place cards/sheets:
+ * MUVO v1.8.1 - Three-line stacked review display (LOCKED)
+ * 
+ * STRICT 3-LINE STRUCTURE:
  * ROW 1: POSITIVE (blue accent) - top 3 items
  * ROW 2: NEUTRAL (amber/gold accent) - top 2 items (style/vibe only)
- * ROW 3: NEGATIVE (red accent) - top 1 item
+ * ROW 3: NEGATIVE (red accent) - top 1 item (only show if exists)
  * 
- * Tap counts (×N) ALWAYS visible.
- * Categories NEVER mixed between rows.
- * Improved readability with larger fonts per v1.7.
+ * VISIBILITY RULES:
+ * - Each row has its OWN reserved vertical space
+ * - Rows NEVER overlap or collapse into each other
+ * - Rows NEVER reorder
+ * - Tap counts (×N) ALWAYS visible
+ * - If no data: show placeholder text, preserve row spacing
  */
 export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
   const { data: aggregates } = usePlaceStampAggregates(placeId);
@@ -81,9 +86,9 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
 
   return (
     <div className={cn("flex flex-col gap-2.5", className)}>
-      {/* ROW 1: POSITIVE - Blue tint */}
+      {/* ROW 1: POSITIVE - Blue tint - Always first, reserved space */}
       <div 
-        className="px-3 py-2 rounded-lg bg-primary/10 text-primary font-semibold"
+        className="px-3 py-2 rounded-lg bg-primary/10 text-primary font-semibold min-h-[38px] flex items-center"
         style={{ fontSize: '15px', lineHeight: '22px' }}
       >
         {reviewLines.positive.length > 0 ? (
@@ -93,9 +98,9 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
         )}
       </div>
 
-      {/* ROW 2: NEUTRAL - Amber/Gold tint (style/vibe only) */}
+      {/* ROW 2: NEUTRAL - Amber/Gold tint - Always second, reserved space */}
       <div 
-        className="px-3 py-2 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold"
+        className="px-3 py-2 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold min-h-[38px] flex items-center"
         style={{ fontSize: '15px', lineHeight: '22px' }}
       >
         {reviewLines.neutral.length > 0 ? (
@@ -105,10 +110,10 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
         )}
       </div>
 
-      {/* ROW 3: NEGATIVE - Red tint (omit if no negatives) */}
+      {/* ROW 3: NEGATIVE - Red tint - Always third position, only show if exists */}
       {reviewLines.negative.length > 0 && (
         <div 
-          className="px-3 py-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 font-semibold"
+          className="px-3 py-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 font-semibold min-h-[38px] flex items-center"
           style={{ fontSize: '15px', lineHeight: '22px' }}
         >
           {formatItems(reviewLines.negative)}
