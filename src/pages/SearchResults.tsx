@@ -10,7 +10,7 @@ import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Map, List, AlertCircle, Search, X, ArrowLeft } from 'lucide-react';
+import { Map as MapIcon, List, AlertCircle, Search, X, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
   ReviewFiltersState, 
@@ -194,7 +194,7 @@ const SearchResults = () => {
                 )}
                 onClick={() => setViewMode('map')}
               >
-                <Map className="w-4 h-4 mr-1.5" />
+                <MapIcon className="w-4 h-4 mr-1.5" />
                 Map
               </Button>
             </div>
