@@ -1,9 +1,9 @@
-import { MapPin, Droplets, Zap, Wifi, Dog, Truck, ShowerHead, WashingMachine, Waves, Flame, MessageSquareText } from 'lucide-react';
+import { MapPin, Droplets, Zap, Wifi, Dog, Truck, ShowerHead, WashingMachine, Waves, Flame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Place, PlaceFeature } from '@/hooks/usePlaces';
 import { FavoriteButton } from './FavoriteButton';
 import { WeatherBadge } from './WeatherBadge';
-import { PlaceStampBadges } from './PlaceStampBadges';
+import { PlaceCardReviewLines } from './PlaceCardReviewLines';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from './ui/aspect-ratio';
 
@@ -76,11 +76,11 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
           )}
 
           {/* Gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
           {/* Top-left: Category + Weather */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-chip bg-background/95 text-foreground backdrop-blur-sm shadow-sm">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[13px] font-medium bg-background/95 text-foreground backdrop-blur-sm shadow-sm">
               {place.primaryCategory}
             </span>
             <WeatherBadge 
@@ -98,28 +98,24 @@ export function PlaceCard({ place, className, style }: PlaceCardProps) {
 
           {/* Bottom content overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-4">
-            {/* Place name */}
-            <h3 className="font-display font-semibold text-white text-[1.125rem] leading-tight mb-1.5 drop-shadow-md">
+            {/* Place name - larger, more readable */}
+            <h3 className="font-display font-bold text-white text-[1.25rem] leading-tight mb-2 drop-shadow-lg">
               {place.name}
             </h3>
 
-            {/* Review stamps badges */}
-            <PlaceStampBadges 
+            {/* MUVO v1.7: 3-line stacked review display */}
+            <PlaceCardReviewLines 
               placeId={place.id} 
-              variant="overlay" 
-              maxGood={2} 
-              maxBad={1}
-              showReviewCount={true}
-              className="mb-2"
+              className="mb-3"
             />
 
-            {/* Distance and price */}
+            {/* Distance and price - larger text */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-white/90 text-secondary">
+              <div className="flex items-center gap-1.5 text-white/90 text-[15px]">
                 <MapPin className="w-4 h-4" />
                 <span>{place.distance} mi</span>
                 <span className="text-white/60 mx-1">•</span>
-                <span className="font-medium">{place.priceLevel}</span>
+                <span className="font-semibold">{place.priceLevel}</span>
               </div>
 
               {/* Feature icons */}

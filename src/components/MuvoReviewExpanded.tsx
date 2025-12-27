@@ -90,19 +90,19 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
   const visibleNegative = showAllNegative ? categorizedSignals.negative : categorizedSignals.negative.slice(0, 2);
 
   return (
-    <div className={cn("space-y-5", className)}>
+    <div className={cn("space-y-6", className)}>
       {/* Positive Section */}
       {categorizedSignals.positive.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-2.5">
-            <ThumbsUp className="w-4 h-4 text-amber-500" />
-            <h4 className="font-semibold text-foreground text-sm">What people like</h4>
+          <div className="flex items-center gap-2 mb-3">
+            <ThumbsUp className="w-5 h-5 text-primary" />
+            <h4 className="font-semibold text-foreground text-base">What people like</h4>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {visiblePositive.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
+                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-primary/10 text-primary border border-primary/20"
               >
                 {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
               </span>
@@ -113,12 +113,12 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
               variant="ghost"
               size="sm"
               onClick={() => setShowAllPositive(!showAllPositive)}
-              className="mt-2 text-xs text-primary h-auto py-1 px-2"
+              className="mt-2 text-sm text-primary h-auto py-1 px-2"
             >
               {showAllPositive ? (
-                <>Show less <ChevronUp className="w-3 h-3 ml-1" /></>
+                <>Show less <ChevronUp className="w-3.5 h-3.5 ml-1" /></>
               ) : (
-                <>Show all {categorizedSignals.positive.length} positives <ChevronDown className="w-3 h-3 ml-1" /></>
+                <>Show all {categorizedSignals.positive.length} positives <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
               )}
             </Button>
           )}
@@ -128,16 +128,16 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
       {/* Neutral Section - How the place feels */}
       {categorizedSignals.neutral.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-2.5">
-            <Sparkles className="w-4 h-4 text-stone-500" />
-            <h4 className="font-semibold text-foreground text-sm">How this place feels</h4>
-            <span className="text-xs text-muted-foreground">(style, not quality)</span>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-5 h-5 text-amber-500" />
+            <h4 className="font-semibold text-foreground text-base">How this place feels</h4>
+            <span className="text-sm text-muted-foreground">(style, not quality)</span>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {visibleNeutral.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-stone-500/10 text-stone-600 dark:text-stone-400 border border-stone-500/20"
+                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
               >
                 {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
               </span>
@@ -148,12 +148,12 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
               variant="ghost"
               size="sm"
               onClick={() => setShowAllNeutral(!showAllNeutral)}
-              className="mt-2 text-xs text-primary h-auto py-1 px-2"
+              className="mt-2 text-sm text-primary h-auto py-1 px-2"
             >
               {showAllNeutral ? (
-                <>Show less <ChevronUp className="w-3 h-3 ml-1" /></>
+                <>Show less <ChevronUp className="w-3.5 h-3.5 ml-1" /></>
               ) : (
-                <>Show all {categorizedSignals.neutral.length} neutral <ChevronDown className="w-3 h-3 ml-1" /></>
+                <>Show all {categorizedSignals.neutral.length} neutral <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
               )}
             </Button>
           )}
@@ -163,15 +163,15 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
       {/* Negative Section */}
       {categorizedSignals.negative.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-2.5">
-            <ThumbsDown className="w-4 h-4 text-red-500" />
-            <h4 className="font-semibold text-foreground text-sm">What didn't go well</h4>
+          <div className="flex items-center gap-2 mb-3">
+            <ThumbsDown className="w-5 h-5 text-red-500" />
+            <h4 className="font-semibold text-foreground text-base">What didn't go well</h4>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {visibleNegative.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
               >
                 {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
               </span>
@@ -182,12 +182,12 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
               variant="ghost"
               size="sm"
               onClick={() => setShowAllNegative(!showAllNegative)}
-              className="mt-2 text-xs text-primary h-auto py-1 px-2"
+              className="mt-2 text-sm text-primary h-auto py-1 px-2"
             >
               {showAllNegative ? (
-                <>Show less <ChevronUp className="w-3 h-3 ml-1" /></>
+                <>Show less <ChevronUp className="w-3.5 h-3.5 ml-1" /></>
               ) : (
-                <>Show all {categorizedSignals.negative.length} negatives <ChevronDown className="w-3 h-3 ml-1" /></>
+                <>Show all {categorizedSignals.negative.length} negatives <ChevronDown className="w-3.5 h-3.5 ml-1" /></>
               )}
             </Button>
           )}
