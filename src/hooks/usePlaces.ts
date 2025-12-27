@@ -92,6 +92,19 @@ export interface Place {
   // Hours fields
   is24_7: boolean;
   hoursJson: PlaceHours | null;
+  // Contact & Info fields
+  address: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  country: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
   // Computed/derived fields
   distance: number;
   summary: string;
@@ -119,6 +132,20 @@ interface PlaceRow {
   status_updated_at: string | null;
   is_24_7: boolean | null;
   hours_json: PlaceHours | null;
+  // Contact fields
+  address: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  postal_code: string | null;
+  country: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
 }
 
 // Generate a summary sentence based on place data
@@ -187,6 +214,19 @@ function transformPlace(row: PlaceRow): Place {
     statusUpdatedAt: row.status_updated_at ? new Date(row.status_updated_at) : null,
     is24_7: row.is_24_7 ?? false,
     hoursJson: row.hours_json,
+    // Contact & Info fields
+    address: row.address,
+    addressLine1: row.address_line1,
+    addressLine2: row.address_line2,
+    city: row.city,
+    state: row.state,
+    zipCode: row.zip_code || row.postal_code,
+    country: row.country,
+    phone: row.phone,
+    email: row.email,
+    website: row.website,
+    facebookUrl: row.facebook_url,
+    instagramUrl: row.instagram_url,
     distance: calculateDistance(row.latitude, row.longitude),
     summary: generateSummary(row),
     isProRecommended: row.is_verified && row.price_level !== '$',

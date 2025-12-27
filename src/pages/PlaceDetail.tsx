@@ -35,6 +35,7 @@ import { MuvoReviewHowItWorks } from '@/components/MuvoReviewHowItWorks';
 import { MuvoMedalBadge } from '@/components/MuvoMedalBadge';
 import { PlaceEntrances } from '@/components/PlaceEntrances';
 import { AddEntranceForm } from '@/components/AddEntranceForm';
+import { PlaceContactInfo } from '@/components/PlaceContactInfo';
 import { extractEntrancesWithRVData, useAddEntrance } from '@/hooks/useEntrances';
 import { EntranceData } from '@/types/entrance';
 import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
@@ -108,8 +109,11 @@ const PlaceDetail = () => {
     );
   }
 
-  // Create a simple location string from coordinates
-  const locationString = `${place.latitude.toFixed(4)}°N, ${Math.abs(place.longitude).toFixed(4)}°W`;
+  // Build location display - prefer formatted address, fallback to coordinates
+  const hasAddress = place.city || place.state || place.addressLine1;
+  const locationString = hasAddress
+    ? [place.city, place.state].filter(Boolean).join(', ')
+    : `${place.latitude.toFixed(4)}°N, ${Math.abs(place.longitude).toFixed(4)}°W`;
 
   // Show only first 6 amenities, then "Show more"
   const visibleAmenities = showAllAmenities ? place.features : place.features.slice(0, 6);
@@ -165,6 +169,22 @@ const PlaceDetail = () => {
             )}
           </div>
         </section>
+
+        {/* Contact & Info Section */}
+        <PlaceContactInfo
+          address={place.address}
+          addressLine1={place.addressLine1}
+          addressLine2={place.addressLine2}
+          city={place.city}
+          state={place.state}
+          zipCode={place.zipCode}
+          country={place.country}
+          phone={place.phone}
+          email={place.email}
+          website={place.website}
+          facebookUrl={place.facebookUrl}
+          instagramUrl={place.instagramUrl}
+        />
 
         {/* 2. Reviews Summary + CTA */}
         <section className="animate-fade-in bg-card border border-border rounded-xl p-4">
