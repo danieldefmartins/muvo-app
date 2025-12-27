@@ -1,68 +1,47 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import {
+  ArrowLeft,
+  Heart,
   MapPin,
-  Package,
-  DollarSign,
+  Phone,
+  Globe,
   Calendar,
-  Truck,
-  Sparkles,
-  ClipboardCheck,
-  AlertCircle,
-  Images,
-  ChevronDown,
-  ChevronUp,
-  Cloud,
+  ThumbsUp,
+  Star,
+  AlertTriangle,
   Navigation,
-  MessageSquareText,
+  Instagram,
+  Facebook,
 } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { WeatherBadge } from '@/components/WeatherBadge';
-import { TrustBadge } from '@/components/TrustBadge';
-import { PriceIndicator } from '@/components/PriceIndicator';
-import { SuggestUpdateForm } from '@/components/SuggestUpdateForm';
-import { PendingSuggestions } from '@/components/PendingSuggestions';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { PlaceCheckin } from '@/components/PlaceCheckin';
-import { PlaceStatusBadge } from '@/components/PlaceStatusBadge';
-import { ReportStatusForm } from '@/components/ReportStatusForm';
 import { PlacePhotoGallery } from '@/components/PlacePhotoGallery';
 import { PhotoUploadForm } from '@/components/PhotoUploadForm';
-import { CompactReviewStrip } from '@/components/CompactReviewStrip';
-import { ReviewsPreview } from '@/components/ReviewsPreview';
 import { MuvoReviewSimple } from '@/components/MuvoReviewSimple';
-import { MuvoReviewHowItWorks } from '@/components/MuvoReviewHowItWorks';
-import { MuvoMedalBadge } from '@/components/MuvoMedalBadge';
-import { PlaceEntrances } from '@/components/PlaceEntrances';
-import { AddEntranceForm } from '@/components/AddEntranceForm';
-import { PlaceContactInfo } from '@/components/PlaceContactInfo';
-import { extractEntrancesWithRVData, useAddEntrance } from '@/hooks/useEntrances';
+import { extractEntrancesWithRVData } from '@/hooks/useEntrances';
 import { EntranceData } from '@/types/entrance';
-import { usePlace, formatLastUpdated } from '@/hooks/usePlaces';
+import { usePlace } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
-import { useMapboxToken } from '@/hooks/useMapboxToken';
-import { useMuvoScore } from '@/hooks/useMuvoScore';
-import { PlaceMiniMap, PlaceMiniMapPlaceholder } from '@/components/PlaceMiniMap';
-import { NavigateButton } from '@/components/NavigateButton';
+import { usePlaceMemberships, useMembershipsList } from '@/hooks/useMemberships';
+import { useFavorites } from '@/hooks/useFavorites';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 const PlaceDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: place, isLoading, error } = usePlace(id || '');
-  const { user, isVerified } = useAuth();
-  const { data: mapboxToken } = useMapboxToken();
-  const { data: muvoData } = useMuvoScore(id);
+  const { user } = useAuth();
+  const { data: placeMemberships } = usePlaceMemberships(id);
+  const { data: allMemberships } = useMembershipsList();
+  const { data: favorites } = useFavorites();
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
-  const [showAllAmenities, setShowAllAmenities] = useState(false);
-  const [showLogistics, setShowLogistics] = useState(false);
-  const [showAddEntrance, setShowAddEntrance] = useState(false);
   const queryClient = useQueryClient();
-  const addEntranceMutation = useAddEntrance(id || '');
+
+  // Check if place is favorited
+  const isFavorited = favorites?.includes(id || '') ?? false;
 
   // Fetch raw place data to extract entrances
   const [entrances, setEntrances] = useState<EntranceData[]>([]);
@@ -83,375 +62,305 @@ const PlaceDetail = () => {
       });
   }, [id]);
 
+  // Get membership that includes this place (first match for hero badge)
+  const includedMembership = useMemo(() => {
+    if (!placeMemberships?.length || !allMemberships?.length) return null;
+    const firstMatch = placeMemberships[0];
+    return allMemberships.find(m => m.id === firstMatch.membership_id);
+  }, [placeMemberships, allMemberships]);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header showBack />
-        <main className="container px-4 py-6 max-w-lg mx-auto">
-          <Skeleton className="h-8 w-3/4 mb-4" />
-          <Skeleton className="h-4 w-1/2 mb-6" />
-          <Skeleton className="h-24 w-full mb-4" />
-          <Skeleton className="h-32 w-full mb-4" />
-          <Skeleton className="h-32 w-full" />
-        </main>
+      <div className="min-h-screen bg-muted">
+        <Skeleton className="h-96 w-full" />
+        <div className="px-4 py-6 space-y-4">
+          <Skeleton className="h-20 w-full rounded-2xl" />
+          <Skeleton className="h-40 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+        </div>
       </div>
     );
   }
 
   if (error || !place) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header showBack />
-        <main className="container px-4 py-8 max-w-lg mx-auto text-center">
+      <div className="min-h-screen bg-muted flex items-center justify-center">
+        <div className="text-center p-6">
           <p className="text-muted-foreground">This place could not be found.</p>
-        </main>
+          <Button onClick={() => navigate(-1)} className="mt-4">
+            Go Back
+          </Button>
+        </div>
       </div>
     );
   }
 
-  // Build location display - prefer formatted address, fallback to coordinates
-  const hasAddress = place.city || place.state || place.addressLine1;
-  const locationString = hasAddress
-    ? [place.city, place.state].filter(Boolean).join(', ')
-    : `${place.latitude.toFixed(4)}°N, ${Math.abs(place.longitude).toFixed(4)}°W`;
+  // Build address string
+  const addressParts = [
+    place.addressLine1,
+    place.city,
+    place.state,
+    place.zipCode
+  ].filter(Boolean);
+  const fullAddress = addressParts.join(', ') || `${place.latitude.toFixed(4)}°N, ${Math.abs(place.longitude).toFixed(4)}°W`;
 
-  // Show only first 6 amenities, then "Show more"
-  const visibleAmenities = showAllAmenities ? place.features : place.features.slice(0, 6);
-  const hasMoreAmenities = place.features.length > 6;
+  // Price level display
+  const priceDisplay = place.priceLevel === '$' ? '$' :
+    place.priceLevel === '$$' ? '$$' :
+    place.priceLevel === '$$$' ? '$$$' : '$';
 
-  // Check if logistics is relevant (has packages info)
-  const hasLogisticsInfo = place.packagesAccepted !== 'No' || place.packageFeeRequired || place.packageFeeAmount;
+  // Open status (simplified - would need hours data for real implementation)
+  const isOpen = true; // Placeholder - would check against hours_of_operation
+
+  // Navigate to entrance
+  const handleNavigate = (lat: number, lng: number, name: string) => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    const encodedName = encodeURIComponent(name);
+    
+    if (isIOS) {
+      window.open(`maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`, '_blank');
+    } else if (isAndroid) {
+      window.open(`geo:${lat},${lng}?q=${lat},${lng}(${encodedName})`, '_blank');
+    } else {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+    }
+  };
+
+  // Ensure website has protocol
+  const ensureHttps = (url: string) => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
+  // Format website for display
+  const formatWebsiteDisplay = (url: string) => {
+    return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header showBack />
-
-      <main className="container px-4 py-6 max-w-lg mx-auto space-y-5">
-        
-        {/* 1. Place Name + Price Level + Medal */}
-        <section className="animate-fade-in">
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <h1 className="font-display text-2xl font-bold text-foreground truncate">
-                {place.name}
-              </h1>
-              {/* Show medal prominently if earned */}
-              {muvoData?.muvo_medal_level && muvoData.muvo_medal_level !== 'none' && (
-                <MuvoMedalBadge 
-                  level={muvoData.muvo_medal_level} 
-                  score={muvoData.muvo_score}
-                  size="lg"
-                  showScore
-                  className="flex-shrink-0"
-                />
-              )}
-            </div>
-            <PriceIndicator level={place.priceLevel} className="mt-1 flex-shrink-0" />
-          </div>
-
-          {/* Location + Distance */}
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <MapPin className="w-4 h-4 flex-shrink-0" />
-            <span>{locationString}</span>
-            <span>•</span>
-            <span>{place.distance} mi away</span>
-          </div>
-
-          {/* Badges row */}
-          <div className="flex flex-wrap gap-2 mt-3">
-            {place.isVerified && <TrustBadge type="verified" />}
-            <TrustBadge type="updated" value={formatLastUpdated(place.lastUpdated)} />
-            {place.openYearRound && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary font-medium">
-                <Calendar className="w-3 h-3 mr-1" />
-                Year-round
-              </span>
-            )}
-          </div>
-        </section>
-
-        {/* Contact & Info Section */}
-        <PlaceContactInfo
-          address={place.address}
-          addressLine1={place.addressLine1}
-          addressLine2={place.addressLine2}
-          city={place.city}
-          state={place.state}
-          zipCode={place.zipCode}
-          country={place.country}
-          phone={place.phone}
-          email={place.email}
-          website={place.website}
-          facebookUrl={place.facebookUrl}
-          instagramUrl={place.instagramUrl}
+    <div className="min-h-screen bg-muted pb-20">
+      {/* Hero Section */}
+      <div className="relative h-96 w-full">
+        <img 
+          src={place.coverImageUrl || '/demo/rv-park-scenic.jpg'} 
+          alt={place.name}
+          className="w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        
+        {/* Back Button */}
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 w-11 h-11 bg-card rounded-full flex items-center justify-center shadow-lg hover:bg-muted transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </button>
+        
+        {/* Favorite Button */}
+        <button 
+          className="absolute top-4 right-4 w-11 h-11 bg-card rounded-full flex items-center justify-center shadow-lg hover:bg-muted transition-colors"
+        >
+          <FavoriteButton placeId={place.id} variant="icon" />
+        </button>
 
-        {/* 2. Reviews Summary + CTA */}
-        <section className="animate-fade-in bg-card border border-border rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
-              <MessageSquareText className="w-5 h-5 text-primary" />
-              Community Reviews
-            </h2>
-            <MuvoReviewHowItWorks />
-          </div>
-          
-          {/* MUVO Score Engine v1.0 display */}
-          {muvoData && (
-            <div className="mb-4">
-              {muvoData.muvo_score_shown !== null ? (
-                <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                  {/* Medal badge - only if earned */}
-                  {muvoData.muvo_medal_level !== 'none' && (
-                    <MuvoMedalBadge 
-                      level={muvoData.muvo_medal_level} 
-                      score={muvoData.muvo_score_shown}
-                      size="lg"
-                      showScore
-                    />
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-primary">
-                        MUVO {Math.round(muvoData.muvo_score_shown)}
-                      </span>
-                      {muvoData.muvo_confidence < 1 && (
-                        <span className="text-xs text-muted-foreground">
-                          (building confidence)
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Based on {muvoData.muvo_total_points} community taps
-                      {muvoData.neutral_taps_total > 0 && (
-                        <span> + {muvoData.neutral_taps_total} neutral</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">
-                  No reviews yet. Be the first to tap!
-                </p>
-              )}
+        {/* Place Name and Membership Badge */}
+        <div className="absolute bottom-6 left-6 right-6">
+          <h1 className="text-3xl font-bold text-white mb-3">{place.name}</h1>
+          {includedMembership && (
+            <div className="inline-flex items-center gap-2 bg-card rounded-full px-4 py-2">
+              <MapPin className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">
+                Included with: <span className="text-primary">{includedMembership.name}</span>
+              </span>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Quick Facts Bar */}
+      <div className="bg-card border-b border-border">
+        <div className="flex items-center justify-around py-4 px-4">
+          <div className="flex flex-col items-center gap-1">
+            <MapPin className="w-5 h-5 text-primary" />
+            <span className="text-sm font-medium text-foreground">{place.distance} mi</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-lg font-bold text-primary">{priceDisplay}</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <div className={`w-3 h-3 rounded-full ${isOpen ? 'bg-green-500' : 'bg-destructive'}`} />
+            <span className="text-sm font-medium text-foreground">{isOpen ? 'Open now' : 'Closed'}</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Calendar className="w-5 h-5 text-primary" />
+            <span className="text-sm font-medium text-foreground">
+              {place.openYearRound ? 'Year-round' : 'Seasonal'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="px-4 py-6 space-y-4">
+        {/* Community Reviews Section */}
+        <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
+          <h2 className="text-xl font-bold text-foreground mb-4">Community Reviews</h2>
           
-          {/* MUVO v1.8.1 Simplified 3-Line Review Display */}
+          {/* MUVO Review Simple - 3-line format */}
           <MuvoReviewSimple placeId={id!} />
           
-          {/* Compact Review Strip for adding/editing reviews */}
-          <div className="mt-4 pt-4 border-t border-border">
-            <CompactReviewStrip
-              placeId={id!}
-              placeName={place.name}
-              placeCategory={place.primaryCategory as any}
-            />
-          </div>
-          
-          {/* Reviews Preview */}
-          <div className="mt-4 pt-4 border-t border-border">
-            <ReviewsPreview 
-              placeId={id!}
-              placeName={place.name}
-              placeCategory={place.primaryCategory}
-              maxReviews={3}
-            />
-          </div>
-        </section>
+          <Button 
+            className="w-full mt-4 bg-primary text-primary-foreground font-semibold py-3 rounded-xl hover:bg-primary/90 transition"
+            onClick={() => {
+              // Could open a review modal here
+            }}
+          >
+            Leave a review
+          </Button>
+        </div>
 
-        {/* Quick Actions */}
-        <section className="animate-fade-in">
-          <div className="flex gap-2">
-            <FavoriteButton placeId={place.id} variant="full" className="flex-1" />
-            <NavigateButton
-              latitude={place.latitude}
-              longitude={place.longitude}
-              name={place.name}
-              variant="compact"
-              className="flex-1"
-            />
-          </div>
-        </section>
-
-        {/* 3. Map Preview (small, tappable) */}
-        <section className="animate-fade-in">
-          <div className="rounded-xl overflow-hidden border border-border">
-            {mapboxToken ? (
-              <PlaceMiniMap
-                latitude={place.latitude}
-                longitude={place.longitude}
-                name={place.name}
-                mapboxToken={mapboxToken}
-                category={place.primaryCategory as any}
-                isVerified={place.isVerified}
-                lastUpdated={place.lastUpdated instanceof Date ? place.lastUpdated.toISOString() : place.lastUpdated}
-              />
-            ) : (
-              <PlaceMiniMapPlaceholder />
-            )}
-          </div>
-        </section>
-
-        {/* Entrances Section */}
-        {showAddEntrance ? (
-          <section className="animate-fade-in bg-card border border-border rounded-xl p-4">
-            <AddEntranceForm
-              placeLatitude={place.latitude}
-              placeLongitude={place.longitude}
-              onSubmit={(entrance) => {
-                addEntranceMutation.mutate(entrance, {
-                  onSuccess: () => {
-                    setShowAddEntrance(false);
-                    // Refetch entrances
-                    supabase.from('places').select('*').eq('id', id!).maybeSingle().then(({ data }) => {
-                      if (data) setEntrances(extractEntrancesWithRVData(data as unknown as Record<string, unknown>));
-                    });
-                  }
-                });
-              }}
-              onCancel={() => setShowAddEntrance(false)}
-              isSubmitting={addEntranceMutation.isPending}
-            />
-          </section>
-        ) : (
-          (entrances.length > 0 || (user && isVerified)) && (
-            <PlaceEntrances 
-              entrances={entrances} 
-              placeName={place.name}
-              canAddEntrance={!!user && isVerified}
-              onAddEntrance={() => setShowAddEntrance(true)}
-            />
-          )
-        )}
-
-        {/* 4. Current Conditions (Weather + Status combined) */}
-        <section className="animate-fade-in">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Cloud className="w-5 h-5 text-primary" />
-            Current Conditions
-          </h2>
-          <div className="space-y-3">
-            {/* Weather */}
-            <WeatherBadge 
-              latitude={place.latitude} 
-              longitude={place.longitude} 
-              variant="card"
-            />
+        {/* Location & Contact Section */}
+        {(fullAddress || place.phone || place.website) && (
+          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
+            <h2 className="text-xl font-bold text-foreground mb-4">Location & Contact</h2>
             
-            {/* Status */}
-            <div className="bg-card border border-border rounded-lg p-3">
-              <PlaceStatusBadge 
-                status={place.currentStatus} 
-                statusUpdatedAt={place.statusUpdatedAt} 
-              />
-              <div className="mt-3">
-                <ReportStatusForm placeId={id!} currentStatus={place.currentStatus} />
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <span className="text-foreground">{fullAddress}</span>
               </div>
+              
+              {place.phone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="w-5 h-5 text-primary flex-shrink-0" />
+                  <a href={`tel:${place.phone}`} className="text-foreground hover:text-primary transition-colors">
+                    {place.phone}
+                  </a>
+                </div>
+              )}
+              
+              {place.website && (
+                <div className="flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-primary flex-shrink-0" />
+                  <a 
+                    href={ensureHttps(place.website)} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-foreground hover:text-primary transition-colors"
+                  >
+                    {formatWebsiteDisplay(place.website)}
+                  </a>
+                </div>
+              )}
+
+              {(place.instagramUrl || place.facebookUrl) && (
+                <div className="flex items-center gap-4 pt-2">
+                  {place.instagramUrl && (
+                    <a 
+                      href={ensureHttps(place.instagramUrl)} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Instagram className="w-6 h-6" />
+                    </a>
+                  )}
+                  {place.facebookUrl && (
+                    <a 
+                      href={ensureHttps(place.facebookUrl)} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Facebook className="w-6 h-6" />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </section>
+        )}
 
-        {/* 5. Amenities & Features (chips, collapsible) */}
-        {place.features.length > 0 && (
-          <section className="animate-fade-in">
-            <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              Amenities & Features
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {visibleAmenities.map((feature) => (
-                <span
-                  key={feature}
-                  className="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-secondary text-secondary-foreground"
-                >
-                  {feature}
-                </span>
+        {/* Entrances Section - Only show if entrances exist */}
+        {entrances.length > 0 && (
+          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
+            <h2 className="text-xl font-bold text-foreground mb-4">Entrances</h2>
+            
+            <div className="space-y-3">
+              {entrances.map((entrance, idx) => (
+                <div key={idx} className="flex items-center justify-between py-2">
+                  <div className="flex-1">
+                    <span className={`${entrance.isPrimary ? 'font-semibold' : ''} text-foreground`}>
+                      {entrance.name || `Entrance ${idx + 1}`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <MapPin className="w-4 h-4 text-primary" />
+                      <span className="text-sm">
+                        {entrance.latitude && entrance.longitude 
+                          ? `${Math.abs(entrance.latitude - place.latitude).toFixed(1)} mi`
+                          : '--'
+                        }
+                      </span>
+                    </div>
+                    <Button 
+                      size="sm"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={() => handleNavigate(
+                        entrance.latitude || place.latitude, 
+                        entrance.longitude || place.longitude, 
+                        entrance.name || place.name
+                      )}
+                    >
+                      Navigate
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
-            {hasMoreAmenities && (
-              <button
-                onClick={() => setShowAllAmenities(!showAllAmenities)}
-                className="mt-3 text-sm text-primary hover:underline flex items-center gap-1"
-              >
-                {showAllAmenities ? (
-                  <>Show less <ChevronUp className="w-4 h-4" /></>
-                ) : (
-                  <>+{place.features.length - 6} more <ChevronDown className="w-4 h-4" /></>
-                )}
-              </button>
-            )}
-          </section>
+          </div>
         )}
 
-        {/* 6. Logistics / Packages / Fees (collapsed by default) */}
-        <Collapsible open={showLogistics} onOpenChange={setShowLogistics}>
-          <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center justify-between py-3 px-4 bg-secondary/50 rounded-lg text-left hover:bg-secondary/70 transition-colors">
-              <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-primary" />
-                <span className="font-medium text-foreground">Packages & Fees</span>
-                {hasLogisticsInfo && (
-                  <span className="text-xs text-muted-foreground">
-                    ({place.packagesAccepted === 'Yes' ? 'Accepts packages' : place.packagesAccepted === 'Limited' ? 'Limited' : 'Info available'})
-                  </span>
-                )}
-              </div>
-              {showLogistics ? (
-                <ChevronUp className="w-5 h-5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-muted-foreground" />
-              )}
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2">
-            <div className="bg-card border border-border rounded-lg divide-y divide-border">
-              <InfoRow
-                icon={Package}
-                label="Packages Accepted"
-                value={place.packagesAccepted}
-                valueClassName={cn(
-                  place.packagesAccepted === 'Yes' && 'text-primary',
-                  place.packagesAccepted === 'No' && 'text-muted-foreground',
-                  place.packagesAccepted === 'Limited' && 'text-warning'
-                )}
-              />
-              <InfoRow
-                icon={DollarSign}
-                label="Fee Required"
-                value={place.packageFeeRequired ? 'Yes' : 'No'}
-              />
-              {place.packageFeeAmount && (
-                <InfoRow
-                  icon={DollarSign}
-                  label="Fee Amount"
-                  value={place.packageFeeAmount}
-                />
-              )}
-              <InfoRow
-                icon={Calendar}
-                label="Last Verified"
-                value={formatLastUpdated(place.lastUpdated)}
-              />
+        {/* Accepted Memberships Section - Only show if memberships exist */}
+        {placeMemberships && placeMemberships.length > 0 && (
+          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
+            <h2 className="text-xl font-bold text-foreground mb-4">Accepted Memberships</h2>
+            
+            <div className="flex items-center gap-4 mb-4 flex-wrap">
+              {placeMemberships.map((pm) => (
+                <div key={pm.id} className="w-16 h-16 flex items-center justify-center bg-muted rounded-lg p-2">
+                  {pm.membership?.icon ? (
+                    <img 
+                      src={pm.membership.icon} 
+                      alt={pm.membership.name} 
+                      className="max-w-full max-h-full object-contain" 
+                    />
+                  ) : (
+                    <span className="text-xs text-center text-muted-foreground font-medium">
+                      {pm.membership?.name}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+            
+            {placeMemberships.some(pm => pm.notes) && (
+              <p className="text-sm text-muted-foreground">
+                {placeMemberships.find(pm => pm.notes)?.notes}
+              </p>
+            )}
+          </div>
+        )}
 
-        {/* 7. Check-in Section */}
-        <section className="animate-fade-in">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            <ClipboardCheck className="w-5 h-5 text-primary" />
-            Check In
-          </h2>
-          <PlaceCheckin placeId={id!} />
-        </section>
-
-        {/* Photo Gallery - moved lower, still accessible */}
-        <section className="animate-fade-in">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Images className="w-5 h-5 text-primary" />
-            Photos
-          </h2>
+        {/* Photos Section */}
+        <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
+          <h2 className="text-xl font-bold text-foreground mb-4">Photos</h2>
+          
           {showPhotoUpload ? (
             <PhotoUploadForm 
               placeId={id!}
@@ -467,70 +376,15 @@ const PlaceDetail = () => {
               onAddPhoto={() => setShowPhotoUpload(true)}
             />
           )}
-        </section>
-
-        {/* Suggest Update - Verified users only */}
-        {user && isVerified && (
-          <section className="animate-fade-in">
-            <SuggestUpdateForm place={place} isVerified={isVerified} />
-          </section>
-        )}
-
-        {/* Not verified prompt */}
-        {user && !isVerified && (
-          <section className="animate-fade-in">
-            <div className="p-4 bg-secondary/30 border border-dashed border-border rounded-lg text-center">
-              <p className="text-sm text-muted-foreground mb-2">
-                Want to suggest updates to this place?
-              </p>
-              <Link to="/auth" className="text-sm text-primary hover:underline">
-                Complete verification to contribute
-              </Link>
-            </div>
-          </section>
-        )}
-
-        {/* Pending Suggestions */}
-        <PendingSuggestions placeId={id!} />
-
-        {/* Conflict warning - only show if relevant */}
-        {place.hasConflict && (
-          <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
-            <p className="text-sm text-warning flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" />
-              Some details reported differently by users. Always verify locally.
-            </p>
-          </div>
-        )}
+        </div>
 
         {/* Disclaimer */}
-        <p className="text-center text-xs text-muted-foreground pb-6">
+        <p className="text-center text-xs text-muted-foreground pt-2">
           Information is based on community reports. Always verify locally.
         </p>
-      </main>
+      </div>
     </div>
   );
 };
-
-interface InfoRowProps {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  valueClassName?: string;
-}
-
-function InfoRow({ icon: Icon, label, value, valueClassName }: InfoRowProps) {
-  return (
-    <div className="flex items-center justify-between p-4">
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <Icon className="w-4 h-4" />
-        <span className="text-sm">{label}</span>
-      </div>
-      <span className={cn('text-sm font-medium text-foreground', valueClassName)}>
-        {value}
-      </span>
-    </div>
-  );
-}
 
 export default PlaceDetail;
