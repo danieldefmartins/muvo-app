@@ -39,7 +39,7 @@ interface ReviewPopupProps {
 
 const LEVEL_LABELS = ['', 'Good', 'Great', 'Excellent'];
 const IMPROVEMENT_LABELS = ['', 'Needs Work', 'Needs More', 'Major Issue'];
-const NEUTRAL_LABELS = ['', 'Selected']; // Single-tap only
+const NEUTRAL_LABELS = ['', '×1', '×2', '×3']; // Same tap mechanic as positive/negative
 
 // Onboarding key for localStorage
 const ONBOARDING_KEY = 'review_onboarding_seen';
@@ -169,22 +169,31 @@ export function ReviewPopup({
     const isNeutral = step === 'neutral';
     
     if (isNeutral) {
-      // Neutral stamps are SINGLE TAP ONLY - toggle on/off with level 1
+      // Neutral stamps use SAME tap mechanic as positive/negative (×1/×2/×3)
       const current = neutralSignals.get(stamp.id) || 0;
       const newMap = new Map(neutralSignals);
+      let newLevel: number;
       
       if (current === 0) {
-        newMap.set(stamp.id, 1);
+        newLevel = 1;
+      } else if (current < 3) {
+        newLevel = current + 1;
+      } else {
+        newLevel = 0;
+      }
+      
+      if (newLevel === 0) {
+        newMap.delete(stamp.id);
+        hapticLight();
+      } else {
+        newMap.set(stamp.id, newLevel);
         hapticMedium();
         setShowFlash(true);
-        setPopText('Selected');
+        setPopText(NEUTRAL_LABELS[newLevel]);
         window.setTimeout(() => {
           setShowFlash(false);
           setPopText(null);
         }, 500);
-      } else {
-        newMap.delete(stamp.id);
-        hapticLight();
       }
       setNeutralSignals(newMap);
       setActiveStamp(stamp);
@@ -292,7 +301,7 @@ export function ReviewPopup({
     switch (step) {
       case 'good': return 'Tap stamps that stood out';
       case 'improvement': return 'Tap issues you experienced';
-      case 'neutral': return 'Help others understand the feeling of this place';
+      case 'neutral': return 'This does NOT affect quality. It describes the vibe.';
       default: return null;
     }
   };
@@ -364,14 +373,20 @@ export function ReviewPopup({
   const getActiveStyles = () => {
     if (currentLevel === 0) {
       if (isNeutralStep) {
-        return 'bg-violet-500/10 text-violet-500 border-violet-500/30';
+        return 'bg-stone-500/10 text-stone-600 border-stone-500/30 dark:text-stone-400';
       }
       return isPositive
         ? 'bg-primary/10 text-primary border-primary/30'
         : 'bg-amber-500/10 text-amber-500 border-amber-500/30';
     }
     if (isNeutralStep) {
-      return 'bg-violet-500/30 text-violet-600 border-violet-500 ring-2 ring-violet-500/30 shadow-lg shadow-violet-500/20';
+      // Neutral uses muted gold/stone colors - same 3-level intensity
+      switch (currentLevel) {
+        case 1: return 'bg-stone-500/20 text-stone-600 border-stone-500/50 shadow-lg shadow-stone-500/20 dark:text-stone-300';
+        case 2: return 'bg-stone-500/40 text-stone-700 border-stone-500 ring-4 ring-stone-500/30 shadow-xl shadow-stone-500/30 dark:text-stone-200';
+        case 3: return 'bg-stone-600 text-white border-stone-600 ring-4 ring-stone-500/50 shadow-2xl shadow-stone-600/40';
+        default: return 'bg-stone-500/10 text-stone-600 border-stone-500/30 dark:text-stone-400';
+      }
     }
     if (isPositive) {
       switch (currentLevel) {
@@ -391,14 +406,7 @@ export function ReviewPopup({
   };
 
   const renderDots = (level: number, polarity: 'positive' | 'improvement' | 'neutral') => {
-    if (polarity === 'neutral') {
-      // Single dot for neutral stamps
-      return (
-        <div className="flex gap-2 justify-center">
-          <div className={cn('w-3 h-3 rounded-full transition-all duration-300', level > 0 ? 'bg-violet-500 scale-110' : 'bg-muted-foreground/25')} />
-        </div>
-      );
-    }
+    // All polarities use 3 dots now
     return (
       <div className="flex gap-2 justify-center">
         {[1, 2, 3].map((dot) => (
@@ -409,7 +417,9 @@ export function ReviewPopup({
               dot <= level
                 ? polarity === 'positive'
                   ? 'bg-primary scale-110'
-                  : level === 3 ? 'bg-destructive scale-110' : 'bg-amber-500 scale-110'
+                  : polarity === 'neutral'
+                    ? 'bg-stone-500 scale-110'
+                    : level === 3 ? 'bg-destructive scale-110' : 'bg-amber-500 scale-110'
                 : 'bg-muted-foreground/25'
             )}
           />
