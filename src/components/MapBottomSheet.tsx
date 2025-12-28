@@ -350,9 +350,9 @@ export function MapBottomSheet({
                   {/* Confidence badge */}
                   <div className={cn(
                     'px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0',
-                    confidenceInfo.variant === 'positive' && 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+                    confidenceInfo.variant === 'positive' && 'bg-[hsl(var(--signal-positive-tint))] text-[hsl(var(--signal-positive-text))]',
                     confidenceInfo.variant === 'neutral' && 'bg-muted text-muted-foreground',
-                    confidenceInfo.variant === 'caution' && 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                    confidenceInfo.variant === 'caution' && 'bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))]'
                   )}>
                     {confidenceInfo.label}
                   </div>

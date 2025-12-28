@@ -66,15 +66,15 @@ export function StampButton({
   };
 
   const getImprovementStyles = () => {
-    if (!selected) return 'bg-muted text-muted-foreground border-border hover:border-amber-500/50';
+    if (!selected) return 'bg-muted text-muted-foreground border-border hover:border-[hsl(var(--signal-neutral))]/50';
     
     switch (level) {
       case 1: // Needs work - outlined
-        return 'bg-transparent text-amber-500 border-amber-500';
+        return 'bg-transparent text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]';
       case 2: // Could be better - solid warning
-        return 'bg-amber-500/30 text-amber-600 border-amber-500 ring-2 ring-amber-500/30';
+        return 'bg-[hsl(var(--signal-neutral))]/30 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))] ring-2 ring-[hsl(var(--signal-neutral))]/30';
       case 3: // Major issue - solid + alert accent
-        return 'bg-destructive text-destructive-foreground border-destructive ring-2 ring-destructive/40 shadow-lg shadow-destructive/30';
+        return 'bg-[hsl(var(--signal-negative))] text-white border-[hsl(var(--signal-negative))] ring-2 ring-[hsl(var(--signal-negative))]/40 shadow-lg shadow-[hsl(var(--signal-negative))]/30';
       default:
         return 'bg-muted text-muted-foreground border-border';
     }
@@ -96,8 +96,8 @@ export function StampButton({
                 ? polarity === 'positive'
                   ? 'bg-primary'
                   : level === 3
-                  ? 'bg-destructive'
-                  : 'bg-amber-500'
+                  ? 'bg-[hsl(var(--signal-negative))]'
+                  : 'bg-[hsl(var(--signal-neutral))]'
                 : 'bg-muted-foreground/30'
             )}
           />
@@ -134,7 +134,7 @@ export function StampButton({
               'absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold',
               polarity === 'positive' 
                 ? 'bg-primary text-primary-foreground' 
-                : 'bg-destructive text-destructive-foreground'
+                : 'bg-[hsl(var(--signal-negative))] text-white'
             )}
           >
             ★

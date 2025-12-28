@@ -34,15 +34,15 @@ const slides = [
     icon: Award,
     title: "Medals reward consistency",
     description: "Places earn medals by being consistently good over time — not by getting one viral review. Real quality shines through.",
-    color: "text-amber-500",
-    bg: "bg-amber-500/10",
+    color: "text-[hsl(var(--signal-neutral))]",
+    bg: "bg-[hsl(var(--signal-neutral-tint))]",
   },
   {
     icon: Star,
     title: "No stars, no punishment",
     description: "We show what people actually notice. One bad day doesn't tank a place. The community decides what matters.",
-    color: "text-emerald-500",
-    bg: "bg-emerald-500/10",
+    color: "text-primary",
+    bg: "bg-primary/10",
   },
 ];
 

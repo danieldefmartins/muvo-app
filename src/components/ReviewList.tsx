@@ -185,7 +185,7 @@ export function ReviewList({ placeId, onEditReview }: ReviewListProps) {
                   {improvementSignals.map((signal) => (
                     <div
                       key={signal.dimension}
-                      className="flex items-center gap-1 bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full text-xs font-medium"
+                      className="flex items-center gap-1 bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))] px-2 py-1 rounded-full text-xs font-medium"
                     >
                       <ReviewSignalIcon
                         dimension={signal.dimension}

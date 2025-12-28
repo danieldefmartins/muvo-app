@@ -273,7 +273,7 @@ export default function UserProfile() {
                           <Badge 
                             key={idx} 
                             variant="secondary"
-                            className={`text-xs ${sig.polarity === 'positive' ? 'bg-primary/10 text-primary' : 'bg-amber-500/10 text-amber-600'}`}
+                            className={`text-xs ${sig.polarity === 'positive' ? 'bg-primary/10 text-primary' : 'bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))]'}`}
                           >
                             {sig.dimension}
                           </Badge>
