@@ -1,4 +1,4 @@
-import { Hand, ShieldCheck, Search, Zap, X, Check } from 'lucide-react';
+import { ShieldCheck, Search, Zap, X, Check, MousePointerClick } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -22,35 +22,35 @@ export function HowReviewsWork() {
             THE TAP SYSTEM
           </p>
           <div className="flex items-center gap-2 mb-3">
-            <Hand className="w-12 h-12 text-foreground" />
+            <MousePointerClick className="w-14 h-14 text-[#008fc0]" />
           </div>
-          <h3 className="text-2xl font-bold text-foreground mb-3">
+          <h3 className="text-3xl font-bold text-foreground mb-3">
             Tap, Don't Type
           </h3>
           <p className="text-base text-muted-foreground leading-relaxed mb-6">
             Instead of writing long reviews, you simply tap the signals that stood out. 
-            Takes 10 seconds. No essays required.
+            Takes <span className="text-xl font-bold text-[#008fc0]">10 seconds</span>. <span className="font-semibold">No essays required.</span>
           </p>
           
           {/* Phone Mockup with Signal Badges */}
           <div className="max-w-xs mx-auto bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-lg border-4 border-gray-200 dark:border-gray-700">
             <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl p-4 space-y-2">
-              <span className="flex items-center justify-center min-w-[192px] w-48 mx-auto bg-[#008fc0] text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="flex items-center justify-start min-w-[192px] w-48 mx-auto bg-[#008fc0] text-white px-4 py-2 rounded-full text-sm font-medium">
                 👍 Level Sites
               </span>
-              <span className="flex items-center justify-center min-w-[192px] w-48 mx-auto bg-[#008fc0] text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="flex items-center justify-start min-w-[192px] w-48 mx-auto bg-[#008fc0] text-white px-4 py-2 rounded-full text-sm font-medium">
                 👍 Clean Bathrooms
               </span>
-              <span className="flex items-center justify-center min-w-[192px] w-48 mx-auto bg-gray-500 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="flex items-center justify-start min-w-[192px] w-48 mx-auto bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-medium">
                 ⭐ Rustic
               </span>
-              <span className="flex items-center justify-center min-w-[192px] w-48 mx-auto bg-gray-500 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="flex items-center justify-start min-w-[192px] w-48 mx-auto bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-medium">
                 ⭐ Family-Friendly
               </span>
-              <span className="flex items-center justify-center min-w-[192px] w-48 mx-auto bg-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="flex items-center justify-start min-w-[192px] w-48 mx-auto bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium">
                 ⚠️ Spotty WiFi
               </span>
-              <span className="flex items-center justify-center min-w-[192px] w-48 mx-auto bg-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="flex items-center justify-start min-w-[192px] w-48 mx-auto bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium">
                 ⚠️ Too Noisy
               </span>
             </div>
@@ -59,15 +59,15 @@ export function HowReviewsWork() {
 
         {/* Section 2 - Why This is Better */}
         <div className="mb-6">
-          <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
+          <h3 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-6 text-center leading-tight">
             Why This Doesn't Punish Businesses
           </h3>
 
           <div className="space-y-4">
             {/* Problem Card */}
             <div className="bg-white dark:bg-card rounded-xl p-4 border-2 border-red-300 dark:border-red-500/50 relative">
-              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
-                <X className="w-5 h-5 text-white" />
+              <div className="absolute -top-3 -right-3 w-12 h-12 rounded-full bg-red-500 flex items-center justify-center shadow-lg">
+                <X className="w-8 h-8 text-white stroke-[3]" />
               </div>
               <div className="text-4xl mb-2">🏪</div>
               <p className="font-semibold text-base mb-1">Restaurant</p>
@@ -85,8 +85,8 @@ export function HowReviewsWork() {
 
             {/* Solution Card */}
             <div className="bg-white dark:bg-card rounded-xl p-4 border-2 border-green-300 dark:border-green-500/50 relative">
-              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                <Check className="w-5 h-5 text-white" />
+              <div className="absolute -top-3 -right-3 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+                <Check className="w-8 h-8 text-white stroke-[3]" />
               </div>
               <div className="text-4xl mb-2">🏪</div>
               <p className="font-semibold text-base mb-2">Restaurant</p>
@@ -154,6 +154,20 @@ export function HowReviewsWork() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Compelling Statement */}
+        <div className="bg-gradient-to-br from-[#008fc0]/10 to-purple-500/10 rounded-2xl p-6 mb-8 border-2 border-[#008fc0]/20">
+          <div className="text-center">
+            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 leading-tight">
+              Reviews That Help Everyone
+            </h3>
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+              Businesses get honest feedback without unfair penalties. 
+              You get the real story to make better decisions. 
+              <span className="block mt-2 font-semibold text-foreground">That's the MUVO difference.</span>
+            </p>
           </div>
         </div>
 
