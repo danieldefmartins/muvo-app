@@ -118,8 +118,8 @@ export function StampSelectorPopup({
                 ? polarity === 'positive'
                   ? 'bg-primary scale-125'
                   : level === 3
-                  ? 'bg-destructive scale-125'
-                  : 'bg-amber-500 scale-125'
+                  ? 'bg-[hsl(var(--signal-negative))] scale-125'
+                  : 'bg-[hsl(var(--signal-neutral))] scale-125'
                 : 'bg-muted-foreground/30'
             )}
           />
@@ -132,7 +132,7 @@ export function StampSelectorPopup({
     if (currentLevel === 0) {
       return polarity === 'positive'
         ? 'bg-primary/10 text-primary border-primary/30'
-        : 'bg-amber-500/10 text-amber-500 border-amber-500/30';
+        : 'bg-[hsl(var(--signal-neutral))]/10 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]/30';
     }
 
     if (polarity === 'positive') {
@@ -149,13 +149,13 @@ export function StampSelectorPopup({
     } else {
       switch (currentLevel) {
         case 1:
-          return 'bg-amber-500/20 text-amber-500 border-amber-500/50';
+          return 'bg-[hsl(var(--signal-neutral))]/20 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]/50';
         case 2:
-          return 'bg-amber-500/40 text-amber-600 border-amber-500 ring-2 ring-amber-500/40';
+          return 'bg-[hsl(var(--signal-neutral))]/40 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))] ring-2 ring-[hsl(var(--signal-neutral))]/40';
         case 3:
-          return 'bg-destructive text-destructive-foreground border-destructive ring-2 ring-destructive/40 shadow-lg shadow-destructive/30';
+          return 'bg-[hsl(var(--signal-negative))] text-white border-[hsl(var(--signal-negative))] ring-2 ring-[hsl(var(--signal-negative))]/40 shadow-lg shadow-[hsl(var(--signal-negative))]/30';
         default:
-          return 'bg-amber-500/10 text-amber-500 border-amber-500/30';
+          return 'bg-[hsl(var(--signal-neutral))]/10 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]/30';
       }
     }
   };
@@ -205,11 +205,11 @@ export function StampSelectorPopup({
                   <p
                     className={cn(
                       'text-sm font-bold transition-all duration-300',
-                      polarity === 'positive'
+                        polarity === 'positive'
                         ? 'text-primary'
                         : animatingLevel === 3
-                        ? 'text-destructive'
-                        : 'text-amber-500'
+                        ? 'text-[hsl(var(--signal-negative))]'
+                        : 'text-[hsl(var(--signal-neutral))]'
                     )}
                   >
                     {labels[animatingLevel]}
@@ -218,11 +218,11 @@ export function StampSelectorPopup({
                   <p
                     className={cn(
                       'text-xs font-medium',
-                      polarity === 'positive'
+                        polarity === 'positive'
                         ? 'text-primary'
                         : currentLevel === 3
-                        ? 'text-destructive'
-                        : 'text-amber-500'
+                        ? 'text-[hsl(var(--signal-negative))]'
+                        : 'text-[hsl(var(--signal-neutral))]'
                     )}
                   >
                     {labels[currentLevel]}
@@ -239,9 +239,9 @@ export function StampSelectorPopup({
 
           {/* Limit Reached Warning */}
           {isLimitReached && currentLevel === 0 && (
-            <div className="flex items-center gap-2 py-1.5 px-2.5 bg-amber-500/10 rounded-lg border border-amber-500/20">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-              <p className="text-xs text-amber-600">Max reached for this review.</p>
+            <div className="flex items-center gap-2 py-1.5 px-2.5 bg-[hsl(var(--signal-neutral))]/10 rounded-lg border border-[hsl(var(--signal-neutral))]/20">
+              <AlertCircle className="w-3.5 h-3.5 text-[hsl(var(--signal-neutral))] flex-shrink-0" />
+              <p className="text-xs text-[hsl(var(--signal-neutral-text))]">Max reached for this review.</p>
             </div>
           )}
 
@@ -276,7 +276,7 @@ export function StampSelectorPopup({
                           stampLevel > 0
                             ? polarity === 'positive'
                               ? 'bg-primary/20 text-primary border-primary/50'
-                              : 'bg-amber-500/20 text-amber-500 border-amber-500/50'
+                              : 'bg-[hsl(var(--signal-neutral))]/20 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]/50'
                             : 'bg-muted text-muted-foreground border-border'
                         )}
                       >
@@ -295,7 +295,7 @@ export function StampSelectorPopup({
                                 dot <= stampLevel
                                   ? polarity === 'positive'
                                     ? 'bg-primary'
-                                    : 'bg-amber-500'
+                                    : 'bg-[hsl(var(--signal-neutral))]'
                                   : 'bg-muted-foreground/30'
                               )}
                             />

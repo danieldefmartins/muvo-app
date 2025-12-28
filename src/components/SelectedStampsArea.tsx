@@ -73,11 +73,11 @@ export function SelectedStampsArea({
       } else {
         switch (level) {
           case 1:
-            return 'bg-amber-500/20 text-amber-500 border-amber-500/50';
+            return 'bg-[hsl(var(--signal-neutral))]/20 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]/50';
           case 2:
-            return 'bg-amber-500/40 text-amber-600 border-amber-500 ring-2 ring-amber-500/40';
+            return 'bg-[hsl(var(--signal-neutral))]/40 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))] ring-2 ring-[hsl(var(--signal-neutral))]/40';
           case 3:
-            return 'bg-destructive text-destructive-foreground border-destructive ring-2 ring-destructive/40 shadow-lg shadow-destructive/30';
+            return 'bg-[hsl(var(--signal-negative))] text-white border-[hsl(var(--signal-negative))] ring-2 ring-[hsl(var(--signal-negative))]/40 shadow-lg shadow-[hsl(var(--signal-negative))]/30';
           default:
             return 'bg-muted text-muted-foreground border-border';
         }
@@ -115,8 +115,8 @@ export function SelectedStampsArea({
               polarity === 'positive'
                 ? 'bg-primary text-primary-foreground'
                 : level === 3
-                ? 'bg-destructive text-destructive-foreground'
-                : 'bg-amber-500 text-white'
+                ? 'bg-[hsl(var(--signal-negative))] text-white'
+                : 'bg-[hsl(var(--signal-neutral))] text-white'
             )}>
               ×{level}
             </div>
@@ -138,8 +138,8 @@ export function SelectedStampsArea({
                     ? polarity === 'positive'
                       ? 'bg-primary'
                       : level === 3
-                      ? 'bg-destructive'
-                      : 'bg-amber-500'
+                      ? 'bg-[hsl(var(--signal-negative))]'
+                      : 'bg-[hsl(var(--signal-neutral))]'
                     : 'bg-muted-foreground/30'
                 )}
               />
@@ -171,7 +171,7 @@ export function SelectedStampsArea({
               : 'border-primary/50 text-primary/50 hover:border-primary hover:text-primary'
             : disabled
               ? 'border-muted-foreground/30 text-muted-foreground/30'
-              : 'border-amber-500/50 text-amber-500/50 hover:border-amber-500 hover:text-amber-500'
+              : 'border-[hsl(var(--signal-neutral))]/50 text-[hsl(var(--signal-neutral))]/50 hover:border-[hsl(var(--signal-neutral))] hover:text-[hsl(var(--signal-neutral))]'
         )}
       >
         <Plus size={24} />
@@ -190,7 +190,7 @@ export function SelectedStampsArea({
           <h3 className="text-base font-semibold">What was GREAT?</h3>
           <span className={cn(
             'text-sm',
-            positiveAtLimit ? 'text-amber-500 font-medium' : 'text-muted-foreground'
+            positiveAtLimit ? 'text-[hsl(var(--signal-neutral))] font-medium' : 'text-muted-foreground'
           )}>
             {totalPositiveVotes} / {maxPositiveVotes}
           </span>
@@ -213,9 +213,9 @@ export function SelectedStampsArea({
 
         {/* Limit reached hint */}
         {positiveAtLimit && selectedPositive.size > 0 && (
-          <div className="flex items-center gap-2 py-2 px-3 bg-amber-500/10 rounded-lg border border-amber-500/20 animate-fade-in">
-            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <p className="text-xs text-amber-600">
+          <div className="flex items-center gap-2 py-2 px-3 bg-[hsl(var(--signal-neutral))]/10 rounded-lg border border-[hsl(var(--signal-neutral))]/20 animate-fade-in">
+            <AlertCircle className="w-4 h-4 text-[hsl(var(--signal-neutral))] flex-shrink-0" />
+            <p className="text-xs text-[hsl(var(--signal-neutral-text))]">
               You've reached the max for Good stamps.
             </p>
           </div>
@@ -228,7 +228,7 @@ export function SelectedStampsArea({
           <h3 className="text-base font-semibold">What needs IMPROVEMENT?</h3>
           <span className={cn(
             'text-sm',
-            improvementAtLimit ? 'text-amber-500 font-medium' : 'text-muted-foreground'
+            improvementAtLimit ? 'text-[hsl(var(--signal-neutral))] font-medium' : 'text-muted-foreground'
           )}>
             {totalImprovementVotes} / {maxImprovementVotes}
           </span>
@@ -251,9 +251,9 @@ export function SelectedStampsArea({
 
         {/* Limit reached hint */}
         {improvementAtLimit && selectedImprovement.size > 0 && (
-          <div className="flex items-center gap-2 py-2 px-3 bg-amber-500/10 rounded-lg border border-amber-500/20 animate-fade-in">
-            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <p className="text-xs text-amber-600">
+          <div className="flex items-center gap-2 py-2 px-3 bg-[hsl(var(--signal-neutral))]/10 rounded-lg border border-[hsl(var(--signal-neutral))]/20 animate-fade-in">
+            <AlertCircle className="w-4 h-4 text-[hsl(var(--signal-neutral))] flex-shrink-0" />
+            <p className="text-xs text-[hsl(var(--signal-neutral-text))]">
               You've reached the max for Improvement stamps.
             </p>
           </div>

@@ -397,10 +397,10 @@ export function ReviewPopup({
       }
     } else {
       switch (currentLevel) {
-        case 1: return 'bg-amber-500/20 text-amber-500 border-amber-500/50 shadow-lg shadow-amber-500/20';
-        case 2: return 'bg-amber-500/40 text-amber-600 border-amber-500 ring-4 ring-amber-500/30 shadow-xl shadow-amber-500/30';
-        case 3: return 'bg-destructive text-destructive-foreground border-destructive ring-4 ring-destructive/40 shadow-2xl shadow-destructive/40';
-        default: return 'bg-amber-500/10 text-amber-500 border-amber-500/30';
+        case 1: return 'bg-[hsl(var(--signal-neutral))]/20 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]/50 shadow-lg shadow-[hsl(var(--signal-neutral))]/20';
+        case 2: return 'bg-[hsl(var(--signal-neutral))]/40 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))] ring-4 ring-[hsl(var(--signal-neutral))]/30 shadow-xl shadow-[hsl(var(--signal-neutral))]/30';
+        case 3: return 'bg-[hsl(var(--signal-negative))] text-white border-[hsl(var(--signal-negative))] ring-4 ring-[hsl(var(--signal-negative))]/40 shadow-2xl shadow-[hsl(var(--signal-negative))]/40';
+        default: return 'bg-[hsl(var(--signal-neutral))]/10 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]/30';
       }
     }
   };
@@ -418,8 +418,8 @@ export function ReviewPopup({
                 ? polarity === 'positive'
                   ? 'bg-primary scale-110'
                   : polarity === 'neutral'
-                    ? 'bg-stone-500 scale-110'
-                    : level === 3 ? 'bg-destructive scale-110' : 'bg-amber-500 scale-110'
+                    ? 'bg-[hsl(var(--signal-neutral))] scale-110'
+                    : level === 3 ? 'bg-[hsl(var(--signal-negative))] scale-110' : 'bg-[hsl(var(--signal-neutral))] scale-110'
                 : 'bg-muted-foreground/25'
             )}
           />

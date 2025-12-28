@@ -241,8 +241,8 @@ export function MuvoFilterModal({
             {/* SECTION 2: HOW THIS PLACE FEELS (NEUTRAL) */}
             <section>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <div className="w-8 h-8 rounded-full bg-[hsl(var(--signal-neutral-tint))] flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[hsl(var(--signal-neutral-text))]" />
                 </div>
                 <div>
                   <h3 className="text-base font-semibold text-foreground">How This Place Feels</h3>
@@ -261,7 +261,7 @@ export function MuvoFilterModal({
                         'px-4 py-2.5 rounded-xl text-sm font-medium transition-all',
                         'touch-manipulation active:scale-95',
                         isActive
-                          ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-2 ring-amber-500/30'
+                          ? 'bg-[hsl(var(--signal-neutral))]/15 text-[hsl(var(--signal-neutral-text))] ring-2 ring-[hsl(var(--signal-neutral))]/30'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       )}
                     >
@@ -277,8 +277,8 @@ export function MuvoFilterModal({
             {/* SECTION 3: WHAT TO AVOID (NEGATIVE) */}
             <section>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
-                  <Ban className="w-4 h-4 text-red-600 dark:text-red-400" />
+                <div className="w-8 h-8 rounded-full bg-[hsl(var(--signal-negative-tint))] flex items-center justify-center">
+                  <Ban className="w-4 h-4 text-[hsl(var(--signal-negative-text))]" />
                 </div>
                 <div>
                   <h3 className="text-base font-semibold text-foreground">What to Avoid</h3>
@@ -297,7 +297,7 @@ export function MuvoFilterModal({
                         'px-4 py-2.5 rounded-xl text-sm font-medium transition-all',
                         'touch-manipulation active:scale-95',
                         isActive
-                          ? 'bg-red-500/15 text-red-700 dark:text-red-400 ring-2 ring-red-500/30'
+                          ? 'bg-[hsl(var(--signal-negative))]/15 text-[hsl(var(--signal-negative-text))] ring-2 ring-[hsl(var(--signal-negative))]/30'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       )}
                     >

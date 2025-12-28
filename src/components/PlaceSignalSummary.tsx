@@ -77,7 +77,7 @@ export function PlaceSignalSummary({ placeId, showReviewCount = true }: PlaceSig
 
       {hasIssues && (
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-amber-500">
+          <div className="flex items-center gap-2 text-[hsl(var(--signal-negative))]">
             <AlertTriangle className="h-4 w-4" />
             <span className="font-medium text-sm">Needs attention</span>
           </div>
@@ -90,11 +90,11 @@ export function PlaceSignalSummary({ placeId, showReviewCount = true }: PlaceSig
               return (
                 <div
                   key={stamp.stamp_id || stamp.dimension}
-                  className="flex items-center gap-1.5 bg-amber-500/10 text-amber-600 px-3 py-1.5 rounded-full"
+                  className="flex items-center gap-1.5 bg-[hsl(var(--signal-negative-tint))] text-[hsl(var(--signal-negative-text))] px-3 py-1.5 rounded-full"
                 >
                   <AlertTriangle className="w-3.5 h-3.5" />
                   <span className="text-sm font-medium">{label}</span>
-                  <span className="text-xs text-amber-500/70">({stamp.total_votes})</span>
+                  <span className="text-xs text-[hsl(var(--signal-negative))]/70">({stamp.total_votes})</span>
                 </div>
               );
             })}

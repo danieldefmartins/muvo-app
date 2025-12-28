@@ -80,11 +80,11 @@ export function ReviewSignalIcon({
     
     switch (level) {
       case 1: // Needs work
-        return 'bg-transparent text-amber-500 border-amber-500';
+        return 'bg-transparent text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]';
       case 2: // Could be better
-        return 'bg-amber-500/20 text-amber-600 border-amber-500';
+        return 'bg-[hsl(var(--signal-neutral))]/20 text-[hsl(var(--signal-neutral))] border-[hsl(var(--signal-neutral))]';
       case 3: // Major issue
-        return 'bg-destructive text-destructive-foreground border-destructive ring-2 ring-destructive/30';
+        return 'bg-[hsl(var(--signal-negative))] text-white border-[hsl(var(--signal-negative))] ring-2 ring-[hsl(var(--signal-negative))]/30';
       default:
         return 'bg-muted text-muted-foreground border-border';
     }
@@ -122,7 +122,7 @@ export function ReviewSignalIcon({
           {selected && (
             <p className={cn(
               'text-xs',
-              polarity === 'positive' ? 'text-primary' : 'text-amber-500'
+              polarity === 'positive' ? 'text-primary' : 'text-[hsl(var(--signal-neutral))]'
             )}>
               {getLevelLabel()}
             </p>

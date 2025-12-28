@@ -66,17 +66,17 @@
     --trust: 192 87% 45%;
     
     /* Review Signal Colors - Solid backgrounds (for cards/list views) */
-    --signal-positive: 193 100% 38%;         /* Brand Blue #008fc0 */
-    --signal-neutral: 38 92% 50%;            /* Amber #F59E0B */
-    --signal-negative: 25 95% 53%;           /* Orange #F97316 */
+    --signal-positive: 193 100% 38%;         /* MUVO Brand Blue #008fc0 */
+    --signal-neutral: 220 9% 46%;            /* Gray-500 #6b7280 */
+    --signal-negative: 25 95% 53%;           /* Orange-500 #F97316 */
     
     /* Review Signal Colors - Tinted backgrounds (for detail pages) */
-    --signal-positive-tint: 193 50% 92%;     /* Light blue tint #E0F2F8 */
-    --signal-positive-text: 193 100% 25%;    /* Dark blue text #005F7F */
-    --signal-neutral-tint: 48 96% 89%;       /* Light amber tint #FEF3C7 */
-    --signal-neutral-text: 28 79% 31%;       /* Dark amber text #92400E */
-    --signal-negative-tint: 20 100% 96%;     /* Light orange tint #FFEFE9 */
-    --signal-negative-text: 21 91% 41%;      /* Dark orange text #C2410C */
+    --signal-positive-tint: 193 50% 92%;     /* Light blue tint */
+    --signal-positive-text: 193 100% 25%;    /* Dark blue text */
+    --signal-neutral-tint: 220 14% 92%;      /* Light gray tint */
+    --signal-neutral-text: 220 9% 30%;       /* Dark gray text */
+    --signal-negative-tint: 25 100% 95%;     /* Light orange tint */
+    --signal-negative-text: 21 91% 41%;      /* Dark orange text */
     
     /* Category Colors (for pins, chips, badges) */
     --cat-rv-campground: 217 91% 60%;
@@ -156,15 +156,15 @@
     --trust: 192 87% 50%;
     
     /* Review Signal Colors - Solid backgrounds (for cards/list views) */
-    --signal-positive: 193 100% 45%;         /* Slightly lighter for dark mode */
-    --signal-neutral: 38 92% 55%;
-    --signal-negative: 25 95% 58%;
+    --signal-positive: 193 100% 45%;         /* MUVO Brand Blue - lighter for dark mode */
+    --signal-neutral: 220 9% 55%;            /* Gray-400 for dark mode */
+    --signal-negative: 25 95% 58%;           /* Orange-400 for dark mode */
     
     /* Review Signal Colors - Tinted backgrounds (for detail pages) */
     --signal-positive-tint: 193 40% 18%;
     --signal-positive-text: 193 70% 65%;
-    --signal-neutral-tint: 38 40% 18%;
-    --signal-neutral-text: 38 70% 65%;
+    --signal-neutral-tint: 220 14% 22%;
+    --signal-neutral-text: 220 14% 70%;
     --signal-negative-tint: 25 40% 18%;
     --signal-negative-text: 25 70% 65%;
 

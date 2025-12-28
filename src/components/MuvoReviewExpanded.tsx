@@ -136,7 +136,7 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
       {categorizedSignals.neutral.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-amber-500" />
+            <Sparkles className="w-5 h-5 text-[hsl(var(--signal-neutral))]" />
             <h4 className="font-semibold text-foreground text-base">How this place feels</h4>
             <span className="text-sm text-muted-foreground">(style, not quality)</span>
           </div>
@@ -144,7 +144,7 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
             {visibleNeutral.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
+                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))] border border-[hsl(var(--signal-neutral))]/20"
               >
                 {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
               </span>
@@ -171,14 +171,14 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
       {categorizedSignals.negative.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <ThumbsDown className="w-5 h-5 text-red-500" />
+            <ThumbsDown className="w-5 h-5 text-[hsl(var(--signal-negative))]" />
             <h4 className="font-semibold text-foreground text-base">What didn't go well</h4>
           </div>
           <div className="flex flex-wrap gap-2.5">
             {visibleNegative.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-[hsl(var(--signal-negative-tint))] text-[hsl(var(--signal-negative-text))] border border-[hsl(var(--signal-negative))]/20"
               >
                 {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
               </span>
