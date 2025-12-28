@@ -476,8 +476,8 @@ export function ReviewPopup({
     }
   }, [positiveSignals.size, improvementSignals.size, neutralSignals.size]);
 
-  // Compact stamp card component
-  const renderCompactStamp = (stamp: StampDefinition, polarity: 'positive' | 'improvement' | 'neutral') => {
+  // Grid stamp card component (2-column design from mockup)
+  const renderGridStamp = (stamp: StampDefinition, polarity: 'positive' | 'improvement' | 'neutral') => {
     const Icon = stamp.icon
       ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
       : LucideIcons.Circle;
@@ -516,30 +516,22 @@ export function ReviewPopup({
       setSignalMap(newMap);
     };
     
-    const colorClasses = {
-      positive: {
-        selected: 'bg-primary/15 border-primary/40 ring-1 ring-primary/20',
-        unselected: 'bg-muted/40 border-border hover:bg-muted/60',
-        icon: isSelected ? 'text-primary' : 'text-muted-foreground',
-        dot: 'bg-primary',
-      },
-      neutral: {
-        selected: 'bg-stone-500/15 border-stone-500/40 ring-1 ring-stone-500/20',
-        unselected: 'bg-muted/40 border-border hover:bg-muted/60',
-        icon: isSelected ? 'text-stone-600 dark:text-stone-400' : 'text-muted-foreground',
-        dot: 'bg-stone-500',
-      },
-      improvement: {
-        selected: level === 3 
-          ? 'bg-destructive/15 border-destructive/40 ring-1 ring-destructive/20' 
-          : 'bg-amber-500/15 border-amber-500/40 ring-1 ring-amber-500/20',
-        unselected: 'bg-muted/40 border-border hover:bg-muted/60',
-        icon: isSelected ? (level === 3 ? 'text-destructive' : 'text-amber-500') : 'text-muted-foreground',
-        dot: level === 3 ? 'bg-destructive' : 'bg-amber-500',
-      },
+    // Get the active color based on polarity
+    const getActiveColor = () => {
+      if (polarity === 'positive') return '#008fc0'; // MUVO blue
+      if (polarity === 'neutral') return '#6b7280'; // Gray-500
+      return '#f97316'; // Orange-500
     };
     
-    const colors = colorClasses[polarity];
+    // Render fire emojis for strength
+    const renderStrength = () => {
+      if (!isSelected) return null;
+      return (
+        <div className="mt-1.5 text-base">
+          {'🔥'.repeat(level)}
+        </div>
+      );
+    };
     
     return (
       <button
@@ -547,29 +539,47 @@ export function ReviewPopup({
         onClick={handleTap}
         disabled={!canAdd && !isSelected}
         className={cn(
-          'flex flex-col items-center p-2 rounded-xl border transition-all duration-150 active:scale-95',
-          isSelected ? colors.selected : colors.unselected,
+          'relative flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-200 active:scale-95 h-32',
+          isSelected ? 'shadow-lg' : 'shadow-sm hover:shadow-md',
           !canAdd && !isSelected && 'opacity-40 cursor-not-allowed'
         )}
+        style={{
+          backgroundColor: isSelected ? getActiveColor() : '#F3F4F6',
+          borderWidth: isSelected ? '3px' : '2px',
+          borderColor: isSelected ? getActiveColor() : '#E5E7EB',
+          borderStyle: 'solid',
+        }}
       >
-        <div className={cn('w-8 h-8 flex items-center justify-center', colors.icon)}>
-          <Icon size={20} strokeWidth={2} />
+        {/* Checkmark for selected */}
+        {isSelected && (
+          <div 
+            className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white flex items-center justify-center"
+          >
+            <LucideIcons.Check 
+              className="w-3 h-3" 
+              style={{ color: getActiveColor() }}
+            />
+          </div>
+        )}
+        
+        {/* Icon */}
+        <div className={cn(
+          'w-10 h-10 flex items-center justify-center mb-1',
+          isSelected ? 'text-white' : 'text-gray-500'
+        )}>
+          <Icon size={28} strokeWidth={2} />
         </div>
-        <span className="text-[11px] font-medium text-foreground leading-tight mt-1 text-center line-clamp-2 min-h-[26px]">
+        
+        {/* Label */}
+        <span className={cn(
+          'text-sm font-semibold text-center leading-tight',
+          isSelected ? 'text-white' : 'text-gray-700'
+        )}>
           {stamp.label}
         </span>
-        {/* Inline strength dots */}
-        <div className="flex gap-1 mt-1">
-          {[1, 2, 3].map((d) => (
-            <div
-              key={d}
-              className={cn(
-                'w-2 h-2 rounded-full transition-all',
-                d <= level ? colors.dot : 'bg-muted-foreground/20'
-              )}
-            />
-          ))}
-        </div>
+        
+        {/* Strength indicator (fire emojis) */}
+        {renderStrength()}
       </button>
     );
   };
@@ -705,9 +715,9 @@ export function ReviewPopup({
                 </div>
               )}
               
-              {/* Stamp grid */}
-              <div className="grid grid-cols-4 gap-2">
-                {positiveStamps.map((stamp) => renderCompactStamp(stamp, 'positive'))}
+              {/* Stamp grid - 2 columns */}
+              <div className="grid grid-cols-2 gap-3">
+                {positiveStamps.map((stamp) => renderGridStamp(stamp, 'positive'))}
               </div>
             </div>
           )}
@@ -730,9 +740,9 @@ export function ReviewPopup({
               
               <p className="text-xs text-muted-foreground">Optional — skip if nothing to report</p>
               
-              {/* Stamp grid */}
-              <div className="grid grid-cols-4 gap-2">
-                {improvementStamps.map((stamp) => renderCompactStamp(stamp, 'improvement'))}
+              {/* Stamp grid - 2 columns */}
+              <div className="grid grid-cols-2 gap-3">
+                {improvementStamps.map((stamp) => renderGridStamp(stamp, 'improvement'))}
               </div>
             </div>
           )}
@@ -757,9 +767,9 @@ export function ReviewPopup({
                 Style & vibe only — does NOT affect quality score
               </p>
               
-              {/* Stamp grid */}
-              <div className="grid grid-cols-4 gap-2">
-                {neutralStamps.map((stamp) => renderCompactStamp(stamp, 'neutral'))}
+              {/* Stamp grid - 2 columns */}
+              <div className="grid grid-cols-2 gap-3">
+                {neutralStamps.map((stamp) => renderGridStamp(stamp, 'neutral'))}
               </div>
             </div>
           )}
