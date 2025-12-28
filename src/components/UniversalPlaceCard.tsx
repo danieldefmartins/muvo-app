@@ -225,11 +225,11 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
             {place.name}
           </h3>
 
-          {/* 3 Signal Lines - uniform width badges */}
+          {/* 3 Signal Lines - fixed width badges */}
           <div className="flex flex-col space-y-2 mt-4 mb-3">
             {/* LINE 1: POSITIVE (Brand Blue) */}
             {reviewLines.positive ? (
-              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm">
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[192px] w-48 bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm">
                 <ThumbsUp className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium truncate max-w-[100px]">
                   {reviewLines.positive.label}
@@ -237,15 +237,15 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
                 <span className="font-bold">×{reviewLines.positive.votes}</span>
               </span>
             ) : hasAnyReviews ? null : (
-              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-muted text-muted-foreground px-3 py-1.5 rounded-full text-sm">
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[192px] w-48 bg-muted text-muted-foreground px-3 py-1.5 rounded-full text-sm">
                 <ThumbsUp className="w-4 h-4 flex-shrink-0" />
                 <span className="italic">Be the first to add feedback</span>
               </span>
             )}
 
-            {/* LINE 2: NEUTRAL (Amber) */}
+            {/* LINE 2: NEUTRAL (Gray) */}
             {reviewLines.neutral && (
-              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm">
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[192px] w-48 bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm">
                 <Star className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium truncate max-w-[100px]">
                   {reviewLines.neutral.label}
@@ -256,7 +256,7 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
 
             {/* LINE 3: NEGATIVE (Orange) - only if exists */}
             {reviewLines.negative && (
-              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm">
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[192px] w-48 bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium truncate max-w-[100px]">
                   {reviewLines.negative.label}

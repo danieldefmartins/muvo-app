@@ -69,7 +69,7 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
     const isCompact = variant === 'compact';
 
     return (
-      <div ref={ref} className={cn('flex items-center gap-2 flex-wrap', className)}>
+      <div ref={ref} className={cn('flex flex-col gap-2', className)}>
         {/* Review count */}
         {showReviewCount && reviewCount !== undefined && reviewCount > 0 && (
           <div
@@ -93,7 +93,7 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
             <div
               key={stamp.stamp_id || `${stamp.dimension}-positive`}
               className={cn(
-                'flex items-center gap-1 rounded-full font-semibold',
+                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48',
                 isOverlay
                   ? 'bg-[hsl(var(--signal-positive))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
                   : isCompact
@@ -126,7 +126,7 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
             <div
               key={stamp.stamp_id || `${stamp.dimension}-neutral`}
               className={cn(
-                'flex items-center gap-1 rounded-full font-semibold',
+                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48',
                 isOverlay
                   ? 'bg-[hsl(var(--signal-neutral))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
                   : isCompact
@@ -159,7 +159,7 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
             <div
               key={stamp.stamp_id || `${stamp.dimension}-improvement`}
               className={cn(
-                'flex items-center gap-1 rounded-full font-semibold',
+                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48',
                 isOverlay
                   ? 'bg-[hsl(var(--signal-negative))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
                   : isCompact
