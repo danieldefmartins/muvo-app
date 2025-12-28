@@ -49,7 +49,7 @@ export function HowMuvoDifferent() {
           <div className="w-full max-w-sm space-y-6">
             <div className="flex items-center gap-3">
               <ArrowLeft className="w-6 h-6 text-blue-600 flex-shrink-0" />
-              <span className="text-lg text-foreground/80">What&apos;s great here?</span>
+              <span className="text-lg text-foreground/80">What Stood Out?</span>
             </div>
             <div className="flex items-center gap-3">
               <ArrowLeft className="w-6 h-6 text-muted-foreground flex-shrink-0" />
@@ -57,7 +57,7 @@ export function HowMuvoDifferent() {
             </div>
             <div className="flex items-center gap-3">
               <ArrowLeft className="w-6 h-6 text-red-600 flex-shrink-0" />
-              <span className="text-lg text-foreground/80">What are the problems?</span>
+              <span className="text-lg text-foreground/80">What didn&apos;t work?</span>
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@ export function HowMuvoDifferent() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 h-[44px]">
                 <ArrowLeft className="w-5 h-5 text-blue-600" />
-                <span className="text-base text-muted-foreground">What&apos;s great here?</span>
+                <span className="text-base text-muted-foreground">What Stood Out?</span>
               </div>
               <div className="flex items-center gap-2 h-[44px]">
                 <ArrowLeft className="w-5 h-5 text-muted-foreground" />
@@ -106,7 +106,7 @@ export function HowMuvoDifferent() {
               </div>
               <div className="flex items-center gap-2 h-[44px]">
                 <ArrowLeft className="w-5 h-5 text-red-600" />
-                <span className="text-base text-muted-foreground">What are the problems?</span>
+                <span className="text-base text-muted-foreground">What didn&apos;t work?</span>
               </div>
             </div>
           </div>
