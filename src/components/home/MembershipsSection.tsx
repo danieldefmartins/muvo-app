@@ -8,6 +8,7 @@ import harvestHostsLogo from '@/assets/memberships/harvest-hosts.png';
 import boondockersLogo from '@/assets/memberships/boondockers-welcome.png';
 import escapeesLogo from '@/assets/memberships/escapees.png';
 import rodLogo from '@/assets/memberships/resorts-of-distinction.jpeg';
+import nationalParksLogo from '@/assets/memberships/national-parks.svg';
 
 type MembershipLogo = {
   id: string;
@@ -25,7 +26,7 @@ const memberships: MembershipLogo[] = [
   { id: 'boondockers', name: 'Boondockers Welcome', logo: boondockersLogo },
   { id: 'escapees', name: 'Escapees RV Club', logo: escapeesLogo },
   { id: 'rod', name: 'Resorts of Distinction', logo: rodLogo },
-  { id: 'state_parks', name: 'State Parks' },
+  { id: 'national_parks', name: 'National Parks', logo: nationalParksLogo },
 ];
 
 function getMonogram(name: string) {
