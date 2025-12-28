@@ -109,9 +109,9 @@ export function HowReviewsWork() {
                 </div>
                 
                 <p className="text-base text-muted-foreground mb-3 leading-relaxed">
-                  <strong>89 people</strong> loved the food. <strong>12 people</strong> noted slow service.
+                  <strong className="text-[#008fc0]">89 people</strong> loved the food. <strong className="text-orange-500">12 people</strong> noted slow service.
                 </p>
-                <p className="text-sm text-green-600 dark:text-green-400 font-semibold leading-relaxed mt-auto">
+                <p className="text-sm font-bold leading-relaxed mt-auto bg-green-200 dark:bg-green-800/50 text-green-800 dark:text-green-200 px-3 py-2 rounded-lg">
                   Now YOU decide what matters. That's the power of MUVO.
                 </p>
               </div>
