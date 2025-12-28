@@ -30,9 +30,17 @@ export function MembershipsSection() {
               className="bg-card rounded-xl border border-border p-4 flex items-center justify-center hover:border-primary/50 transition-colors cursor-pointer"
             >
               <div className="w-24 h-24 flex items-center justify-center">
-                <span className="text-sm text-muted-foreground text-center font-medium leading-tight">
-                  {membership.name}
-                </span>
+                <img 
+                  src={membership.logo} 
+                  alt={membership.name}
+                  className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    // Fallback to text if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.parentElement!.innerHTML = `<span class="text-sm text-muted-foreground text-center font-medium leading-tight">${membership.name}</span>`;
+                  }}
+                />
               </div>
             </div>
           ))}
