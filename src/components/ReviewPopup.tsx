@@ -4,12 +4,12 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import * as LucideIcons from 'lucide-react';
 import { ArrowLeft, ArrowRight, Check, Loader2, ChevronLeft, ChevronRight, HelpCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptic, hapticLight, hapticMedium } from '@/lib/haptics';
 import type { StampDefinition } from '@/hooks/useStamps';
+import { NotesStep } from '@/components/review/NotesStep';
 
 // Step definitions
 type ReviewStep = 'intro' | 'good' | 'improvement' | 'neutral' | 'notes' | 'confirm';
@@ -783,34 +783,15 @@ export function ReviewPopup({
             </div>
           )}
 
-          {/* NOTES STEP */}
+          {/* NOTES STEP - Modern Design */}
           {step === 'notes' && (
-            <div className="p-4 space-y-5">
-              <div>
-                <label className="text-base font-bold text-foreground">Public note</label>
-                <p className="text-sm text-muted-foreground mb-2">Share tips with other visitors</p>
-                <Textarea
-                  value={notePublic}
-                  onChange={(e) => setNotePublic(e.target.value.slice(0, 250))}
-                  placeholder="What should others know?"
-                  className="resize-none text-base min-h-[100px] rounded-xl border-border"
-                  rows={4}
-                />
-                <p className="text-sm text-muted-foreground text-right mt-1.5">{notePublic.length}/250</p>
-              </div>
-              <div>
-                <label className="text-base font-bold text-foreground">Private note (optional)</label>
-                <p className="text-sm text-muted-foreground mb-2">Only visible to the owner</p>
-                <Textarea
-                  value={notePrivate}
-                  onChange={(e) => setNotePrivate(e.target.value.slice(0, 250))}
-                  placeholder="Direct feedback for the owner..."
-                  className="resize-none text-base min-h-[80px] rounded-xl border-border"
-                  rows={3}
-                />
-                <p className="text-sm text-muted-foreground text-right mt-1.5">{notePrivate.length}/250</p>
-              </div>
-            </div>
+            <NotesStep
+              notePublic={notePublic}
+              notePrivate={notePrivate}
+              onNotePublicChange={setNotePublic}
+              onNotePrivateChange={setNotePrivate}
+              onSkip={goNext}
+            />
           )}
 
           {/* CONFIRM STEP */}
@@ -861,7 +842,7 @@ export function ReviewPopup({
         </div>
 
         {/* Sticky Footer */}
-        <div className="px-4 py-3 border-t border-border bg-background">
+        <div className="px-4 py-3 border-t border-border bg-background space-y-2">
           {step === 'confirm' ? (
             <Button onClick={goNext} disabled={!canGoNext() || isSubmitting} className="w-full h-11 text-sm font-semibold">
               {isSubmitting ? (
@@ -871,6 +852,19 @@ export function ReviewPopup({
               )}
               {isEditing ? 'Update Review' : 'Submit Review'}
             </Button>
+          ) : step === 'notes' ? (
+            <>
+              <Button onClick={goNext} className="w-full h-11 text-sm font-semibold bg-[#008fc0] hover:bg-[#007aad] active:scale-[0.98] transition-all">
+                Continue
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+              <button
+                onClick={goNext}
+                className="w-full text-sm text-muted-foreground hover:text-foreground py-2 transition-colors active:scale-[0.98]"
+              >
+                Skip this step
+              </button>
+            </>
           ) : (
             <Button onClick={goNext} disabled={!canGoNext()} className="w-full h-11 text-sm font-semibold">
               {step === 'intro' ? "Let's Go" : 'Continue'}
