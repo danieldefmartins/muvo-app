@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Truck, Zap, Signal } from 'lucide-react';
 import { HomeSearchBar } from '@/components/HomeSearchBar';
 
-// Import hero images
+// Import scenic hero images
 import heroBeach from '@/assets/hero-beach.jpg';
 import heroCanyon from '@/assets/hero-canyon.jpg';
 import heroGlacier from '@/assets/hero-glacier.jpg';
@@ -12,15 +12,34 @@ import heroRedwoods from '@/assets/hero-redwoods.jpg';
 import heroRushmore from '@/assets/hero-rushmore.jpg';
 import heroWaterfall from '@/assets/hero-waterfall.jpg';
 
+// Import RV hero images
+import heroRvWaterfall from '@/assets/hero-rv-waterfall.jpg';
+import heroRvRushmore from '@/assets/hero-rv-rushmore.jpg';
+import heroRvNorthernLights from '@/assets/hero-rv-northern-lights.jpg';
+import heroRvMountains from '@/assets/hero-rv-mountains.jpg';
+import heroRvGlacier from '@/assets/hero-rv-glacier.jpg';
+import heroRvCanyon from '@/assets/hero-rv-canyon.jpg';
+import heroRvRedwoods from '@/assets/hero-rv-redwoods.jpg';
+import heroRvBeach from '@/assets/hero-rv-beach.jpg';
+
+// Alternate between scenic and RV images
 const heroImages = [
   { src: heroWaterfall, alt: 'Majestic waterfall in nature' },
-  { src: heroRushmore, alt: 'Mount Rushmore National Memorial' },
+  { src: heroRvRushmore, alt: 'RV at Mount Rushmore National Memorial' },
   { src: heroNorthernLights, alt: 'Northern Lights aurora borealis' },
-  { src: heroMountains, alt: 'Scenic mountain landscape' },
+  { src: heroRvMountains, alt: 'RV parked at scenic mountain overlook' },
   { src: heroGlacier, alt: 'Glacier national park' },
-  { src: heroCanyon, alt: 'Grand canyon views' },
+  { src: heroRvCanyon, alt: 'RV at Grand Canyon sunset' },
   { src: heroRedwoods, alt: 'Redwood forest trees' },
+  { src: heroRvBeach, alt: 'RV on tropical beach at sunset' },
+  { src: heroMountains, alt: 'Scenic mountain landscape' },
+  { src: heroRvWaterfall, alt: 'RV at waterfall viewpoint' },
+  { src: heroCanyon, alt: 'Grand canyon views' },
+  { src: heroRvNorthernLights, alt: 'RV under Northern Lights' },
   { src: heroBeach, alt: 'Beautiful beach sunset' },
+  { src: heroRvGlacier, alt: 'RV at Glacier National Park' },
+  { src: heroRushmore, alt: 'Mount Rushmore National Memorial' },
+  { src: heroRvRedwoods, alt: 'Airstream RV among Redwood trees' },
 ];
 
 export function HeroSection() {
