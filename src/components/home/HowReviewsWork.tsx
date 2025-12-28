@@ -25,7 +25,7 @@ export function HowReviewsWork() {
             <MousePointerClick className="w-14 h-14 text-[#008fc0]" />
           </div>
           <h3 className="text-3xl font-bold text-foreground mb-3">
-            Tap, Don't Type
+            Start Tapping, Stop Typing
           </h3>
           <p className="text-base text-muted-foreground leading-relaxed mb-6">
             Instead of writing long reviews, you simply tap the signals that stood out. 
