@@ -75,10 +75,10 @@ export function HowReviewsWork() {
                 <span className="text-yellow-500">⭐</span>
                 <span className="text-base font-bold">2.0 stars</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-lg sm:text-xl font-bold text-foreground mb-1">
                 Amazing food + slow service = BAD RATING
               </p>
-              <p className="text-xs text-red-500 font-medium">
+              <p className="text-sm text-red-500 font-semibold">
                 You miss a great meal
               </p>
             </div>
@@ -90,19 +90,19 @@ export function HowReviewsWork() {
               </div>
               <div className="text-4xl mb-2">🏪</div>
               <p className="font-semibold text-base mb-2">Restaurant</p>
-              <div className="space-y-1.5 mb-3">
-                <div className="bg-[#008fc0] text-white px-3 py-1 rounded-full text-sm inline-block font-medium">
+              {/* Standardized review bars - matching PlaceStampBadges style */}
+              <div className="flex flex-col gap-2 mb-4">
+                <span className="inline-flex items-center justify-center gap-1.5 min-w-[192px] w-48 bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
                   👍 Delicious Food <span className="font-bold">×89</span>
-                </div>
-                <br />
-                <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm inline-block font-medium">
+                </span>
+                <span className="inline-flex items-center justify-center gap-1.5 min-w-[192px] w-48 bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
                   ⚠️ Slow Service <span className="font-bold">×12</span>
-                </div>
+                </span>
               </div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-lg sm:text-xl font-bold text-foreground mb-1">
                 You see both. You decide.
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+              <p className="text-base sm:text-lg text-green-600 dark:text-green-400 font-bold">
                 Perfect if you're not in a hurry!
               </p>
             </div>
