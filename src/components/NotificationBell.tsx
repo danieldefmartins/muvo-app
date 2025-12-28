@@ -8,16 +8,14 @@ export const NotificationBell = () => {
   const { user } = useAuth();
   const { data: unreadCount = 0 } = useUnreadCount();
 
-  if (!user) return null;
-
   return (
     <Link
-      to="/notifications"
+      to={user ? "/notifications" : "/auth"}
       className="relative p-2 rounded-full hover:bg-accent transition-colors"
       aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
     >
-      <Bell className="h-5 w-5 text-foreground" />
-      {unreadCount > 0 && (
+      <Bell className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+      {unreadCount > 0 && user && (
         <span
           className={cn(
             "absolute -top-0.5 -right-0.5 flex items-center justify-center",
