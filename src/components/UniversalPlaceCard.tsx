@@ -220,57 +220,49 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
 
         {/* RIGHT: Content */}
         <div className="flex-1 min-w-0 flex flex-col">
-          {/* Place Name */}
-          <h3 className="font-display font-semibold text-foreground text-lg leading-tight mb-2 truncate">
+          {/* Place Name - Hero element */}
+          <h3 className="font-display font-bold text-foreground text-xl leading-tight truncate">
             {place.name}
           </h3>
 
-          {/* 3 Signal Lines - increased size and contrast */}
-          <div className="flex flex-col gap-2 mb-3">
+          {/* 3 Signal Lines - uniform width badges */}
+          <div className="flex flex-col space-y-2 mt-4 mb-3">
             {/* LINE 1: POSITIVE (Blue) */}
             {reviewLines.positive ? (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm">
-                  <ThumbsUp className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium truncate max-w-[120px] sm:max-w-none">
-                    {reviewLines.positive.label}
-                  </span>
-                  <span className="font-bold">×{reviewLines.positive.votes}</span>
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm">
+                <ThumbsUp className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium truncate max-w-[100px]">
+                  {reviewLines.positive.label}
                 </span>
-              </div>
+                <span className="font-bold">×{reviewLines.positive.votes}</span>
+              </span>
             ) : hasAnyReviews ? null : (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1.5 rounded-full text-sm">
-                  <ThumbsUp className="w-4 h-4 flex-shrink-0" />
-                  <span className="italic">Be the first to add feedback</span>
-                </span>
-              </div>
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-muted text-muted-foreground px-3 py-1.5 rounded-full text-sm">
+                <ThumbsUp className="w-4 h-4 flex-shrink-0" />
+                <span className="italic">Be the first to add feedback</span>
+              </span>
             )}
 
             {/* LINE 2: NEUTRAL (Yellow) */}
             {reviewLines.neutral && (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 bg-yellow-500 text-black px-3 py-1.5 rounded-full text-sm">
-                  <Star className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium truncate max-w-[120px] sm:max-w-none">
-                    {reviewLines.neutral.label}
-                  </span>
-                  <span className="font-bold">×{reviewLines.neutral.votes}</span>
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-yellow-500 text-black px-3 py-1.5 rounded-full text-sm">
+                <Star className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium truncate max-w-[100px]">
+                  {reviewLines.neutral.label}
                 </span>
-              </div>
+                <span className="font-bold">×{reviewLines.neutral.votes}</span>
+              </span>
             )}
 
             {/* LINE 3: NEGATIVE (Red) - only if exists */}
             {reviewLines.negative && (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 bg-red-600 text-white px-3 py-1.5 rounded-full text-sm">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium truncate max-w-[120px] sm:max-w-none">
-                    {reviewLines.negative.label}
-                  </span>
-                  <span className="font-bold">×{reviewLines.negative.votes}</span>
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-red-600 text-white px-3 py-1.5 rounded-full text-sm">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium truncate max-w-[100px]">
+                  {reviewLines.negative.label}
                 </span>
-              </div>
+                <span className="font-bold">×{reviewLines.negative.votes}</span>
+              </span>
             )}
           </div>
 
