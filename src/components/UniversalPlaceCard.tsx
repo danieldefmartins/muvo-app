@@ -149,7 +149,7 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
     <Link
       to={`/place/${place.id}`}
       className={cn(
-        'block bg-card rounded-2xl overflow-hidden shadow-sm border border-border/50',
+        'block w-full bg-card rounded-2xl overflow-hidden shadow-sm border border-border/50',
         'transition-all duration-200 hover:shadow-md hover:border-border',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className
@@ -158,7 +158,7 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
     >
       <div className="flex p-4 gap-4">
         {/* LEFT: Swipeable Photo Carousel */}
-        <div className="flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40 rounded-xl overflow-hidden bg-muted relative group">
+        <div className="flex-shrink-0 w-28 h-28 sm:w-40 sm:h-40 rounded-xl overflow-hidden bg-muted relative group">
           {photos.length > 0 ? (
             <>
               <div className="overflow-hidden h-full" ref={emblaRef}>
@@ -221,47 +221,41 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
         {/* RIGHT: Content */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Place Name */}
-          <h3 className="font-display font-bold text-foreground text-lg sm:text-xl leading-tight mb-3 truncate">
+          <h3 className="font-display font-semibold text-foreground text-lg leading-tight mb-2 truncate">
             {place.name}
           </h3>
 
-          {/* 3 Signal Lines */}
-          <div className="flex flex-col gap-1.5 mb-3">
+          {/* 3 Signal Lines - increased size and contrast */}
+          <div className="flex flex-col gap-2 mb-3">
             {/* LINE 1: POSITIVE (Blue) */}
             {reviewLines.positive ? (
               <div className="flex items-center gap-2">
-                <ThumbsUp className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                <span className="text-sm font-semibold text-blue-600 truncate">
-                  Best for:
-                </span>
-                <span className="text-sm text-blue-600 truncate flex-1">
-                  {reviewLines.positive.label}
-                </span>
-                <span className="text-sm font-bold text-blue-600 flex-shrink-0">
-                  ×{reviewLines.positive.votes}
+                <span className="inline-flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm">
+                  <ThumbsUp className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium truncate max-w-[120px] sm:max-w-none">
+                    {reviewLines.positive.label}
+                  </span>
+                  <span className="font-bold">×{reviewLines.positive.votes}</span>
                 </span>
               </div>
             ) : hasAnyReviews ? null : (
               <div className="flex items-center gap-2">
-                <ThumbsUp className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
-                <span className="text-sm text-muted-foreground italic">
-                  Be the first to add feedback
+                <span className="inline-flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1.5 rounded-full text-sm">
+                  <ThumbsUp className="w-4 h-4 flex-shrink-0" />
+                  <span className="italic">Be the first to add feedback</span>
                 </span>
               </div>
             )}
 
-            {/* LINE 2: NEUTRAL (Gray) */}
+            {/* LINE 2: NEUTRAL (Yellow) */}
             {reviewLines.neutral && (
               <div className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-sm font-semibold text-muted-foreground truncate">
-                  Vibe:
-                </span>
-                <span className="text-sm text-muted-foreground truncate flex-1">
-                  {reviewLines.neutral.label}
-                </span>
-                <span className="text-sm font-bold text-muted-foreground flex-shrink-0">
-                  ×{reviewLines.neutral.votes}
+                <span className="inline-flex items-center gap-1.5 bg-yellow-500 text-black px-3 py-1.5 rounded-full text-sm">
+                  <Star className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium truncate max-w-[120px] sm:max-w-none">
+                    {reviewLines.neutral.label}
+                  </span>
+                  <span className="font-bold">×{reviewLines.neutral.votes}</span>
                 </span>
               </div>
             )}
@@ -269,15 +263,12 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
             {/* LINE 3: NEGATIVE (Red) - only if exists */}
             {reviewLines.negative && (
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                <span className="text-sm font-semibold text-red-600 truncate">
-                  Heads up:
-                </span>
-                <span className="text-sm text-red-600 truncate flex-1">
-                  {reviewLines.negative.label}
-                </span>
-                <span className="text-sm font-bold text-red-600 flex-shrink-0">
-                  ×{reviewLines.negative.votes}
+                <span className="inline-flex items-center gap-1.5 bg-red-600 text-white px-3 py-1.5 rounded-full text-sm">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium truncate max-w-[120px] sm:max-w-none">
+                    {reviewLines.negative.label}
+                  </span>
+                  <span className="font-bold">×{reviewLines.negative.votes}</span>
                 </span>
               </div>
             )}
@@ -292,41 +283,41 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
             {getOpenStatus()}
           </div>
 
-          {/* Action Icons */}
+          {/* Action Icons - 44x44px minimum for touch targets */}
           <div className="flex items-center gap-2 mt-auto">
             {place.phone && (
               <button
                 onClick={(e) => handleActionClick(e, 'phone')}
-                className="w-9 h-9 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+                className="w-11 h-11 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
                 aria-label="Call"
               >
-                <Phone className="w-4 h-4 text-muted-foreground" />
+                <Phone className="w-5 h-5 text-muted-foreground" />
               </button>
             )}
             {place.website && (
               <button
                 onClick={(e) => handleActionClick(e, 'website')}
-                className="w-9 h-9 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+                className="w-11 h-11 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
                 aria-label="Website"
               >
-                <Globe className="w-4 h-4 text-muted-foreground" />
+                <Globe className="w-5 h-5 text-muted-foreground" />
               </button>
             )}
             {place.instagramUrl && (
               <button
                 onClick={(e) => handleActionClick(e, 'instagram')}
-                className="w-9 h-9 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+                className="w-11 h-11 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
                 aria-label="Instagram"
               >
-                <Instagram className="w-4 h-4 text-muted-foreground" />
+                <Instagram className="w-5 h-5 text-muted-foreground" />
               </button>
             )}
             <button
               onClick={(e) => handleActionClick(e, 'share')}
-              className="w-9 h-9 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+              className="w-11 h-11 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
               aria-label="Share"
             >
-              <Share2 className="w-4 h-4 text-muted-foreground" />
+              <Share2 className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
         </div>
