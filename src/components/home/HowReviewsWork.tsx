@@ -57,7 +57,49 @@ export function HowReviewsWork() {
           </div>
         </div>
 
-        {/* Section 2 - Transparency Message */}
+        {/* Section 2 - Restaurant Comparison */}
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 text-center">
+            THE DIFFERENCE
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Traditional Review - Red Card */}
+            <div className="bg-red-50 dark:bg-red-950/30 rounded-xl p-4 border border-red-200 dark:border-red-800/50">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+                  <X className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-xs font-semibold text-red-600 dark:text-red-400">Old Way</span>
+              </div>
+              <div className="text-2xl font-bold text-foreground mb-1">3.2 ★</div>
+              <p className="text-sm text-muted-foreground mb-1">
+                One bad review tanks everything
+              </p>
+              <p className="text-xs text-red-500 font-medium">
+                You'll never discover this hidden gem because someone had a bad day
+              </p>
+            </div>
+
+            {/* MUVO Review - Green Card */}
+            <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 border border-green-200 dark:border-green-800/50">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-xs font-semibold text-green-600 dark:text-green-400">MUVO Way</span>
+              </div>
+              <div className="text-2xl font-bold text-foreground mb-1">Signals</div>
+              <p className="text-sm text-muted-foreground mb-1">
+                <strong>89 people</strong> loved the food. <strong>12 people</strong> noted slow service.
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                Now YOU decide what matters. That's the power of MUVO.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3 - Transparency Message */}
         <div className="mb-6">
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-2xl p-8 border-2 border-[#008fc0]/30">
             <div className="text-center space-y-4">
