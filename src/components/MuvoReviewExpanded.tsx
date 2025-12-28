@@ -105,13 +105,14 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
             <ThumbsUp className="w-5 h-5 text-primary" />
             <h4 className="font-semibold text-foreground text-base">What stood out</h4>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5">
             {visiblePositive.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-primary/10 text-primary border border-primary/20"
+                className="inline-flex w-full items-center justify-between gap-2 px-3 py-2 rounded-full text-[15px] font-semibold bg-[hsl(var(--signal-positive))] text-white"
               >
-                {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
+                <span className="truncate">{signal.label}</span>
+                <span className="ml-1 font-bold flex-shrink-0">×{signal.votes}</span>
               </span>
             ))}
           </div>
@@ -140,13 +141,14 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
             <h4 className="font-semibold text-foreground text-base">How this place feels</h4>
             <span className="text-sm text-muted-foreground">(style, not quality)</span>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5">
             {visibleNeutral.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))] border border-[hsl(var(--signal-neutral))]/20"
+                className="inline-flex w-full items-center justify-between gap-2 px-3 py-2 rounded-full text-[15px] font-semibold bg-[hsl(var(--signal-neutral))] text-white"
               >
-                {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
+                <span className="truncate">{signal.label}</span>
+                <span className="ml-1 font-bold flex-shrink-0">×{signal.votes}</span>
               </span>
             ))}
           </div>
@@ -174,13 +176,14 @@ export function MuvoReviewExpanded({ placeId, className }: MuvoReviewExpandedPro
             <ThumbsDown className="w-5 h-5 text-[hsl(var(--signal-negative))]" />
             <h4 className="font-semibold text-foreground text-base">What didn't go well</h4>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5">
             {visibleNegative.map(signal => (
               <span
                 key={signal.id}
-                className="inline-flex items-center px-3 py-1.5 rounded-full text-[15px] font-medium bg-[hsl(var(--signal-negative-tint))] text-[hsl(var(--signal-negative-text))] border border-[hsl(var(--signal-negative))]/20"
+                className="inline-flex w-full items-center justify-between gap-2 px-3 py-2 rounded-full text-[15px] font-semibold bg-[hsl(var(--signal-negative))] text-white"
               >
-                {signal.label} <span className="ml-1 font-bold">×{signal.votes}</span>
+                <span className="truncate">{signal.label}</span>
+                <span className="ml-1 font-bold flex-shrink-0">×{signal.votes}</span>
               </span>
             ))}
           </div>

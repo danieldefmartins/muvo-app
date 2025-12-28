@@ -68,28 +68,28 @@ export function PlaceCardReviewLines({ placeId, className }: PlaceCardReviewLine
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      {/* LINE 1: POSITIVE - Brand blue shaded background */}
+      {/* LINE 1: POSITIVE - Brand blue solid background */}
       {reviewLines.positive && (
-        <div className="bg-[hsl(var(--signal-positive))]/30 backdrop-blur-sm rounded px-2 py-0.5 truncate max-w-full">
-          <span className="text-[13px] leading-tight font-semibold text-white drop-shadow-md truncate">
+        <div className="bg-[hsl(var(--signal-positive))] rounded px-2 py-0.5 truncate max-w-full">
+          <span className="text-[13px] leading-tight font-semibold text-white truncate">
             {reviewLines.positive.label} <span className="font-bold">×{reviewLines.positive.votes}</span>
           </span>
         </div>
       )}
 
-      {/* LINE 2: NEUTRAL - Amber shaded background */}
+      {/* LINE 2: NEUTRAL - Gray solid background */}
       {reviewLines.neutral && (
-        <div className="bg-[hsl(var(--signal-neutral))]/30 backdrop-blur-sm rounded px-2 py-0.5 truncate max-w-full">
-          <span className="text-[12px] leading-tight font-medium text-white/90 drop-shadow-md truncate">
+        <div className="bg-[hsl(var(--signal-neutral))] rounded px-2 py-0.5 truncate max-w-full">
+          <span className="text-[12px] leading-tight font-medium text-white/90 truncate">
             {reviewLines.neutral.label} <span className="font-bold">×{reviewLines.neutral.votes}</span>
           </span>
         </div>
       )}
 
-      {/* LINE 3: NEGATIVE - Orange shaded background, only shown if exists */}
+      {/* LINE 3: NEGATIVE - Orange solid background, only shown if exists */}
       {reviewLines.negative && (
-        <div className="bg-[hsl(var(--signal-negative))]/30 backdrop-blur-sm rounded px-2 py-0.5 truncate max-w-full">
-          <span className="text-[12px] leading-tight font-medium text-white drop-shadow-md truncate">
+        <div className="bg-[hsl(var(--signal-negative))] rounded px-2 py-0.5 truncate max-w-full">
+          <span className="text-[12px] leading-tight font-medium text-white truncate">
             {reviewLines.negative.label} <span className="font-bold">×{reviewLines.negative.votes}</span>
           </span>
         </div>

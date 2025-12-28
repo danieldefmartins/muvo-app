@@ -518,9 +518,9 @@ export function ReviewPopup({
     
     // Get the active color based on polarity
     const getActiveColor = () => {
-      if (polarity === 'positive') return '#008fc0'; // MUVO blue
-      if (polarity === 'neutral') return '#6b7280'; // Gray-500
-      return '#f97316'; // Orange-500
+      if (polarity === 'positive') return 'hsl(var(--signal-positive))';
+      if (polarity === 'neutral') return 'hsl(var(--signal-neutral))';
+      return 'hsl(var(--signal-negative))';
     };
     
     // Render fire emojis for strength
@@ -594,25 +594,13 @@ export function ReviewPopup({
     
     // Get the background color based on polarity
     const getBgColor = () => {
-      if (polarity === 'positive') return 'bg-[#008fc0]/15'; // Light blue tint
-      if (polarity === 'neutral') return 'bg-gray-500/15'; // Light gray tint
-      return 'bg-orange-500/15'; // Light orange tint
+      if (polarity === 'positive') return 'bg-[hsl(var(--signal-positive))]';
+      if (polarity === 'neutral') return 'bg-[hsl(var(--signal-neutral))]';
+      return 'bg-[hsl(var(--signal-negative))]';
     };
-    
-    const getTextColor = () => {
-      if (polarity === 'positive') return 'text-[#008fc0]';
-      if (polarity === 'neutral') return 'text-gray-600 dark:text-gray-400';
-      return 'text-orange-600';
-    };
-    
-    const getDotColor = () => {
-      if (polarity === 'positive') return 'bg-[#008fc0]';
-      if (polarity === 'neutral') return 'bg-gray-500';
-      return 'bg-orange-500';
-    };
-    
+
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2.5">
         {Array.from(stampMap.entries()).map(([id, level]) => {
           const stamp = stampList.find((s) => s.id === id);
           if (!stamp) return null;
@@ -621,24 +609,26 @@ export function ReviewPopup({
             : LucideIcons.Circle;
 
           return (
-            <div 
-              key={id} 
+            <div
+              key={id}
               className={cn(
-                'inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold',
+                'w-full inline-flex items-center justify-between gap-2 px-3 py-2 rounded-full text-sm font-semibold text-white',
                 getBgColor(),
-                getTextColor()
               )}
             >
-              <Icon size={16} />
-              <span>{stamp.label}</span>
-              <div className="flex gap-1 ml-0.5">
+              <span className="inline-flex items-center gap-2 min-w-0">
+                <Icon size={16} />
+                <span className="truncate">{stamp.label}</span>
+              </span>
+
+              <div className="flex gap-1 ml-2 flex-shrink-0">
                 {[1, 2, 3].map((d) => (
-                  <div 
-                    key={d} 
+                  <div
+                    key={d}
                     className={cn(
                       'w-2 h-2 rounded-full transition-colors',
-                      d <= level ? getDotColor() : 'bg-current opacity-20'
-                    )} 
+                      d <= level ? 'bg-white/90' : 'bg-white/30',
+                    )}
                   />
                 ))}
               </div>

@@ -88,7 +88,7 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
     <div className={cn("flex flex-col gap-2.5", className)}>
       {/* ROW 1: POSITIVE - Solid MUVO blue #008fc0 */}
       <div 
-        className="px-3 py-2 rounded-lg bg-[#008fc0] text-white font-semibold min-h-[38px] flex items-center"
+        className="px-3 py-2 rounded-lg bg-[hsl(var(--signal-positive))] text-white font-semibold min-h-[38px] flex items-center"
         style={{ fontSize: '15px', lineHeight: '22px' }}
       >
         {reviewLines.positive.length > 0 ? (
@@ -100,7 +100,7 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
 
       {/* ROW 2: NEUTRAL - Solid Gray-500 */}
       <div 
-        className="px-3 py-2 rounded-lg bg-gray-500 text-white font-semibold min-h-[38px] flex items-center"
+        className="px-3 py-2 rounded-lg bg-[hsl(var(--signal-neutral))] text-white font-semibold min-h-[38px] flex items-center"
         style={{ fontSize: '15px', lineHeight: '22px' }}
       >
         {reviewLines.neutral.length > 0 ? (
@@ -113,7 +113,7 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
       {/* ROW 3: NEGATIVE - Solid Orange-500 - Only show if exists */}
       {reviewLines.negative.length > 0 && (
         <div 
-          className="px-3 py-2 rounded-lg bg-orange-500 text-white font-semibold min-h-[38px] flex items-center"
+          className="px-3 py-2 rounded-lg bg-[hsl(var(--signal-negative))] text-white font-semibold min-h-[38px] flex items-center"
           style={{ fontSize: '15px', lineHeight: '22px' }}
         >
           {formatItems(reviewLines.negative)}

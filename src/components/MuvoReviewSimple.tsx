@@ -102,7 +102,7 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.positive}
           isExpanded={expandedSection === 'positive'}
           onToggle={() => toggleSection('positive')}
-          bgClass="bg-[#008fc0]"
+          bgClass="bg-[hsl(var(--signal-positive))]"
           textClass="text-white"
           iconClass="text-white"
         />
@@ -117,7 +117,7 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.neutral}
           isExpanded={expandedSection === 'neutral'}
           onToggle={() => toggleSection('neutral')}
-          bgClass="bg-gray-500"
+          bgClass="bg-[hsl(var(--signal-neutral))]"
           textClass="text-white"
           iconClass="text-white"
         />
@@ -132,7 +132,7 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.negative}
           isExpanded={expandedSection === 'negative'}
           onToggle={() => toggleSection('negative')}
-          bgClass="bg-orange-500"
+          bgClass="bg-[hsl(var(--signal-negative))]"
           textClass="text-white"
           iconClass="text-white"
         />
