@@ -16,7 +16,7 @@ const Index = () => {
   const trendingPlaces = places?.slice(0, 4) || [];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
       <Header />
       
       {/* Hero Section with Search */}

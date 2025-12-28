@@ -149,8 +149,8 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
     <Link
       to={`/place/${place.id}`}
       className={cn(
-        'block w-full bg-card rounded-2xl overflow-hidden shadow-sm border border-border/50',
-        'transition-all duration-200 hover:shadow-md hover:border-border',
+        'block w-full bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100',
+        'transition-shadow duration-300 hover:shadow-xl',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className
       )}
