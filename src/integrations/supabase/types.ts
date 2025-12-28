@@ -2055,6 +2055,14 @@ export type Database = {
           score_shown: number
         }[]
       }
+      calculate_muvo_score_v2: {
+        Args: { p_neg_taps_weighted: number; p_pos_taps_weighted: number }
+        Returns: {
+          confidence: number
+          score_raw: number
+          score_shown: number
+        }[]
+      }
       calculate_reviewer_medal: {
         Args: { user_id_param: string }
         Returns: Database["public"]["Enums"]["reviewer_medal"]
@@ -2158,6 +2166,10 @@ export type Database = {
         Returns: string
       }
       recompute_place_muvo_aggregates: {
+        Args: { p_place_id: string }
+        Returns: undefined
+      }
+      recompute_place_muvo_aggregates_v2: {
         Args: { p_place_id: string }
         Returns: undefined
       }
