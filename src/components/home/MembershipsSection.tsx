@@ -1,24 +1,39 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import thousandTrailsLogo from '@/assets/memberships/thousand-trails.png';
 import koaLogo from '@/assets/memberships/koa.jpg';
 import goodSamLogo from '@/assets/memberships/good-sam.png';
+import passportAmericaLogo from '@/assets/memberships/passport-america.png';
 import harvestHostsLogo from '@/assets/memberships/harvest-hosts.png';
 import boondockersLogo from '@/assets/memberships/boondockers-welcome.png';
 
-// Membership logos - using local assets
-const memberships = [
+type MembershipLogo = {
+  id: string;
+  name: string;
+  logo?: string;
+};
+
+// Membership logos - use local assets when available; fallback to monogram tiles
+const memberships: MembershipLogo[] = [
   { id: 'thousand_trails', name: 'Thousand Trails', logo: thousandTrailsLogo },
   { id: 'koa', name: 'KOA', logo: koaLogo },
   { id: 'good_sam', name: 'Good Sam', logo: goodSamLogo },
+  { id: 'passport_america', name: 'Passport America', logo: passportAmericaLogo },
   { id: 'harvest_hosts', name: 'Harvest Hosts', logo: harvestHostsLogo },
   { id: 'boondockers', name: 'Boondockers Welcome', logo: boondockersLogo },
+  { id: 'escapees', name: 'Escapees RV Club' },
+  { id: 'rod', name: 'Resorts of Distinction' },
+  { id: 'state_parks', name: 'State Parks' },
 ];
+
+function getMonogram(name: string) {
+  const words = name.replace(/[^a-zA-Z0-9 ]/g, '').split(/\s+/).filter(Boolean);
+  const letters = words.slice(0, 2).map((w) => w[0]?.toUpperCase()).join('');
+  return letters || name.slice(0, 2).toUpperCase();
+}
 
 export function MembershipsSection() {
   const [failedLogos, setFailedLogos] = useState<Set<string>>(() => new Set());
-
-  const failedIds = useMemo(() => failedLogos, [failedLogos]);
 
   return (
     <section className="py-8 sm:py-10 px-4" aria-labelledby="memberships-heading">
@@ -33,7 +48,7 @@ export function MembershipsSection() {
         {/* Membership Logos Grid - 2 cols on mobile, 3 on larger */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {memberships.map((membership) => {
-            const showFallback = failedIds.has(membership.id);
+            const showFallback = !membership.logo || failedLogos.has(membership.id);
 
             return (
               <div
@@ -53,8 +68,8 @@ export function MembershipsSection() {
                     />
                   ) : (
                     <div className="w-full h-full rounded-md bg-muted flex items-center justify-center">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {membership.name}
+                      <span className="text-sm font-bold text-muted-foreground tracking-wide">
+                        {getMonogram(membership.name)}
                       </span>
                     </div>
                   )}
