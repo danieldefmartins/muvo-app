@@ -584,15 +584,35 @@ export function ReviewPopup({
     );
   };
 
-  // Render selected stamps summary for confirm step
+  // Render selected stamps summary for confirm step - pill/badge style
   const renderSelectedStampsSummary = (
     stampMap: Map<string, number>,
     stampList: StampDefinition[],
     polarity: 'positive' | 'improvement' | 'neutral'
   ) => {
     if (stampMap.size === 0) return null;
+    
+    // Get the background color based on polarity
+    const getBgColor = () => {
+      if (polarity === 'positive') return 'bg-[#008fc0]/15'; // Light blue tint
+      if (polarity === 'neutral') return 'bg-gray-500/15'; // Light gray tint
+      return 'bg-orange-500/15'; // Light orange tint
+    };
+    
+    const getTextColor = () => {
+      if (polarity === 'positive') return 'text-[#008fc0]';
+      if (polarity === 'neutral') return 'text-gray-600 dark:text-gray-400';
+      return 'text-orange-600';
+    };
+    
+    const getDotColor = () => {
+      if (polarity === 'positive') return 'bg-[#008fc0]';
+      if (polarity === 'neutral') return 'bg-gray-500';
+      return 'bg-orange-500';
+    };
+    
     return (
-      <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
         {Array.from(stampMap.entries()).map(([id, level]) => {
           const stamp = stampList.find((s) => s.id === id);
           if (!stamp) return null;
@@ -600,27 +620,26 @@ export function ReviewPopup({
             ? (LucideIcons as any)[stamp.icon] || LucideIcons.Circle
             : LucideIcons.Circle;
 
-          const dotColor = polarity === 'positive' 
-            ? 'bg-primary' 
-            : polarity === 'neutral' 
-              ? 'bg-stone-500' 
-              : level === 3 ? 'bg-destructive' : 'bg-amber-500';
-
           return (
             <div 
               key={id} 
               className={cn(
-                'flex items-center justify-center gap-2 min-w-[192px] w-48 px-3 py-1.5 rounded-full text-sm font-medium',
-                polarity === 'positive' && 'bg-primary/10 text-primary',
-                polarity === 'neutral' && 'bg-stone-500/10 text-stone-600 dark:text-stone-400',
-                polarity === 'improvement' && (level === 3 ? 'bg-destructive/10 text-destructive' : 'bg-amber-500/10 text-amber-600')
+                'inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold',
+                getBgColor(),
+                getTextColor()
               )}
             >
               <Icon size={16} />
               <span>{stamp.label}</span>
-              <div className="flex gap-0.5 ml-1">
+              <div className="flex gap-1 ml-0.5">
                 {[1, 2, 3].map((d) => (
-                  <div key={d} className={cn('w-1.5 h-1.5 rounded-full', d <= level ? dotColor : 'bg-muted-foreground/20')} />
+                  <div 
+                    key={d} 
+                    className={cn(
+                      'w-2 h-2 rounded-full transition-colors',
+                      d <= level ? getDotColor() : 'bg-current opacity-20'
+                    )} 
+                  />
                 ))}
               </div>
             </div>
@@ -776,42 +795,42 @@ export function ReviewPopup({
 
           {/* NOTES STEP */}
           {step === 'notes' && (
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-5">
               <div>
-                <label className="text-sm font-semibold text-foreground">Public note</label>
-                <p className="text-xs text-muted-foreground mb-1.5">Share tips with other visitors</p>
+                <label className="text-base font-bold text-foreground">Public note</label>
+                <p className="text-sm text-muted-foreground mb-2">Share tips with other visitors</p>
                 <Textarea
                   value={notePublic}
                   onChange={(e) => setNotePublic(e.target.value.slice(0, 250))}
                   placeholder="What should others know?"
-                  className="resize-none text-sm"
-                  rows={3}
+                  className="resize-none text-base min-h-[100px] rounded-xl border-border"
+                  rows={4}
                 />
-                <p className="text-xs text-muted-foreground text-right mt-1">{notePublic.length}/250</p>
+                <p className="text-sm text-muted-foreground text-right mt-1.5">{notePublic.length}/250</p>
               </div>
               <div>
-                <label className="text-sm font-semibold text-foreground">Private note (optional)</label>
-                <p className="text-xs text-muted-foreground mb-1.5">Only visible to the owner</p>
+                <label className="text-base font-bold text-foreground">Private note (optional)</label>
+                <p className="text-sm text-muted-foreground mb-2">Only visible to the owner</p>
                 <Textarea
                   value={notePrivate}
                   onChange={(e) => setNotePrivate(e.target.value.slice(0, 250))}
                   placeholder="Direct feedback for the owner..."
-                  className="resize-none text-sm"
-                  rows={2}
+                  className="resize-none text-base min-h-[80px] rounded-xl border-border"
+                  rows={3}
                 />
-                <p className="text-xs text-muted-foreground text-right mt-1">{notePrivate.length}/250</p>
+                <p className="text-sm text-muted-foreground text-right mt-1.5">{notePrivate.length}/250</p>
               </div>
             </div>
           )}
 
           {/* CONFIRM STEP */}
           {step === 'confirm' && (
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-5">
               {positiveSignals.size > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <LucideIcons.ThumbsUp className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold">Highlights</span>
+                  <div className="flex items-center gap-2 mb-3">
+                    <LucideIcons.ThumbsUp className="w-5 h-5 text-[#008fc0]" />
+                    <span className="text-base font-bold">Highlights</span>
                   </div>
                   {renderSelectedStampsSummary(positiveSignals, positiveStamps, 'positive')}
                 </div>
@@ -819,9 +838,9 @@ export function ReviewPopup({
               
               {neutralSignals.size > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <LucideIcons.Sparkles className="w-4 h-4 text-stone-500" />
-                    <span className="text-sm font-semibold">Vibe</span>
+                  <div className="flex items-center gap-2 mb-3">
+                    <LucideIcons.Sparkles className="w-5 h-5 text-gray-500" />
+                    <span className="text-base font-bold">Vibe</span>
                   </div>
                   {renderSelectedStampsSummary(neutralSignals, neutralStamps, 'neutral')}
                 </div>
@@ -829,9 +848,9 @@ export function ReviewPopup({
               
               {improvementSignals.size > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <LucideIcons.AlertTriangle className="w-4 h-4 text-amber-500" />
-                    <span className="text-sm font-semibold">Needs Work</span>
+                  <div className="flex items-center gap-2 mb-3">
+                    <LucideIcons.AlertTriangle className="w-5 h-5 text-orange-500" />
+                    <span className="text-base font-bold">Needs Work</span>
                   </div>
                   {renderSelectedStampsSummary(improvementSignals, improvementStamps, 'improvement')}
                 </div>
@@ -842,9 +861,9 @@ export function ReviewPopup({
               )}
               
               {(notePublic || notePrivate) && (
-                <div className="text-sm text-muted-foreground border-t border-border pt-3 space-y-1.5">
+                <div className="text-sm text-muted-foreground border-t border-border pt-4 space-y-2">
                   {notePublic && <p className="break-words"><span className="font-medium text-foreground">Public:</span> {notePublic}</p>}
-                  {notePrivate && <p className="break-words text-amber-600"><span className="font-medium">Private:</span> {notePrivate}</p>}
+                  {notePrivate && <p className="break-words text-orange-600"><span className="font-medium">Private:</span> {notePrivate}</p>}
                 </div>
               )}
             </div>
