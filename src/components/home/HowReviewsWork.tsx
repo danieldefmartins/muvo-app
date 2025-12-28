@@ -63,55 +63,55 @@ export function HowReviewsWork() {
               THE DIFFERENCE
             </h4>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {/* OLD WAY - Red Card */}
-              <div className="bg-red-50 dark:bg-red-950/20 rounded-2xl p-4 border-2 border-red-200 dark:border-red-800">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
-                    <X className="w-6 h-6 text-white stroke-[4]" />
+              <div className="bg-red-50 dark:bg-red-950/20 rounded-2xl p-6 border-2 border-red-200 dark:border-red-800 min-h-[320px] flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                    <X className="w-7 h-7 text-white stroke-[4]" />
                   </div>
-                  <h5 className="text-lg font-bold text-red-700 dark:text-red-400">Old Way</h5>
+                  <h5 className="text-xl font-bold text-red-700 dark:text-red-400">Old Way</h5>
                 </div>
                 
-                <div className="mb-3">
-                  <div className="text-4xl font-black text-foreground mb-1">3.2 ⭐</div>
+                <div className="mb-4">
+                  <div className="text-5xl font-black text-foreground mb-2">3.2 ⭐</div>
                 </div>
                 
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-base text-muted-foreground mb-3 leading-relaxed">
                   One bad review tanks everything
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400 font-semibold leading-relaxed">
+                <p className="text-sm text-red-600 dark:text-red-400 font-semibold leading-relaxed mt-auto">
                   You'll never discover this hidden gem because someone had a bad day
                 </p>
               </div>
 
               {/* MUVO WAY - Green Card */}
-              <div className="bg-green-50 dark:bg-green-950/20 rounded-2xl p-4 border-2 border-green-200 dark:border-green-800">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-6 h-6 text-white stroke-[4]" />
+              <div className="bg-green-50 dark:bg-green-950/20 rounded-2xl p-6 border-2 border-green-200 dark:border-green-800 min-h-[320px] flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-7 h-7 text-white stroke-[4]" />
                   </div>
-                  <h5 className="text-lg font-bold text-green-700 dark:text-green-400">MUVO Way</h5>
+                  <h5 className="text-xl font-bold text-green-700 dark:text-green-400">MUVO Way</h5>
                 </div>
                 
-                <div className="mb-3">
-                  <div className="text-2xl font-black text-foreground mb-2">Signals</div>
-                  <div className="space-y-1.5">
-                    <div className="bg-[#008fc0] text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center justify-between">
+                <div className="mb-4">
+                  <div className="text-3xl font-black text-foreground mb-3">Signals</div>
+                  <div className="space-y-2">
+                    <div className="bg-[#008fc0] text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center justify-between">
                       <span>👍 Delicious Food</span>
                       <span className="font-bold">×89</span>
                     </div>
-                    <div className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center justify-between">
+                    <div className="bg-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center justify-between">
                       <span>⚠️ Slow Service</span>
                       <span className="font-bold">×12</span>
                     </div>
                   </div>
                 </div>
                 
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-base text-muted-foreground mb-3 leading-relaxed">
                   <strong>89 people</strong> loved the food. <strong>12 people</strong> noted slow service.
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400 font-semibold leading-relaxed">
+                <p className="text-sm text-green-600 dark:text-green-400 font-semibold leading-relaxed mt-auto">
                   Now YOU decide what matters. That's the power of MUVO.
                 </p>
               </div>
