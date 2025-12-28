@@ -1,14 +1,16 @@
-// Membership logos - using placeholder images for now
+import thousandTrailsLogo from '@/assets/memberships/thousand-trails.png';
+import koaLogo from '@/assets/memberships/koa.jpg';
+import goodSamLogo from '@/assets/memberships/good-sam.png';
+import harvestHostsLogo from '@/assets/memberships/harvest-hosts.png';
+import boondockersLogo from '@/assets/memberships/boondockers-welcome.png';
+
+// Membership logos - using local assets
 const memberships = [
-  { id: 'thousand_trails', name: 'Thousand Trails', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Thousand_Trails_Logo.svg/200px-Thousand_Trails_Logo.svg.png' },
-  { id: 'koa', name: 'KOA', logo: 'https://koa.com/content/favicons/apple-touch-icon-180x180.png' },
-  { id: 'good_sam', name: 'Good Sam', logo: 'https://www.goodsam.com/content/dam/goodsam/logos/GS-logo.svg' },
-  { id: 'passport_america', name: 'Passport America', logo: 'https://www.passportamerica.com/wp-content/uploads/2020/01/PA-50-Logo-Original-1.png' },
-  { id: 'harvest_hosts', name: 'Harvest Hosts', logo: 'https://harvesthosts.com/static/images/harvest-hosts-logo.svg' },
-  { id: 'boondockers', name: 'Boondockers Welcome', logo: 'https://www.boondockerswelcome.com/wp-content/uploads/2019/06/BoondockersWelcome_Logo.png' },
-  { id: 'escapees', name: 'Escapees RV Club', logo: 'https://www.escapees.com/wp-content/uploads/2023/01/Escapees-Logo-Stacked.png' },
-  { id: 'rod', name: 'Resorts of Distinction', logo: 'https://www.rodrv.com/wp-content/uploads/2021/03/ROD-Logo.png' },
-  { id: 'state_parks', name: 'State Parks', logo: 'https://www.parks.ca.gov/portals/0/Images/Logo/parks_logo.png' },
+  { id: 'thousand_trails', name: 'Thousand Trails', logo: thousandTrailsLogo },
+  { id: 'koa', name: 'KOA', logo: koaLogo },
+  { id: 'good_sam', name: 'Good Sam', logo: goodSamLogo },
+  { id: 'harvest_hosts', name: 'Harvest Hosts', logo: harvestHostsLogo },
+  { id: 'boondockers', name: 'Boondockers Welcome', logo: boondockersLogo },
 ];
 
 export function MembershipsSection() {
