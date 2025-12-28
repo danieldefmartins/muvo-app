@@ -13,24 +13,24 @@ const memberships = [
 
 export function MembershipsSection() {
   return (
-    <section className="py-10 px-4">
+    <section className="py-8 sm:py-10 px-4">
       <div className="max-w-md mx-auto text-center">
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
           All Your Memberships in One App
         </h2>
-        <p className="text-muted-foreground mb-8">
+        <p className="text-base text-muted-foreground mb-8">
           Filter by what you already have
         </p>
 
-        {/* Membership Logos Grid */}
-        <div className="grid grid-cols-3 gap-3">
+        {/* Membership Logos Grid - 2 cols on mobile, 3 on larger */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {memberships.map((membership) => (
             <div
               key={membership.id}
-              className="aspect-square bg-card rounded-xl border border-border p-3 flex items-center justify-center hover:border-primary/50 transition-colors cursor-pointer"
+              className="bg-card rounded-xl border border-border p-4 flex items-center justify-center hover:border-primary/50 transition-colors cursor-pointer"
             >
-              <div className="w-16 h-16 flex items-center justify-center">
-                <span className="text-xs text-muted-foreground text-center font-medium leading-tight">
+              <div className="w-24 h-24 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground text-center font-medium leading-tight">
                   {membership.name}
                 </span>
               </div>

@@ -35,7 +35,7 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden h-[420px] sm:h-[480px]">
+    <section className="relative w-full overflow-hidden h-[60vh] max-h-[420px] sm:max-h-[480px]">
       {/* Rotating Hero Images */}
       {heroImages.map((image, index) => (
         <img
@@ -52,28 +52,28 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
       
       {/* Hero Content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 py-8">
         {/* Main Headline */}
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center mb-6 leading-tight">
           The fastest way to find<br />your perfect RV spot.
         </h1>
         
-        {/* Search bar */}
-        <HomeSearchBar className="w-full max-w-md mb-4" />
+        {/* Search bar - full width on mobile */}
+        <HomeSearchBar className="w-full max-w-md mb-4 px-0" />
         
-        {/* Quick Filter Chips */}
-        <div className="flex items-center gap-3 text-white/90 text-sm">
-          <span className="flex items-center gap-1.5">
+        {/* Quick Filter Chips - wrap properly on mobile */}
+        <div className="flex flex-wrap items-center justify-center gap-2 text-white/90 text-sm">
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
             <Truck className="w-4 h-4" />
             Big Rig Friendly
           </span>
-          <span className="text-white/50">•</span>
-          <span className="flex items-center gap-1.5">
+          <span className="text-white/50 hidden sm:inline">•</span>
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
             <Zap className="w-4 h-4" />
             Hookups
           </span>
-          <span className="text-white/50">•</span>
-          <span className="flex items-center gap-1.5">
+          <span className="text-white/50 hidden sm:inline">•</span>
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
             <Signal className="w-4 h-4" />
             Cell Signal
           </span>

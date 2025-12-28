@@ -72,7 +72,7 @@ export const HomeSearchBar = forwardRef<HTMLDivElement, HomeSearchBarProps>(
   const showSuggestions = isOpen && query.trim().length >= 2;
 
   return (
-    <div ref={combinedRef} className={cn('relative', className)}>
+    <div ref={combinedRef} className={cn('relative w-full', className)}>
       <form onSubmit={handleSubmit}>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -82,7 +82,7 @@ export const HomeSearchBar = forwardRef<HTMLDivElement, HomeSearchBarProps>(
             onChange={handleInputChange}
             onFocus={() => setIsOpen(true)}
             placeholder="Where do you want to go?"
-            className="w-full h-14 pl-12 pr-10 rounded-full bg-white/95 backdrop-blur-sm border-0 shadow-lg text-foreground placeholder:text-muted-foreground/80 text-input"
+            className="w-full h-12 sm:h-14 pl-12 pr-10 rounded-full bg-white/95 backdrop-blur-sm border-0 shadow-lg text-foreground placeholder:text-muted-foreground/80 text-base"
           />
           {query && (
             <button
