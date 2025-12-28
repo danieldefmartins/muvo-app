@@ -582,7 +582,7 @@ export function ReviewPopup({
   ) => {
     if (stampMap.size === 0) return null;
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="space-y-2">
         {Array.from(stampMap.entries()).map(([id, level]) => {
           const stamp = stampList.find((s) => s.id === id);
           if (!stamp) return null;
@@ -600,7 +600,7 @@ export function ReviewPopup({
             <div 
               key={id} 
               className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium',
+                'flex items-center justify-center gap-2 min-w-[192px] w-48 px-3 py-1.5 rounded-full text-sm font-medium',
                 polarity === 'positive' && 'bg-primary/10 text-primary',
                 polarity === 'neutral' && 'bg-stone-500/10 text-stone-600 dark:text-stone-400',
                 polarity === 'improvement' && (level === 3 ? 'bg-destructive/10 text-destructive' : 'bg-amber-500/10 text-amber-600')

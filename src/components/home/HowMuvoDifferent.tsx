@@ -24,22 +24,22 @@ export function HowMuvoDifferent() {
               className="w-full h-40 object-cover"
             />
             <div className="p-4 space-y-2">
-              <div className="flex items-center gap-2 bg-[hsl(var(--signal-positive))] text-white px-3 py-2 rounded-full text-sm">
+              <div className="flex items-center justify-center gap-2 min-w-[192px] bg-[hsl(var(--signal-positive))] text-white px-3 py-2 rounded-full text-sm">
                 <ThumbsUp className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Best for:</span>
-                <span className="flex-1">Level Sites</span>
+                <span>Level Sites</span>
                 <span className="font-bold">×62</span>
               </div>
-              <div className="flex items-center gap-2 bg-[hsl(var(--signal-neutral))] text-white px-3 py-2 rounded-full text-sm">
+              <div className="flex items-center justify-center gap-2 min-w-[192px] bg-[hsl(var(--signal-neutral))] text-white px-3 py-2 rounded-full text-sm">
                 <Star className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Vibe:</span>
-                <span className="flex-1">Family-Friendly</span>
+                <span>Family-Friendly</span>
                 <span className="font-bold">×28</span>
               </div>
-              <div className="flex items-center gap-2 bg-[hsl(var(--signal-negative))] text-white px-3 py-2 rounded-full text-sm">
+              <div className="flex items-center justify-center gap-2 min-w-[192px] bg-[hsl(var(--signal-negative))] text-white px-3 py-2 rounded-full text-sm">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Heads up:</span>
-                <span className="flex-1">Spotty WiFi</span>
+                <span>Spotty WiFi</span>
                 <span className="font-bold">×18</span>
               </div>
             </div>
@@ -72,22 +72,22 @@ export function HowMuvoDifferent() {
               className="w-full h-48 object-cover"
             />
             <div className="p-4 space-y-3">
-              <div className="flex items-center gap-2 bg-[hsl(var(--signal-positive))] text-white px-4 py-2.5 rounded-full text-sm">
+              <div className="flex items-center justify-center gap-2 min-w-[192px] bg-[hsl(var(--signal-positive))] text-white px-4 py-2.5 rounded-full text-sm">
                 <ThumbsUp className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Best for:</span>
-                <span className="flex-1">Level Sites</span>
+                <span>Level Sites</span>
                 <span className="font-bold">×62</span>
               </div>
-              <div className="flex items-center gap-2 bg-[hsl(var(--signal-neutral))] text-white px-4 py-2.5 rounded-full text-sm">
+              <div className="flex items-center justify-center gap-2 min-w-[192px] bg-[hsl(var(--signal-neutral))] text-white px-4 py-2.5 rounded-full text-sm">
                 <Star className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Vibe:</span>
-                <span className="flex-1">Family-Friendly</span>
+                <span>Family-Friendly</span>
                 <span className="font-bold">×28</span>
               </div>
-              <div className="flex items-center gap-2 bg-[hsl(var(--signal-negative))] text-white px-4 py-2.5 rounded-full text-sm">
+              <div className="flex items-center justify-center gap-2 min-w-[192px] bg-[hsl(var(--signal-negative))] text-white px-4 py-2.5 rounded-full text-sm">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Heads up:</span>
-                <span className="flex-1">Spotty WiFi</span>
+                <span>Spotty WiFi</span>
                 <span className="font-bold">×18</span>
               </div>
             </div>

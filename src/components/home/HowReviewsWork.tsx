@@ -32,30 +32,26 @@ export function HowReviewsWork() {
             Takes 10 seconds. No essays required.
           </p>
           
-          {/* Signal Tags Preview - larger on mobile */}
+          {/* Signal Tags Preview - fixed width vertical stack */}
           <div className="mt-6 space-y-2">
-            <div className="flex flex-wrap gap-2">
-              <span className="bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
-                Level Sites 👆
-              </span>
-              <span className="bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
-                Rustic
-              </span>
-              <span className="bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
-                Spotty WiFi 👆
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
-                Clean Bathrooms
-              </span>
-              <span className="bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
-                Family-Friendly
-              </span>
-              <span className="bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
-                Too Noisy 👆
-              </span>
-            </div>
+            <span className="flex items-center justify-center min-w-[192px] w-48 bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              Level Sites 👆
+            </span>
+            <span className="flex items-center justify-center min-w-[192px] w-48 bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              Clean Bathrooms
+            </span>
+            <span className="flex items-center justify-center min-w-[192px] w-48 bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              Rustic
+            </span>
+            <span className="flex items-center justify-center min-w-[192px] w-48 bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              Family-Friendly
+            </span>
+            <span className="flex items-center justify-center min-w-[192px] w-48 bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              Spotty WiFi 👆
+            </span>
+            <span className="flex items-center justify-center min-w-[192px] w-48 bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              Too Noisy 👆
+            </span>
           </div>
         </div>
 
