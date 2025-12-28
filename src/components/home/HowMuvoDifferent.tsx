@@ -1,4 +1,4 @@
-import { ThumbsUp, Star, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { ThumbsUp, Star, AlertTriangle } from 'lucide-react';
 
 export function HowMuvoDifferent() {
   return (
@@ -48,15 +48,15 @@ export function HowMuvoDifferent() {
           {/* Explanations List */}
           <div className="w-full max-w-sm space-y-6">
             <div className="flex items-center gap-3">
-              <ArrowLeft className="w-6 h-6 text-blue-600 flex-shrink-0" />
+              <div className="w-4 h-4 rounded-full bg-blue-600 flex-shrink-0" />
               <span className="text-lg text-foreground/80">What Stood Out?</span>
             </div>
             <div className="flex items-center gap-3">
-              <ArrowLeft className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+              <div className="w-4 h-4 rounded-full bg-gray-400 flex-shrink-0" />
               <span className="text-lg text-foreground/80">What&apos;s it like?</span>
             </div>
             <div className="flex items-center gap-3">
-              <ArrowLeft className="w-6 h-6 text-red-600 flex-shrink-0" />
+              <div className="w-4 h-4 rounded-full bg-red-600 flex-shrink-0" />
               <span className="text-lg text-foreground/80">What didn&apos;t work?</span>
             </div>
           </div>
@@ -96,16 +96,16 @@ export function HowMuvoDifferent() {
           {/* Explanations - Right, aligned with badges */}
           <div className="flex flex-col justify-end" style={{ paddingTop: '192px' }}>
             <div className="space-y-3">
-              <div className="flex items-center gap-2 h-[44px]">
-                <ArrowLeft className="w-5 h-5 text-blue-600" />
+              <div className="flex items-center gap-3 h-[44px]">
+                <div className="w-3 h-3 rounded-full bg-blue-600 flex-shrink-0" />
                 <span className="text-base text-muted-foreground">What Stood Out?</span>
               </div>
-              <div className="flex items-center gap-2 h-[44px]">
-                <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+              <div className="flex items-center gap-3 h-[44px]">
+                <div className="w-3 h-3 rounded-full bg-gray-400 flex-shrink-0" />
                 <span className="text-base text-muted-foreground">What&apos;s it like?</span>
               </div>
-              <div className="flex items-center gap-2 h-[44px]">
-                <ArrowLeft className="w-5 h-5 text-red-600" />
+              <div className="flex items-center gap-3 h-[44px]">
+                <div className="w-3 h-3 rounded-full bg-red-600 flex-shrink-0" />
                 <span className="text-base text-muted-foreground">What didn&apos;t work?</span>
               </div>
             </div>
