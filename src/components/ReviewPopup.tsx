@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { haptic, hapticLight, hapticMedium } from '@/lib/haptics';
 import type { StampDefinition } from '@/hooks/useStamps';
 import { NotesStep } from '@/components/review/NotesStep';
+import { SummaryStep } from '@/components/review/SummaryStep';
 
 // Step definitions
 type ReviewStep = 'intro' | 'good' | 'improvement' | 'neutral' | 'notes' | 'confirm';
@@ -794,64 +795,54 @@ export function ReviewPopup({
             />
           )}
 
-          {/* CONFIRM STEP */}
+          {/* CONFIRM STEP - Celebratory Summary */}
           {step === 'confirm' && (
-            <div className="p-4 space-y-5">
-              {positiveSignals.size > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <LucideIcons.ThumbsUp className="w-5 h-5 text-[#008fc0]" />
-                    <span className="text-base font-bold">Highlights</span>
-                  </div>
-                  {renderSelectedStampsSummary(positiveSignals, positiveStamps, 'positive')}
-                </div>
-              )}
-              
-              {neutralSignals.size > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <LucideIcons.Sparkles className="w-5 h-5 text-gray-500" />
-                    <span className="text-base font-bold">Vibe</span>
-                  </div>
-                  {renderSelectedStampsSummary(neutralSignals, neutralStamps, 'neutral')}
-                </div>
-              )}
-              
-              {improvementSignals.size > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <LucideIcons.AlertTriangle className="w-5 h-5 text-orange-500" />
-                    <span className="text-base font-bold">Needs Work</span>
-                  </div>
-                  {renderSelectedStampsSummary(improvementSignals, improvementStamps, 'improvement')}
-                </div>
-              )}
-              
-              {positiveSignals.size === 0 && improvementSignals.size === 0 && neutralSignals.size === 0 && (
-                <p className="text-base text-muted-foreground text-center py-6">Add at least one stamp to submit.</p>
-              )}
-              
-              {(notePublic || notePrivate) && (
-                <div className="text-sm text-muted-foreground border-t border-border pt-4 space-y-2">
-                  {notePublic && <p className="break-words"><span className="font-medium text-foreground">Public:</span> {notePublic}</p>}
-                  {notePrivate && <p className="break-words text-orange-600"><span className="font-medium">Private:</span> {notePrivate}</p>}
-                </div>
-              )}
-            </div>
+            <SummaryStep
+              positiveSignals={positiveSignals}
+              improvementSignals={improvementSignals}
+              neutralSignals={neutralSignals}
+              positiveStamps={positiveStamps}
+              improvementStamps={improvementStamps}
+              neutralStamps={neutralStamps}
+              notePublic={notePublic}
+              notePrivate={notePrivate}
+              onEditNote={() => setStep('notes')}
+            />
           )}
         </div>
 
         {/* Sticky Footer */}
         <div className="px-4 py-3 border-t border-border bg-background space-y-2">
           {step === 'confirm' ? (
-            <Button onClick={goNext} disabled={!canGoNext() || isSubmitting} className="w-full h-11 text-sm font-semibold">
-              {isSubmitting ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Check className="w-4 h-4 mr-2" />
-              )}
-              {isEditing ? 'Update Review' : 'Submit Review'}
-            </Button>
+            <div className="space-y-2">
+              {/* Go Back button */}
+              <button
+                onClick={goBack}
+                className="w-full text-sm text-muted-foreground hover:text-foreground py-2 flex items-center justify-center gap-1 transition-colors active:scale-[0.98]"
+              >
+                <LucideIcons.ArrowLeft className="w-4 h-4" />
+                Go Back to Edit
+              </button>
+              
+              {/* Submit button with glow effect */}
+              <Button 
+                onClick={goNext} 
+                disabled={!canGoNext() || isSubmitting} 
+                className="w-full h-14 text-base font-semibold bg-[#008fc0] hover:bg-[#007aad] active:scale-[0.98] transition-all shadow-lg shadow-[#008fc0]/30"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                ) : (
+                  <Check className="w-5 h-5 mr-2" />
+                )}
+                {isEditing ? 'Update Review' : 'Submit Review'}
+              </Button>
+              
+              {/* Micro-copy */}
+              <p className="text-xs text-muted-foreground text-center pt-1">
+                Your review helps travelers make better decisions
+              </p>
+            </div>
           ) : step === 'notes' ? (
             <>
               <Button onClick={goNext} className="w-full h-11 text-sm font-semibold bg-[#008fc0] hover:bg-[#007aad] active:scale-[0.98] transition-all">
