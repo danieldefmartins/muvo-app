@@ -65,6 +65,19 @@
     --warning: 38 92% 50%;
     --trust: 192 87% 45%;
     
+    /* Review Signal Colors - Solid backgrounds (for cards/list views) */
+    --signal-positive: 193 100% 38%;         /* Brand Blue #008fc0 */
+    --signal-neutral: 38 92% 50%;            /* Amber #F59E0B */
+    --signal-negative: 25 95% 53%;           /* Orange #F97316 */
+    
+    /* Review Signal Colors - Tinted backgrounds (for detail pages) */
+    --signal-positive-tint: 193 50% 92%;     /* Light blue tint #E0F2F8 */
+    --signal-positive-text: 193 100% 25%;    /* Dark blue text #005F7F */
+    --signal-neutral-tint: 48 96% 89%;       /* Light amber tint #FEF3C7 */
+    --signal-neutral-text: 28 79% 31%;       /* Dark amber text #92400E */
+    --signal-negative-tint: 20 100% 96%;     /* Light orange tint #FFEFE9 */
+    --signal-negative-text: 21 91% 41%;      /* Dark orange text #C2410C */
+    
     /* Category Colors (for pins, chips, badges) */
     --cat-rv-campground: 217 91% 60%;
     --cat-rv-resort: 263 70% 58%;
@@ -141,6 +154,19 @@
     --success: 142 70% 45%;
     --warning: 38 85% 55%;
     --trust: 192 87% 50%;
+    
+    /* Review Signal Colors - Solid backgrounds (for cards/list views) */
+    --signal-positive: 193 100% 45%;         /* Slightly lighter for dark mode */
+    --signal-neutral: 38 92% 55%;
+    --signal-negative: 25 95% 58%;
+    
+    /* Review Signal Colors - Tinted backgrounds (for detail pages) */
+    --signal-positive-tint: 193 40% 18%;
+    --signal-positive-text: 193 70% 65%;
+    --signal-neutral-tint: 38 40% 18%;
+    --signal-neutral-text: 38 70% 65%;
+    --signal-negative-tint: 25 40% 18%;
+    --signal-negative-text: 25 70% 65%;
 
     /* Category colors stay consistent in dark mode */
     --gradient-hero: linear-gradient(135deg, hsl(192 87% 40%) 0%, hsl(199 85% 45%) 100%);

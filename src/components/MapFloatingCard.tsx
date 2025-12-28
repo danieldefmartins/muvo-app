@@ -162,19 +162,19 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
           <div className="flex flex-col gap-1 mb-2.5">
             {/* Line 1: Positive */}
             {reviewLines.positive && (
-              <div className="text-[15px] font-semibold text-primary">
+              <div className="text-[15px] font-semibold text-[hsl(var(--signal-positive-text))]">
                 {reviewLines.positive.label} <span className="font-bold">×{reviewLines.positive.votes}</span>
               </div>
             )}
             {/* Line 2: Neutral */}
             {reviewLines.neutral && (
-              <div className="text-[14px] font-medium text-amber-600 dark:text-amber-400">
+              <div className="text-[14px] font-medium text-[hsl(var(--signal-neutral-text))]">
                 {reviewLines.neutral.label} <span className="font-bold">×{reviewLines.neutral.votes}</span>
               </div>
             )}
             {/* Line 3: Negative - only if exists */}
             {reviewLines.negative && (
-              <div className="text-[14px] font-medium text-red-500 dark:text-red-400">
+              <div className="text-[14px] font-medium text-[hsl(var(--signal-negative-text))]">
                 {reviewLines.negative.label} <span className="font-bold">×{reviewLines.negative.votes}</span>
               </div>
             )}
@@ -192,9 +192,9 @@ export function MapFloatingCard({ place, isSelected, onSelect, distance }: MapFl
         <div className="flex items-center justify-between">
           <span className={cn(
             'text-[13px] font-medium',
-            confidenceInfo.variant === 'positive' && 'text-emerald-600 dark:text-emerald-400',
+            confidenceInfo.variant === 'positive' && 'text-[hsl(var(--signal-positive-text))]',
             confidenceInfo.variant === 'neutral' && 'text-muted-foreground',
-            confidenceInfo.variant === 'caution' && 'text-amber-600 dark:text-amber-400'
+            confidenceInfo.variant === 'caution' && 'text-[hsl(var(--signal-neutral-text))]'
           )}>
             {confidenceInfo.label}
           </span>

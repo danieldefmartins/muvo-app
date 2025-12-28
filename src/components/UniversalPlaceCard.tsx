@@ -227,9 +227,9 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
 
           {/* 3 Signal Lines - uniform width badges */}
           <div className="flex flex-col space-y-2 mt-4 mb-3">
-            {/* LINE 1: POSITIVE (Blue) */}
+            {/* LINE 1: POSITIVE (Brand Blue) */}
             {reviewLines.positive ? (
-              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm">
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm">
                 <ThumbsUp className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium truncate max-w-[100px]">
                   {reviewLines.positive.label}
@@ -243,9 +243,9 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
               </span>
             )}
 
-            {/* LINE 2: NEUTRAL (Yellow) */}
+            {/* LINE 2: NEUTRAL (Amber) */}
             {reviewLines.neutral && (
-              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-yellow-500 text-black px-3 py-1.5 rounded-full text-sm">
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm">
                 <Star className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium truncate max-w-[100px]">
                   {reviewLines.neutral.label}
@@ -254,9 +254,9 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
               </span>
             )}
 
-            {/* LINE 3: NEGATIVE (Red) - only if exists */}
+            {/* LINE 3: NEGATIVE (Orange) - only if exists */}
             {reviewLines.negative && (
-              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-red-600 text-white px-3 py-1.5 rounded-full text-sm">
+              <span className="inline-flex items-center justify-center gap-1.5 min-w-[176px] w-fit bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium truncate max-w-[100px]">
                   {reviewLines.negative.label}
