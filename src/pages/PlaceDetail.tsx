@@ -18,6 +18,7 @@ import { FavoriteButton } from '@/components/FavoriteButton';
 import { PlacePhotoGallery } from '@/components/PlacePhotoGallery';
 import { PhotoUploadForm } from '@/components/PhotoUploadForm';
 import { MuvoReviewSimple } from '@/components/MuvoReviewSimple';
+import { ReviewForm } from '@/components/ReviewForm';
 import { extractEntrancesWithRVData } from '@/hooks/useEntrances';
 import { EntranceData } from '@/types/entrance';
 import { usePlace } from '@/hooks/usePlaces';
@@ -213,14 +214,18 @@ const PlaceDetail = () => {
           {/* MUVO Review Simple - 3-line format */}
           <MuvoReviewSimple placeId={id!} />
           
-          <Button 
-            className="w-full mt-4 bg-primary text-primary-foreground font-semibold py-3 rounded-xl hover:bg-primary/90 transition"
-            onClick={() => {
-              // Could open a review modal here
-            }}
-          >
-            Leave a review
-          </Button>
+          {/* Review Form - handles both new reviews and editing */}
+          <div className="mt-4">
+            <ReviewForm 
+              placeId={id!} 
+              placeName={place.name}
+              placeCategory={place.primaryCategory}
+              onSuccess={() => {
+                queryClient.invalidateQueries({ queryKey: ['place-stamp-aggregates', id] });
+                queryClient.invalidateQueries({ queryKey: ['my-review', id] });
+              }}
+            />
+          </div>
         </div>
 
         {/* Location & Contact Section */}

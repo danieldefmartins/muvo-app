@@ -15,7 +15,7 @@ import { useIsAdmin } from '@/hooks/useAdmin';
 import { Loader2, MessageSquarePlus, Edit2, Shield } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
-type PlaceCategory = Database['public']['Enums']['place_category'];
+type PlaceCategory = Database['public']['Enums']['place_category'] | undefined;
 
 // Maximum reviews allowed before phone verification is required
 const MAX_REVIEWS_BEFORE_PHONE_VERIFICATION = 5;
@@ -23,7 +23,7 @@ const MAX_REVIEWS_BEFORE_PHONE_VERIFICATION = 5;
 interface ReviewFormProps {
   placeId: string;
   placeName?: string;
-  placeCategory?: PlaceCategory;
+  placeCategory?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -33,7 +33,7 @@ export function ReviewForm({ placeId, placeName, placeCategory, onSuccess, onCan
   const { data: isAdmin } = useIsAdmin();
   const { toast } = useToast();
   const { data: existingReview, isLoading: loadingExisting } = useMyReview(placeId);
-  const { data: stamps, isLoading: loadingStamps } = useStamps(placeCategory);
+  const { data: stamps, isLoading: loadingStamps } = useStamps(placeCategory as any);
   const createReview = useCreateReview();
   const updateReview = useUpdateReview();
 
