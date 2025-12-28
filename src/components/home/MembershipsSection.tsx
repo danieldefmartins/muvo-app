@@ -3,9 +3,11 @@ import { useState } from 'react';
 import thousandTrailsLogo from '@/assets/memberships/thousand-trails.png';
 import koaLogo from '@/assets/memberships/koa.jpg';
 import goodSamLogo from '@/assets/memberships/good-sam.png';
-import passportAmericaLogo from '@/assets/memberships/passport-america.png';
+import passportAmericaLogo from '@/assets/memberships/passport-america.jpeg';
 import harvestHostsLogo from '@/assets/memberships/harvest-hosts.png';
 import boondockersLogo from '@/assets/memberships/boondockers-welcome.png';
+import escapeesLogo from '@/assets/memberships/escapees.png';
+import rodLogo from '@/assets/memberships/resorts-of-distinction.jpeg';
 
 type MembershipLogo = {
   id: string;
@@ -21,8 +23,8 @@ const memberships: MembershipLogo[] = [
   { id: 'passport_america', name: 'Passport America', logo: passportAmericaLogo },
   { id: 'harvest_hosts', name: 'Harvest Hosts', logo: harvestHostsLogo },
   { id: 'boondockers', name: 'Boondockers Welcome', logo: boondockersLogo },
-  { id: 'escapees', name: 'Escapees RV Club' },
-  { id: 'rod', name: 'Resorts of Distinction' },
+  { id: 'escapees', name: 'Escapees RV Club', logo: escapeesLogo },
+  { id: 'rod', name: 'Resorts of Distinction', logo: rodLogo },
   { id: 'state_parks', name: 'State Parks' },
 ];
 
