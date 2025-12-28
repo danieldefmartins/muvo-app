@@ -57,47 +57,66 @@ export function HowReviewsWork() {
           </div>
         </div>
 
-        {/* Section 2 - Restaurant Comparison */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 text-center">
-            THE DIFFERENCE
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {/* Traditional Review - Red Card */}
-            <div className="bg-red-50 dark:bg-red-950/30 rounded-xl p-4 border border-red-200 dark:border-red-800/50">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
-                  <X className="w-4 h-4 text-white" />
+          {/* The Difference - Side by Side Comparison */}
+          <div className="mt-8">
+            <h4 className="text-center text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">
+              THE DIFFERENCE
+            </h4>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {/* OLD WAY - Red Card */}
+              <div className="bg-red-50 dark:bg-red-950/20 rounded-2xl p-4 border-2 border-red-200 dark:border-red-800">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                    <X className="w-6 h-6 text-white stroke-[4]" />
+                  </div>
+                  <h5 className="text-lg font-bold text-red-700 dark:text-red-400">Old Way</h5>
                 </div>
-                <span className="text-xs font-semibold text-red-600 dark:text-red-400">Old Way</span>
+                
+                <div className="mb-3">
+                  <div className="text-4xl font-black text-foreground mb-1">3.2 ⭐</div>
+                </div>
+                
+                <p className="text-sm text-muted-foreground mb-2">
+                  One bad review tanks everything
+                </p>
+                <p className="text-xs text-red-600 dark:text-red-400 font-semibold leading-relaxed">
+                  You'll never discover this hidden gem because someone had a bad day
+                </p>
               </div>
-              <div className="text-2xl font-bold text-foreground mb-1">3.2 ★</div>
-              <p className="text-sm text-muted-foreground mb-1">
-                One bad review tanks everything
-              </p>
-              <p className="text-xs text-red-500 font-medium">
-                You'll never discover this hidden gem because someone had a bad day
-              </p>
-            </div>
 
-            {/* MUVO Review - Green Card */}
-            <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 border border-green-200 dark:border-green-800/50">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-white" />
+              {/* MUVO WAY - Green Card */}
+              <div className="bg-green-50 dark:bg-green-950/20 rounded-2xl p-4 border-2 border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-6 h-6 text-white stroke-[4]" />
+                  </div>
+                  <h5 className="text-lg font-bold text-green-700 dark:text-green-400">MUVO Way</h5>
                 </div>
-                <span className="text-xs font-semibold text-green-600 dark:text-green-400">MUVO Way</span>
+                
+                <div className="mb-3">
+                  <div className="text-2xl font-black text-foreground mb-2">Signals</div>
+                  <div className="space-y-1.5">
+                    <div className="bg-[#008fc0] text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center justify-between">
+                      <span>👍 Delicious Food</span>
+                      <span className="font-bold">×89</span>
+                    </div>
+                    <div className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center justify-between">
+                      <span>⚠️ Slow Service</span>
+                      <span className="font-bold">×12</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-muted-foreground mb-2">
+                  <strong>89 people</strong> loved the food. <strong>12 people</strong> noted slow service.
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400 font-semibold leading-relaxed">
+                  Now YOU decide what matters. That's the power of MUVO.
+                </p>
               </div>
-              <div className="text-2xl font-bold text-foreground mb-1">Signals</div>
-              <p className="text-sm text-muted-foreground mb-1">
-                <strong>89 people</strong> loved the food. <strong>12 people</strong> noted slow service.
-              </p>
-              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-                Now YOU decide what matters. That's the power of MUVO.
-              </p>
             </div>
           </div>
-        </div>
 
         {/* Section 3 - Transparency Message */}
         <div className="mb-6">
