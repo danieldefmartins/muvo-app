@@ -93,12 +93,8 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
             <div
               key={stamp.stamp_id || `${stamp.dimension}-positive`}
               className={cn(
-                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48',
-                isOverlay
-                  ? 'bg-[hsl(var(--signal-positive))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
-                  : isCompact
-                    ? 'bg-[hsl(var(--signal-positive-tint))] text-[hsl(var(--signal-positive-text))] px-2.5 py-1.5 shadow-sm border border-[hsl(var(--signal-positive))]/20'
-                    : 'bg-[hsl(var(--signal-positive-tint))] text-[hsl(var(--signal-positive-text))] px-2.5 py-1',
+                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48 bg-[hsl(var(--signal-positive))] text-white',
+                isCompact ? 'px-2.5 py-1.5' : 'px-2.5 py-1',
               )}
               title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
             >
@@ -126,12 +122,8 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
             <div
               key={stamp.stamp_id || `${stamp.dimension}-neutral`}
               className={cn(
-                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48',
-                isOverlay
-                  ? 'bg-[hsl(var(--signal-neutral))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
-                  : isCompact
-                    ? 'bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))] px-2.5 py-1.5 shadow-sm border border-[hsl(var(--signal-neutral))]/20'
-                    : 'bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))] px-2.5 py-1',
+                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48 bg-[hsl(var(--signal-neutral))] text-white',
+                isCompact ? 'px-2.5 py-1.5' : 'px-2.5 py-1',
               )}
               title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
             >
@@ -159,12 +151,8 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
             <div
               key={stamp.stamp_id || `${stamp.dimension}-improvement`}
               className={cn(
-                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48',
-                isOverlay
-                  ? 'bg-[hsl(var(--signal-negative))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
-                  : isCompact
-                    ? 'bg-[hsl(var(--signal-negative-tint))] text-[hsl(var(--signal-negative-text))] px-2.5 py-1.5 shadow-sm border border-[hsl(var(--signal-negative))]/20'
-                    : 'bg-[hsl(var(--signal-negative-tint))] text-[hsl(var(--signal-negative-text))] px-2.5 py-1',
+                'flex items-center justify-center gap-1 rounded-full font-semibold min-w-[192px] w-48 bg-[hsl(var(--signal-negative))] text-white',
+                isCompact ? 'px-2.5 py-1.5' : 'px-2.5 py-1',
               )}
               title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
             >
