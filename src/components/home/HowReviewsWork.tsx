@@ -35,24 +35,24 @@ export function HowReviewsWork() {
           {/* Signal Tags Preview - larger on mobile */}
           <div className="mt-6 space-y-2">
             <div className="flex flex-wrap gap-2">
-              <span className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
                 Level Sites 👆
               </span>
-              <span className="bg-yellow-500 text-black px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
                 Rustic
               </span>
-              <span className="bg-red-600 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
                 Spotty WiFi 👆
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
                 Clean Bathrooms
               </span>
-              <span className="bg-yellow-500 text-black px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="bg-[hsl(var(--signal-neutral))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
                 Family-Friendly
               </span>
-              <span className="bg-red-600 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+              <span className="bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
                 Too Noisy 👆
               </span>
             </div>
@@ -93,11 +93,11 @@ export function HowReviewsWork() {
               </div>
               <div className="text-4xl mb-2">🏪</div>
               <div className="space-y-1.5 mb-2">
-                <div className="bg-blue-600 text-white px-3 py-1 rounded text-sm inline-block font-medium">
+                <div className="bg-[hsl(var(--signal-positive))] text-white px-3 py-1 rounded text-sm inline-block font-medium">
                   👍 Delicious Food <span className="font-bold">×89</span>
                 </div>
                 <br />
-                <div className="bg-red-600 text-white px-3 py-1 rounded text-sm inline-block font-medium">
+                <div className="bg-[hsl(var(--signal-negative))] text-white px-3 py-1 rounded text-sm inline-block font-medium">
                   ⚠️ Slow Service <span className="font-bold">×12</span>
                 </div>
               </div>

@@ -86,9 +86,9 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
 
   return (
     <div className={cn("flex flex-col gap-2.5", className)}>
-      {/* ROW 1: POSITIVE - Blue tint - Always first, reserved space */}
+      {/* ROW 1: POSITIVE - Brand blue tint - Always first, reserved space */}
       <div 
-        className="px-3 py-2 rounded-lg bg-primary/10 text-primary font-semibold min-h-[38px] flex items-center"
+        className="px-3 py-2 rounded-lg bg-[hsl(var(--signal-positive-tint))] text-[hsl(var(--signal-positive-text))] font-semibold min-h-[38px] flex items-center"
         style={{ fontSize: '15px', lineHeight: '22px' }}
       >
         {reviewLines.positive.length > 0 ? (
@@ -98,9 +98,9 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
         )}
       </div>
 
-      {/* ROW 2: NEUTRAL - Amber/Gold tint - Always second, reserved space */}
+      {/* ROW 2: NEUTRAL - Amber tint - Always second, reserved space */}
       <div 
-        className="px-3 py-2 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold min-h-[38px] flex items-center"
+        className="px-3 py-2 rounded-lg bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))] font-semibold min-h-[38px] flex items-center"
         style={{ fontSize: '15px', lineHeight: '22px' }}
       >
         {reviewLines.neutral.length > 0 ? (
@@ -110,10 +110,10 @@ export function MuvoReviewLine({ placeId, className }: MuvoReviewLineProps) {
         )}
       </div>
 
-      {/* ROW 3: NEGATIVE - Red tint - Always third position, only show if exists */}
+      {/* ROW 3: NEGATIVE - Orange tint - Always third position, only show if exists */}
       {reviewLines.negative.length > 0 && (
         <div 
-          className="px-3 py-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 font-semibold min-h-[38px] flex items-center"
+          className="px-3 py-2 rounded-lg bg-[hsl(var(--signal-negative-tint))] text-[hsl(var(--signal-negative-text))] font-semibold min-h-[38px] flex items-center"
           style={{ fontSize: '15px', lineHeight: '22px' }}
         >
           {formatItems(reviewLines.negative)}

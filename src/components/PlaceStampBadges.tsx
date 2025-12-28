@@ -95,40 +95,10 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
               className={cn(
                 'flex items-center gap-1 rounded-full font-semibold',
                 isOverlay
-                  ? 'bg-primary/80 text-primary-foreground px-2 py-0.5 backdrop-blur-sm'
+                  ? 'bg-[hsl(var(--signal-positive))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
                   : isCompact
-                    ? 'bg-primary/15 text-primary px-2.5 py-1.5 shadow-sm border border-primary/20'
-                    : 'bg-primary/10 text-primary px-2.5 py-1',
-              )}
-              title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
-            >
-              <IconComponent
-                className={cn('flex-shrink-0', isCompact ? 'w-5 h-5' : 'w-4 h-4')}
-                strokeWidth={2.5}
-              />
-              {!isCompact && (
-                <>
-                  <span className="text-sm font-medium">{label}</span>
-                  {intensity > 1 && <span className="text-sm font-bold">×{intensity}</span>}
-                </>
-        )}
-
-        {/* Neutral stamps - style/vibe indicators */}
-        {neutralStamps.map((stamp) => {
-          const label = stamp.stamp_id ? getStampLabel(allStamps, stamp.stamp_id) : stamp.dimension;
-          const intensity = Math.round(stamp.avg_intensity || 1);
-          const IconComponent = stamp.stamp_id ? getStampIcon(allStamps, stamp.stamp_id) : CheckCircle;
-
-          return (
-            <div
-              key={stamp.stamp_id || `${stamp.dimension}-neutral`}
-              className={cn(
-                'flex items-center gap-1 rounded-full font-semibold',
-                isOverlay
-                  ? 'bg-stone-500/70 text-white px-2 py-0.5 backdrop-blur-sm'
-                  : isCompact
-                    ? 'bg-stone-500/15 text-stone-600 dark:text-stone-400 px-2.5 py-1.5 shadow-sm border border-stone-500/20'
-                    : 'bg-stone-500/10 text-stone-600 dark:text-stone-400 px-2.5 py-1',
+                    ? 'bg-[hsl(var(--signal-positive-tint))] text-[hsl(var(--signal-positive-text))] px-2.5 py-1.5 shadow-sm border border-[hsl(var(--signal-positive))]/20'
+                    : 'bg-[hsl(var(--signal-positive-tint))] text-[hsl(var(--signal-positive-text))] px-2.5 py-1',
               )}
               title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
             >
@@ -145,6 +115,36 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
             </div>
           );
         })}
+
+        {/* Neutral stamps - style/vibe indicators */}
+        {neutralStamps.map((stamp) => {
+          const label = stamp.stamp_id ? getStampLabel(allStamps, stamp.stamp_id) : stamp.dimension;
+          const intensity = Math.round(stamp.avg_intensity || 1);
+          const IconComponent = stamp.stamp_id ? getStampIcon(allStamps, stamp.stamp_id) : CheckCircle;
+
+          return (
+            <div
+              key={stamp.stamp_id || `${stamp.dimension}-neutral`}
+              className={cn(
+                'flex items-center gap-1 rounded-full font-semibold',
+                isOverlay
+                  ? 'bg-[hsl(var(--signal-neutral))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
+                  : isCompact
+                    ? 'bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))] px-2.5 py-1.5 shadow-sm border border-[hsl(var(--signal-neutral))]/20'
+                    : 'bg-[hsl(var(--signal-neutral-tint))] text-[hsl(var(--signal-neutral-text))] px-2.5 py-1',
+              )}
+              title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
+            >
+              <IconComponent
+                className={cn('flex-shrink-0', isCompact ? 'w-5 h-5' : 'w-4 h-4')}
+                strokeWidth={2.5}
+              />
+              {!isCompact && (
+                <>
+                  <span className="text-sm font-medium">{label}</span>
+                  {intensity > 1 && <span className="text-sm font-bold">×{intensity}</span>}
+                </>
+              )}
             </div>
           );
         })}
@@ -161,10 +161,10 @@ export const PlaceStampBadges = React.forwardRef<HTMLDivElement, PlaceStampBadge
               className={cn(
                 'flex items-center gap-1 rounded-full font-semibold',
                 isOverlay
-                  ? 'bg-amber-500/80 text-white px-2 py-0.5 backdrop-blur-sm'
+                  ? 'bg-[hsl(var(--signal-negative))]/80 text-white px-2 py-0.5 backdrop-blur-sm'
                   : isCompact
-                    ? 'bg-amber-500/15 text-amber-600 px-2.5 py-1.5 shadow-sm border border-amber-500/20'
-                    : 'bg-amber-500/10 text-amber-600 px-2.5 py-1',
+                    ? 'bg-[hsl(var(--signal-negative-tint))] text-[hsl(var(--signal-negative-text))] px-2.5 py-1.5 shadow-sm border border-[hsl(var(--signal-negative))]/20'
+                    : 'bg-[hsl(var(--signal-negative-tint))] text-[hsl(var(--signal-negative-text))] px-2.5 py-1',
               )}
               title={`${label}${intensity > 1 ? ` ×${intensity}` : ''}`}
             >

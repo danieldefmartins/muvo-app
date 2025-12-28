@@ -24,19 +24,19 @@ export function HowMuvoDifferent() {
               className="w-full h-40 object-cover"
             />
             <div className="p-4 space-y-2">
-              <div className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-full text-sm">
+              <div className="flex items-center gap-2 bg-[hsl(var(--signal-positive))] text-white px-3 py-2 rounded-full text-sm">
                 <ThumbsUp className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Best for:</span>
                 <span className="flex-1">Level Sites</span>
                 <span className="font-bold">×62</span>
               </div>
-              <div className="flex items-center gap-2 bg-muted text-foreground px-3 py-2 rounded-full text-sm">
+              <div className="flex items-center gap-2 bg-[hsl(var(--signal-neutral))] text-white px-3 py-2 rounded-full text-sm">
                 <Star className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Vibe:</span>
                 <span className="flex-1">Family-Friendly</span>
                 <span className="font-bold">×28</span>
               </div>
-              <div className="flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded-full text-sm">
+              <div className="flex items-center gap-2 bg-[hsl(var(--signal-negative))] text-white px-3 py-2 rounded-full text-sm">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Heads up:</span>
                 <span className="flex-1">Spotty WiFi</span>
@@ -48,15 +48,15 @@ export function HowMuvoDifferent() {
           {/* Explanations List */}
           <div className="w-full max-w-sm space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-blue-600 flex-shrink-0" />
+              <div className="w-4 h-4 rounded-full bg-[hsl(var(--signal-positive))] flex-shrink-0" />
               <span className="text-lg text-foreground/80">What Stood Out?</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-gray-400 flex-shrink-0" />
+              <div className="w-4 h-4 rounded-full bg-[hsl(var(--signal-neutral))] flex-shrink-0" />
               <span className="text-lg text-foreground/80">What&apos;s it like?</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-red-600 flex-shrink-0" />
+              <div className="w-4 h-4 rounded-full bg-[hsl(var(--signal-negative))] flex-shrink-0" />
               <span className="text-lg text-foreground/80">What didn&apos;t work?</span>
             </div>
           </div>
@@ -72,19 +72,19 @@ export function HowMuvoDifferent() {
               className="w-full h-48 object-cover"
             />
             <div className="p-4 space-y-3">
-              <div className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-full text-sm">
+              <div className="flex items-center gap-2 bg-[hsl(var(--signal-positive))] text-white px-4 py-2.5 rounded-full text-sm">
                 <ThumbsUp className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Best for:</span>
                 <span className="flex-1">Level Sites</span>
                 <span className="font-bold">×62</span>
               </div>
-              <div className="flex items-center gap-2 bg-muted text-foreground px-4 py-2.5 rounded-full text-sm">
+              <div className="flex items-center gap-2 bg-[hsl(var(--signal-neutral))] text-white px-4 py-2.5 rounded-full text-sm">
                 <Star className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Vibe:</span>
                 <span className="flex-1">Family-Friendly</span>
                 <span className="font-bold">×28</span>
               </div>
-              <div className="flex items-center gap-2 bg-red-600 text-white px-4 py-2.5 rounded-full text-sm">
+              <div className="flex items-center gap-2 bg-[hsl(var(--signal-negative))] text-white px-4 py-2.5 rounded-full text-sm">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium">Heads up:</span>
                 <span className="flex-1">Spotty WiFi</span>
@@ -97,15 +97,15 @@ export function HowMuvoDifferent() {
           <div className="flex flex-col justify-end" style={{ paddingTop: '192px' }}>
             <div className="space-y-3">
               <div className="flex items-center gap-3 h-[44px]">
-                <div className="w-3 h-3 rounded-full bg-blue-600 flex-shrink-0" />
+                <div className="w-3 h-3 rounded-full bg-[hsl(var(--signal-positive))] flex-shrink-0" />
                 <span className="text-base text-muted-foreground">What Stood Out?</span>
               </div>
               <div className="flex items-center gap-3 h-[44px]">
-                <div className="w-3 h-3 rounded-full bg-gray-400 flex-shrink-0" />
+                <div className="w-3 h-3 rounded-full bg-[hsl(var(--signal-neutral))] flex-shrink-0" />
                 <span className="text-base text-muted-foreground">What&apos;s it like?</span>
               </div>
               <div className="flex items-center gap-3 h-[44px]">
-                <div className="w-3 h-3 rounded-full bg-red-600 flex-shrink-0" />
+                <div className="w-3 h-3 rounded-full bg-[hsl(var(--signal-negative))] flex-shrink-0" />
                 <span className="text-base text-muted-foreground">What didn&apos;t work?</span>
               </div>
             </div>

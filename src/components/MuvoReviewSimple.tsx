@@ -93,7 +93,7 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
 
   return (
     <div className={cn("space-y-2", className)}>
-      {/* LINE 1: POSITIVE - Soft green tint */}
+      {/* LINE 1: POSITIVE - Brand blue tint */}
       {reviewData.positive.length > 0 && (
         <ReviewLine
           type="positive"
@@ -102,13 +102,13 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.positive}
           isExpanded={expandedSection === 'positive'}
           onToggle={() => toggleSection('positive')}
-          bgClass="bg-emerald-50 dark:bg-emerald-950/30"
-          textClass="text-emerald-700 dark:text-emerald-400"
-          iconClass="text-emerald-600 dark:text-emerald-500"
+          bgClass="bg-[hsl(var(--signal-positive-tint))]"
+          textClass="text-[hsl(var(--signal-positive-text))]"
+          iconClass="text-[hsl(var(--signal-positive-text))]"
         />
       )}
 
-      {/* LINE 2: NEUTRAL - Soft beige/warm gray */}
+      {/* LINE 2: NEUTRAL - Amber tint */}
       {reviewData.neutral.length > 0 && (
         <ReviewLine
           type="neutral"
@@ -117,13 +117,13 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.neutral}
           isExpanded={expandedSection === 'neutral'}
           onToggle={() => toggleSection('neutral')}
-          bgClass="bg-amber-50 dark:bg-amber-950/30"
-          textClass="text-amber-700 dark:text-amber-400"
-          iconClass="text-amber-600 dark:text-amber-500"
+          bgClass="bg-[hsl(var(--signal-neutral-tint))]"
+          textClass="text-[hsl(var(--signal-neutral-text))]"
+          iconClass="text-[hsl(var(--signal-neutral-text))]"
         />
       )}
 
-      {/* LINE 3: NEGATIVE - Soft coral/red */}
+      {/* LINE 3: NEGATIVE - Orange tint */}
       {reviewData.negative.length > 0 && (
         <ReviewLine
           type="negative"
@@ -132,9 +132,9 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.negative}
           isExpanded={expandedSection === 'negative'}
           onToggle={() => toggleSection('negative')}
-          bgClass="bg-rose-50 dark:bg-rose-950/30"
-          textClass="text-rose-700 dark:text-rose-400"
-          iconClass="text-rose-600 dark:text-rose-500"
+          bgClass="bg-[hsl(var(--signal-negative-tint))]"
+          textClass="text-[hsl(var(--signal-negative-text))]"
+          iconClass="text-[hsl(var(--signal-negative-text))]"
         />
       )}
     </div>
