@@ -57,53 +57,22 @@ export function HowReviewsWork() {
           </div>
         </div>
 
-        {/* Section 2 - Why This is Better */}
+        {/* Section 2 - Transparency Message */}
         <div className="mb-6">
-          <h3 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-6 text-center leading-tight">
-            Why This Doesn't Punish Businesses
-          </h3>
-
-          <div className="space-y-4">
-            {/* Problem Card */}
-            <div className="bg-white dark:bg-card rounded-xl p-4 border-2 border-red-300 dark:border-red-500/50 relative">
-              <div className="absolute -top-3 -right-3 w-12 h-12 rounded-full bg-red-500 flex items-center justify-center shadow-lg">
-                <X className="w-8 h-8 text-white stroke-[3]" />
-              </div>
-              <div className="text-4xl mb-2">🏪</div>
-              <p className="font-semibold text-base mb-1">Restaurant</p>
-              <div className="flex items-center gap-1 mb-2">
-                <span className="text-yellow-500">⭐</span>
-                <span className="text-base font-bold">2.0 stars</span>
-              </div>
-              <p className="text-lg sm:text-xl font-bold text-foreground mb-1">
-                Amazing food + slow service = BAD RATING
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-2xl p-8 border-2 border-[#008fc0]/30">
+            <div className="text-center space-y-4">
+              <div className="text-5xl mb-2">👁️</div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+                You see both comments, the good and the bad
+              </h3>
+              <p className="text-xl sm:text-2xl font-extrabold text-[#008fc0] uppercase tracking-wide">
+                WE WILL NEVER HIDE FROM YOU
               </p>
-              <p className="text-sm text-red-500 font-semibold">
-                You miss a great meal
+              <p className="text-lg sm:text-xl text-foreground font-semibold">
+                but at the end it's <span className="text-[#008fc0] font-bold">Your decision!</span>
               </p>
-            </div>
-
-            {/* Solution Card */}
-            <div className="bg-white dark:bg-card rounded-xl p-4 border-2 border-green-300 dark:border-green-500/50 relative">
-              <div className="absolute -top-3 -right-3 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
-                <Check className="w-8 h-8 text-white stroke-[3]" />
-              </div>
-              <div className="text-4xl mb-2">🏪</div>
-              <p className="font-semibold text-base mb-2">Restaurant</p>
-              {/* Standardized review bars - matching PlaceStampBadges style */}
-              <div className="flex flex-col gap-2 mb-4">
-                <span className="inline-flex items-center justify-center gap-1.5 min-w-[192px] w-48 bg-[hsl(var(--signal-positive))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
-                  👍 Delicious Food <span className="font-bold">×89</span>
-                </span>
-                <span className="inline-flex items-center justify-center gap-1.5 min-w-[192px] w-48 bg-[hsl(var(--signal-negative))] text-white px-3 py-1.5 rounded-full text-sm font-medium">
-                  ⚠️ Slow Service <span className="font-bold">×12</span>
-                </span>
-              </div>
-              <p className="text-lg sm:text-xl font-bold text-foreground mb-1">
-                You see both. You decide.
-              </p>
-              <p className="text-base sm:text-lg text-green-600 dark:text-green-400 font-bold">
-                Perfect if you're not in a hurry!
+              <p className="text-2xl font-bold text-muted-foreground">
+                Simple!
               </p>
             </div>
           </div>
