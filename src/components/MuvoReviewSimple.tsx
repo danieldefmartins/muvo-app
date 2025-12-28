@@ -93,7 +93,7 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
 
   return (
     <div className={cn("space-y-2", className)}>
-      {/* LINE 1: POSITIVE - Brand blue tint */}
+      {/* LINE 1: POSITIVE - MUVO Blue #008fc0 solid */}
       {reviewData.positive.length > 0 && (
         <ReviewLine
           type="positive"
@@ -102,13 +102,13 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.positive}
           isExpanded={expandedSection === 'positive'}
           onToggle={() => toggleSection('positive')}
-          bgClass="bg-[hsl(var(--signal-positive-tint))]"
-          textClass="text-[hsl(var(--signal-positive-text))]"
-          iconClass="text-[hsl(var(--signal-positive-text))]"
+          bgClass="bg-[#008fc0]"
+          textClass="text-white"
+          iconClass="text-white"
         />
       )}
 
-      {/* LINE 2: NEUTRAL - Amber tint */}
+      {/* LINE 2: NEUTRAL - Gray-500 solid */}
       {reviewData.neutral.length > 0 && (
         <ReviewLine
           type="neutral"
@@ -117,13 +117,13 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.neutral}
           isExpanded={expandedSection === 'neutral'}
           onToggle={() => toggleSection('neutral')}
-          bgClass="bg-[hsl(var(--signal-neutral-tint))]"
-          textClass="text-[hsl(var(--signal-neutral-text))]"
-          iconClass="text-[hsl(var(--signal-neutral-text))]"
+          bgClass="bg-gray-500"
+          textClass="text-white"
+          iconClass="text-white"
         />
       )}
 
-      {/* LINE 3: NEGATIVE - Orange tint */}
+      {/* LINE 3: NEGATIVE - Orange-500 solid */}
       {reviewData.negative.length > 0 && (
         <ReviewLine
           type="negative"
@@ -132,9 +132,9 @@ export function MuvoReviewSimple({ placeId, className }: MuvoReviewSimpleProps) 
           allItems={reviewData.negative}
           isExpanded={expandedSection === 'negative'}
           onToggle={() => toggleSection('negative')}
-          bgClass="bg-[hsl(var(--signal-negative-tint))]"
-          textClass="text-[hsl(var(--signal-negative-text))]"
-          iconClass="text-[hsl(var(--signal-negative-text))]"
+          bgClass="bg-orange-500"
+          textClass="text-white"
+          iconClass="text-white"
         />
       )}
     </div>
@@ -212,11 +212,11 @@ function ReviewLine({
 
       {/* Expanded content */}
       {isExpanded && hasMore && (
-        <div className={cn("px-3 pb-2.5 pt-0 space-y-1.5 border-t border-black/5 dark:border-white/5 mt-0")}>
+        <div className={cn("px-3 pb-2.5 pt-0 space-y-1.5 border-t border-white/20 mt-0")}>
           {allItems.slice(1).map((item, idx) => (
             <div 
               key={idx} 
-              className={cn("flex items-center gap-2 pl-6 text-sm", textClass, "opacity-80")}
+              className={cn("flex items-center gap-2 pl-6 text-sm", textClass, "opacity-90")}
             >
               <span className="truncate">{item.label}</span>
               <span className="font-semibold flex-shrink-0">×{item.votes}</span>
