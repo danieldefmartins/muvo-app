@@ -47,24 +47,21 @@ export function Header({ showBack = false, showMap = false, className }: HeaderP
         </div>
 
         <div className="flex items-center gap-1">
-          {user && (
-            <>
-              <NotificationBell />
-              <Button
-                asChild
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "text-muted-foreground hover:text-foreground",
-                  location.pathname === '/saved' && "text-primary"
-                )}
-              >
-                <Link to="/saved" aria-label="Saved places">
-                  <Heart className="w-5 h-5" />
-                </Link>
-              </Button>
-            </>
-          )}
+          {/* Always show notification bell and heart */}
+          <NotificationBell />
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-foreground hover:text-foreground",
+              location.pathname === '/saved' && "text-primary"
+            )}
+          >
+            <Link to={user ? "/saved" : "/auth"} aria-label="Saved places">
+              <Heart className="w-5 h-5" />
+            </Link>
+          </Button>
 
           {isAdmin && (
             <Button
