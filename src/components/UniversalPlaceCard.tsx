@@ -76,6 +76,18 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
       return { positive: null, neutral: null, negative: null };
     }
 
+    // Helper to safely get label as string
+    const getLabel = (data: typeof aggregates[0]): string => {
+      if (data.stamp_id) {
+        return getStampLabel(allStamps, data.stamp_id);
+      }
+      // Ensure dimension is converted to string (it could be an enum/object)
+      const dim = data.dimension;
+      if (typeof dim === 'string') return dim;
+      if (dim && typeof dim === 'object') return String(dim);
+      return 'Review';
+    };
+
     // TOP 1 POSITIVE
     const positiveData = aggregates
       .filter(a => a.polarity === 'positive')
@@ -93,15 +105,15 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
 
     return {
       positive: positiveData ? {
-        label: positiveData.stamp_id ? getStampLabel(allStamps, positiveData.stamp_id) : positiveData.dimension,
+        label: getLabel(positiveData),
         votes: positiveData.total_votes,
       } : null,
       neutral: neutralData ? {
-        label: neutralData.stamp_id ? getStampLabel(allStamps, neutralData.stamp_id) : neutralData.dimension,
+        label: getLabel(neutralData),
         votes: neutralData.total_votes,
       } : null,
       negative: negativeData ? {
-        label: negativeData.stamp_id ? getStampLabel(allStamps, negativeData.stamp_id) : negativeData.dimension,
+        label: getLabel(negativeData),
         votes: negativeData.total_votes,
       } : null,
     };
@@ -268,7 +280,7 @@ export function UniversalPlaceCard({ place, className, style }: UniversalPlaceCa
 
           {/* Meta Information Line */}
           <div className="text-sm text-muted-foreground truncate mb-2">
-            {place.primaryCategory}
+            {String(place.primaryCategory || 'Place')}
             <span className="mx-1.5">•</span>
             {place.distance} mi
             <span className="mx-1.5">•</span>
